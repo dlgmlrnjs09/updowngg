@@ -1,14 +1,12 @@
-package gg.updown.backend.external.riot.api.account.dto;
+package gg.updown.backend.external.riot.api.account.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class AccountInfoResDto {
     private String puuid;
     private String gameName;

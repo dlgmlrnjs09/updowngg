@@ -1,3 +1,36 @@
+spring:
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+  thymeleaf:
+    cache: false
+  application:
+    name: Spring-Boot-MyBatis
+  datasource:
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: jdbc:log4jdbc:postgresql://localhost:5432/updowngg
+    username: postgres
+    password: gmlrnjs0
+
 external:
   riot:
     api-key: RGAPI-5268e3df-824b-45b3-be6c-2d25836cb436
+
+mybatis:
+  type-aliases-package: gg.updown.backend
+  mapper-locations: classpath:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    jdbc-type-for-null: null
+
+logging:
+  level:
+    jdbc:
+      sqlonly: INFO      # SQL 쿼리문만 로그로 남기기
+      sqltiming: OFF     # SQL 쿼리문과 실행 시간 로그
+      audit: OFF         # ResultSet을 제외한 모든 JDBC 호출 정보
+      resultset: OFF     # ResultSet을 포함한 모든 JDBC 호출 정보
+      resultsettable: INFO  # SQL 결과 데이터 테이블
+      connection: OFF    # 커넥션 연결/해제 정보
