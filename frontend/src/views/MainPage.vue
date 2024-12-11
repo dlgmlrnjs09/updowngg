@@ -24,7 +24,7 @@ let intervalId: number;
 onMounted(() => {
   intervalId = window.setInterval(() => {
     currentIndex.value = (currentIndex.value + 1) % examples.length;
-    currentExample.value = `예시: ${examples[currentIndex.value]}`;
+    currentExample.value = `${examples[currentIndex.value]}`;
   }, 3000);
 });
 

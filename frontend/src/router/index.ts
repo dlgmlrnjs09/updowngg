@@ -10,11 +10,11 @@ const router = createRouter({
             name: 'home',
             component: HomePage
         },
-        // {
-        //     path: '/summoner/:name',
-        //     name: 'summoner',
-        //     component: () => import('@/views/SummonerPage.vue')
-        // },
+        {
+            path: '/summoner/:name',
+            name: 'summoner',
+            component: () => import('@/views/SummonerMainPage.vue')
+        },
         // {
         //     path: '/ranking',
         //     name: 'ranking',
