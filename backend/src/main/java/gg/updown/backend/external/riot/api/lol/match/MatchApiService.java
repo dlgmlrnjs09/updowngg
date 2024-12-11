@@ -1,4 +1,4 @@
-package gg.updown.backend.external.riot.api.match;
+package gg.updown.backend.external.riot.api.lol.match;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

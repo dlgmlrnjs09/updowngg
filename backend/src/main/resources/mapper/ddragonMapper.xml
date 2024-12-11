@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.riot.ddragon.mapper.DdragonMapper">
+    <insert id="insertVersion" parameterType="String">
+        INSERT INTO lol_version (
+            version
+        ) VALUES (
+            #{version}
+        )
+    </insert>
+
+    <select id="getLatestVersion" resultType="String">
+        SELECT version
+        FROM lol_version
+        ORDER BY seq desc
+        LIMIT 1
+    </select>
+</mapper>

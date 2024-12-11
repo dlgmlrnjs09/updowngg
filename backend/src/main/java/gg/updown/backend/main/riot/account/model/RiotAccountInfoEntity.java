@@ -1,4 +1,4 @@
-package gg.updown.backend.external.riot.api.account.model;
+package gg.updown.backend.main.riot.account.model;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AccountInfoEntity {
+public class RiotAccountInfoEntity {
     private String puuid;
     private String gameName;
     private String tagLine;
