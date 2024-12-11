@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.riot.account.mapper.RiotAccountMapper">
+    <insert id="insertAccountBasicInfo" parameterType="RiotAccountInfoEntity">
+        INSERT INTO riot_account (
+            puuid
+            , game_name
+            , tag_line
+        ) VALUES (
+            #{puuid}
+            , #{gameName}
+            , #{tagLine}
+        )
+    </insert>
+
+    <insert id="conflictAccountBasicInfo" parameterType="RiotAccountInfoEntity">
+        INSERT INTO riot_account (
+           puuid
+         , game_name
+         , tag_line
+        ) VALUES (
+           #{puuid}
+         , #{gameName}
+         , #{tagLine}
+        ) ON CONFLICT (puuid)
+        DO UPDATE
+        SET game_name = #{gameName}
+           , tag_line = #{tagLine}
+    </insert>
+</mapper>

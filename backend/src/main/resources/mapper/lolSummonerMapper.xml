@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.lol.summoner.mapper.LolSummonerMapper">
+    <select id="getSummonerInfoByPuuid" parameterType="String" resultType="LolSummonerEntity">
+        SELECT
+            lol_account_seq
+            , puuid
+            , summoner_id
+            , account_id
+            , summoner_level
+            , external_mod_dt
+            , profile_icon_id
+        FROM
+            lol_summoner
+        WHERE
+            puuid = #{puuid}
+    </select>
+
+    <insert id="insertSummonerInfo" parameterType="LolSummonerEntity">
+        INSERT INTO lol_summoner (
+             puuid
+             , summoner_id
+             , account_id
+             , summoner_level
+             , external_mod_dt
+             , profile_icon_id
+        ) VALUES (
+            #{puuid}
+            , #{summonerId}
+            , #{accountId}
+            , #{summonerLevel}
+            , #{externalModDt}
+            , #{profileIconId}
+        )
+    </insert>
+
+    <update id="updateSummonerInfo" parameterType="LolSummonerEntity">
+        UPDATE lol_summoner
+        SET
+             summoner_id = #{summonerId}
+             , account_id = #{accountId}
+             , summoner_level = #{summonerLevel}
+             , external_mod_dt = #{externalModDt}
+             , profile_icon_id = #{profileIconId}
+        WHERE
+            puuid = #{puuid}
+    </update>
+</mapper>

@@ -16,7 +16,7 @@ spring:
 
 external:
   riot:
-    api-key: RGAPI-5268e3df-824b-45b3-be6c-2d25836cb436
+    api-key: RGAPI-890a2491-eea8-4012-89f8-0377c280708c
 
 mybatis:
   type-aliases-package: gg.updown.backend
@@ -34,3 +34,7 @@ logging:
       resultset: OFF     # ResultSet을 포함한 모든 JDBC 호출 정보
       resultsettable: INFO  # SQL 결과 데이터 테이블
       connection: OFF    # 커넥션 연결/해제 정보
+
+riot:
+  ddragon:
+    basepath: "https://ddragon.leagueoflegends.com"

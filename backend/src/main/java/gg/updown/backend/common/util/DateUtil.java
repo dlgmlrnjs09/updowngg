@@ -1,4 +1,4 @@
-package gg.updown.backend.util;
+package gg.updown.backend.common.util;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

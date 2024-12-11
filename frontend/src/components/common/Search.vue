@@ -26,18 +26,50 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { summonerApi } from '@/api/summoner'
 
-const router = useRouter();
-const searchQuery = ref('');
+const router = useRouter()
+const searchQuery = ref('')
+const isLoading = ref(false)
 
-const handleSearch = () => {
-  const query = searchQuery.value.trim();
-  if (query) {
-    router.push(`/summoner/${query}`);
+const handleSearch = async () => {
+  const query = searchQuery.value.trim()
+  if (!query) return
+
+  // '#' 기준으로 소환사 이름과 태그 분리
+  const [summonerId, tagLine] = query.split('#')
+  if (!summonerId || !tagLine) {
+    alert('소환사#태그 형식으로 입력해주세요')
+    return
   }
-};
+
+  try {
+    isLoading.value = true
+    const response = await summonerApi.getInfo(summonerId, tagLine)
+
+    // 검색 결과가 있으면 소환사 페이지로 이동
+    if (response.data) {
+      router.push({
+        name: 'summoner',
+        params: {
+          name: summonerId,
+          tag: tagLine
+        },
+        // 소환사 정보를 state로 전달
+        state: {
+          summonerInfo: response.data
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Failed to fetch summoner:', error)
+    alert('소환사를 찾을 수 없습니다')
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -87,5 +119,17 @@ const handleSearch = () => {
 .search-icon svg {
   width: 20px;
   height: 20px;
+}
+
+.search-box.loading .search-input {
+  background-color: rgba(20, 20, 20, 0.8);
+}
+
+.search-box.loading .search-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: translateY(-50%) rotate(360deg); }
 }
 </style>

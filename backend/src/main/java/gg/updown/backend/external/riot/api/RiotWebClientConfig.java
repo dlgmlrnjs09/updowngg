@@ -15,6 +15,9 @@ public class RiotWebClientConfig {
     @Value("${external.riot.api-key}")
     private String apiKey;
 
+    @Value("${riot.ddragon.basepath}")
+    private String ddragonBasepath;
+
     @Bean
     public WebClient riotKrWebClient() {
         return createRiotWebClient("kr");
@@ -31,6 +34,15 @@ public class RiotWebClientConfig {
                 .defaultHeader("X-Riot-Token", apiKey)
                 .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36")
                 .defaultHeader(HttpHeaders.ACCEPT_LANGUAGE, "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+    }
+
+    @Bean
+    WebClient ddragonWebClient() {
+        return WebClient.builder()
+                .baseUrl(ddragonBasepath)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();

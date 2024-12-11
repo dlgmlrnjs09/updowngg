@@ -3,11 +3,13 @@
   <div class="container">
     <!-- 프로필 섹션 -->
     <div class="profile-section">
-      <div class="profile-icon"></div>
+      <div class="profile-icon">
+        <img :src="summonerInfo?.lolSummonerDto.profileIconUrl" alt="">
+      </div>
       <div class="profile-info">
         <div class="profile-header">
           <div class="name-section">
-            <div class="summoner-name">{{ summonerName }}</div>
+            <div class="summoner-name">{{ summonerInfo?.riotAccountInfoEntity.gameName }}</div>
             <div class="profile-stats">평가 312회 · 최근 30일 동안 89회 평가됨</div>
           </div>
           <button class="detail-button" @click="showDetailModal = true">상세 평가 보기</button>
@@ -101,10 +103,12 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import DetailModal from "@/components/summoner/main/modal/DetailModal.vue";
 import ReviewModal from "@/components/summoner/main/modal/ReviewModal.vue";
+import type {LolSummonerProfileResDto } from "@/types/summoner.ts";
+import {summonerApi} from "@/api/summoner.ts";
 
 // 라우터에서 소환사 이름 가져오기
 const route = useRoute()
-const summonerName = route.params.name as string
+const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
 
 // 모달 상태 관리
 const showDetailModal = ref(false)
@@ -149,8 +153,15 @@ const openReviewModal = (player: any) => {
 
 // 컴포넌트 마운트 시 데이터 로드
 onMounted(async () => {
-  // API 호출하여 데이터 로드
-  // 프로필 정보, 게임 기록 등을 가져옴
+  try {
+    const summonerId = route.params.name as string
+    const tagLine = route.params.tag as string
+
+    const response = await summonerApi.getInfo(summonerId, tagLine)
+    summonerInfo.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch summoner info:', error)
+  }
 })
 </script>
 
@@ -330,5 +341,11 @@ onMounted(async () => {
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.profile-icon img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 </style>
