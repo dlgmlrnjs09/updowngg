@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.lol.match.mapper.LolMatchMapper">
+    <select id="getLatestMatchId" parameterType="String" resultType="String">
+        SELECT
+            match_id
+        FROM
+            lol_match
+        WHERE
+            puuid = #{puuid}
+        ORDER BY
+            lol_match_seq DESC
+        LIMIT 1
+    </select>
+</mapper>

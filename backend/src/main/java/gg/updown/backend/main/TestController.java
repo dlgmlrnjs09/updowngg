@@ -2,6 +2,7 @@ package gg.updown.backend.main;
 
 import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
+import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
 import gg.updown.backend.main.riot.account.service.RiotAccountService;
 import gg.updown.backend.main.riot.ddragon.service.DdragonService;
@@ -17,6 +18,7 @@ public class TestController {
     private final AccountApiService accountApiService;
     private final RiotAccountService riotAccountService;
     private final DdragonService ddragonService;
+    private final LolMatchService matchService;
 
     @GetMapping("/test")
     public void test() {
@@ -27,6 +29,6 @@ public class TestController {
 //            .tagLine(resDto.getTagLine())
 //        .build());
 
-        ddragonService.loadAndInsertVersionList();
+        matchService.insertNewMatchList("W8BbbIDV3ctMEWIklMFx0sFk6yXmTfBfuLYUdglXhwG9LPdrxc5ITkDCxaOo_vJKbWm3haDdPlDNBw");
     }
 }

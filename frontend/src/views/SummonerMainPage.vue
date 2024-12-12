@@ -13,6 +13,7 @@
             <div class="profile-stats">평가 312회 · 최근 30일 동안 89회 평가됨</div>
           </div>
           <button class="detail-button" @click="showDetailModal = true">상세 평가 보기</button>
+          <button class="update-button">전적 갱신</button>
         </div>
         <div class="rating-stats">
           <div class="rating-item">
@@ -51,7 +52,32 @@
                    class="player"
                    @click="openReviewModal(player)">
                 <div class="champion-icon"></div>
-                <div class="player-name">{{ player.summonerName }}</div>
+                <!-- 플레이어 정보 템플릿 수정 -->
+                <div class="player-info">
+                  <div class="player-name">{{ player.summonerName }}</div>
+                  <div class="player-stats">
+                    <span class="kda">{{ player.kills }}/{{ player.deaths }}/{{ player.assists }}</span>
+                    <span class="kp">{{ player.killParticipation }}%</span>
+                    <div class="damage-bars">
+                      <div class="damage-bar">
+                        <div class="progress-bg">
+                          <div class="progress-fill damage"
+                               :style="{ width: player.totalDamage + '%' }">
+                          </div>
+                        </div>
+                        <span class="damage-text">{{ player.totalDamage }}</span>
+                      </div>
+                      <div class="damage-bar">
+                        <div class="progress-bg">
+                          <div class="progress-fill taken-damage"
+                               :style="{ width: player.takenDamage + '%' }">
+                          </div>
+                        </div>
+                        <span class="damage-text">{{ player.takenDamage }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -63,7 +89,32 @@
                    class="player"
                    @click="openReviewModal(player)">
                 <div class="champion-icon"></div>
-                <div class="player-name">{{ player.summonerName }}</div>
+                <!-- 플레이어 정보 템플릿 수정 -->
+                <div class="player-info">
+                  <div class="player-name">{{ player.summonerName }}</div>
+                  <div class="player-stats">
+                    <span class="kda">{{ player.kills }}/{{ player.deaths }}/{{ player.assists }}</span>
+                    <span class="kp">{{ player.killParticipation }}%</span>
+                    <div class="damage-bars">
+                      <div class="damage-bar">
+                        <div class="progress-bg">
+                          <div class="progress-fill damage"
+                               :style="{ width: player.totalDamage + '%' }">
+                          </div>
+                        </div>
+                        <span class="damage-text">{{ player.totalDamage }}</span>
+                      </div>
+                      <div class="damage-bar">
+                        <div class="progress-bg">
+                          <div class="progress-fill taken-damage"
+                               :style="{ width: player.takenDamage + '%' }">
+                          </div>
+                        </div>
+                        <span class="damage-text">{{ player.takenDamage }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -202,10 +253,22 @@ onMounted(async () => {
   margin-bottom: 4px;
 }
 
-.profile-stats {
-  color: #888;
-  font-size: 14px;
+.player-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: #666;
 }
+
+.kda {
+  color: #888;
+}
+
+.kp {
+  color: #666;
+}
+
 
 .detail-button {
   background: rgba(41, 121, 255, 0.1);
@@ -219,6 +282,21 @@ onMounted(async () => {
 }
 
 .detail-button:hover {
+  background: rgba(41, 121, 255, 0.2);
+}
+
+.update-button {
+  background: rgba(41, 121, 255, 0.1);
+  border: 1px solid rgba(41, 121, 255, 0.2);
+  color: #2979FF;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.update-button:hover {
   background: rgba(41, 121, 255, 0.2);
 }
 
@@ -294,10 +372,16 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px;
+  padding: 8px;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s;
+  width: 100%;
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .player:hover {
@@ -315,6 +399,10 @@ onMounted(async () => {
   font-size: 14px;
   color: #888;
   transition: color 0.2s;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .player:hover .player-name {
@@ -347,5 +435,62 @@ onMounted(async () => {
   width:100%;
   height:100%;
   object-fit:cover;
+}
+
+.damage-stats {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.damage {
+  color: #ff6b6b;
+}
+
+.taken-damage {
+  color: #4dabf7;
+}
+
+.damage-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 120px;
+}
+
+.damage-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.progress-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.damage {
+  background: #ff6b6b;
+}
+
+.progress-fill.taken-damage {
+  background: #4dabf7;
+}
+
+.damage-text {
+  min-width: 45px;
+  text-align: right;
+  font-size: 11px;
+  color: #888;
 }
 </style>

@@ -6,7 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
@@ -36,6 +38,7 @@ public class RiotWebClientConfig {
                 .defaultHeader(HttpHeaders.ACCEPT_LANGUAGE, "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .filter(loggingRequestUrl())
                 .build();
     }
 
@@ -45,6 +48,14 @@ public class RiotWebClientConfig {
                 .baseUrl(ddragonBasepath)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .filter(loggingRequestUrl())
                 .build();
+    }
+
+    private ExchangeFilterFunction loggingRequestUrl() {
+        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
+            log.info("Request URL: {}", clientRequest.url());
+            return Mono.just(clientRequest);
+        });
     }
 }
