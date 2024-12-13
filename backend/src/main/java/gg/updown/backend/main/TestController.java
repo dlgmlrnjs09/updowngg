@@ -2,6 +2,7 @@ package gg.updown.backend.main;
 
 import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
+import gg.updown.backend.main.api.lol.match.model.LolMatchInfoResDto;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
 import gg.updown.backend.main.riot.account.service.RiotAccountService;
@@ -10,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class TestController {
 //            .tagLine(resDto.getTagLine())
 //        .build());
 
-        matchService.insertNewMatchList("W8BbbIDV3ctMEWIklMFx0sFk6yXmTfBfuLYUdglXhwG9LPdrxc5ITkDCxaOo_vJKbWm3haDdPlDNBw");
+        List<LolMatchInfoResDto> list = matchService.getAndInsertMatchList("W8BbbIDV3ctMEWIklMFx0sFk6yXmTfBfuLYUdglXhwG9LPdrxc5ITkDCxaOo_vJKbWm3haDdPlDNBw", 1, 20);
+        System.out.println("");
     }
 }

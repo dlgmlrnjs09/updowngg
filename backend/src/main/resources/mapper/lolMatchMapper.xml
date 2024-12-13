@@ -12,4 +12,125 @@
             lol_match_seq DESC
         LIMIT 1
     </select>
+
+    <select id="countingMatchByMatchId" parameterType="String" resultType="int">
+        SELECT
+            count(*)
+        FROM
+            lol_match
+        WHERE
+            match_id = #{matchId}
+    </select>
+
+    <select id="getMatchInfo" parameterType="String" resultType="LolMatchEntity">
+        SELECT
+            match_id
+            , lol_match_seq
+            , game_create_dt
+            , game_duration
+            , game_id
+            , game_mode
+            , game_name
+            , game_start_dt
+            , game_type
+            , game_version
+            , map_id
+        FROM
+            lol_match
+        WHERE
+            match_id = #{matchId}
+    </select>
+
+    <select id="getMatchParticipantList" parameterType="String" resultType="LolMatchParticipantEntity">
+        SELECT
+            match_participant_seq,
+            match_id,
+           puuid,
+           riot_id_game_name,
+           riot_id_tagline,
+           role,
+           summoner_id,
+           summoner_name,
+           summoner_level,
+           team_id,
+           CASE WHEN team_id = 100 THEN 'BLUE' WHEN team_id = 200 THEN 'RED' END as teamName,
+           time_played,
+           kills,
+           assists,
+           deaths,
+           champ_level,
+           total_damage_to_champion,
+           total_damage_taken
+        FROM
+            lol_match_participant
+        WHERE
+            match_id = #{matchId}
+    </select>
+
+    <insert id="insertMatch" parameterType="LolMatchEntity">
+        INSERT INTO lol_match (
+            match_id,
+            game_create_dt,
+            game_duration,
+            game_id,
+            game_mode,
+            game_name,
+            game_start_dt,
+            game_type,
+            game_version,
+            map_id
+        ) VALUES (
+             #{matchId},
+             #{gameCreateDt},
+             #{gameDuration},
+             #{gameId},
+             #{gameMode},
+             #{gameName},
+             #{gameStartDt},
+             #{gameType},
+             #{gameVersion},
+             #{mapId}
+         )
+    </insert>
+
+    <insert id="insertMatchParticipants" parameterType="java.util.List">
+        INSERT INTO lol_match_participant (
+            match_id,
+            puuid,
+            riot_id_game_name,
+            riot_id_tagline,
+            role,
+            summoner_id,
+            summoner_level,
+            summoner_name,
+            team_id,
+            time_played,
+            kills,
+            assists,
+            deaths,
+            champ_level,
+            total_damage_to_champion,
+            total_damage_taken
+        ) VALUES
+        <foreach collection="list" item="participant" separator=",">
+        (
+            #{participant.matchId},
+            #{participant.puuid},
+            #{participant.riotIdGameName},
+            #{participant.riotIdTagline},
+            #{participant.role},
+            #{participant.summonerId},
+            #{participant.summonerLevel},
+            #{participant.summonerName},
+            #{participant.teamId},
+            #{participant.timePlayed},
+            #{participant.kills},
+            #{participant.assists},
+            #{participant.deaths},
+            #{participant.champLevel},
+            #{participant.totalDamageToChampion},
+            #{participant.totalDamageTaken}
+        )
+        </foreach>
+    </insert>
 </mapper>

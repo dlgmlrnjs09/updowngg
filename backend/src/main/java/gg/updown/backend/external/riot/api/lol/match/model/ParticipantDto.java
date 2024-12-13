@@ -196,7 +196,7 @@ public class ParticipantDto {
     private int quadraKills;
 
     /** 라이엇 계정 이름 */
-    private String riotIdName;
+    private String riotIdGameName;
 
     /** 라이엇 계정 태그라인 */
     private String riotIdTagline;

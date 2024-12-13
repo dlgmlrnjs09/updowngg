@@ -16,7 +16,7 @@ spring:
 
 external:
   riot:
-    api-key: RGAPI-890a2491-eea8-4012-89f8-0377c280708c
+    api-key: RGAPI-773182d0-7619-4604-be5e-98d9d90e3fdd
 
 mybatis:
   type-aliases-package: gg.updown.backend
