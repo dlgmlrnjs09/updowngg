@@ -23,6 +23,8 @@ public class LolMatchParticipantEntity {
     private int assists;
     private int deaths;
     private int champLevel;
+    private int champId;
+    private String champName;
     private int totalDamageToChampion;
     private int totalDamageTaken;
 }

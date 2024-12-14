@@ -31,7 +31,7 @@ import { useRouter } from 'vue-router'
 import { summonerApi } from '@/api/summoner'
 
 const router = useRouter()
-const searchQuery = ref('')
+const searchQuery = ref('조용조용조용필#KR2')
 const isLoading = ref(false)
 
 const handleSearch = async () => {

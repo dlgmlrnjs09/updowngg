@@ -5,6 +5,7 @@ import gg.updown.backend.external.riot.api.lol.match.model.*;
 import gg.updown.backend.external.riot.api.lol.match.service.MatchApiService;
 import gg.updown.backend.main.api.lol.match.mapper.LolMatchMapper;
 import gg.updown.backend.main.api.lol.match.model.*;
+import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -22,6 +23,7 @@ public class LolMatchService {
     private final MatchApiService matchApiService;
     private final LolMatchMapper matchMapper;
     private final LolMatchTransactionService transactionService;
+    private final LolSummonerService lolSummonerService;
 
     /**
      * match 페이징 목록 가져오기 및 DB에 없는 match 정보 저장하기
@@ -62,12 +64,19 @@ public class LolMatchService {
             transactionService.saveMatchWithParticipants(matchInfoEntity, participantList);
         }
 
+        // 게임 참여자 10명 정보 없으면 Insert
+        for (LolMatchParticipantEntity participantEntity : participantList) {
+            lolSummonerService.conflictSummonerInfo(participantEntity.getPuuid(), participantEntity.getRiotIdGameName(), participantEntity.getRiotIdTagline());
+        }
+
         LolMatchInfoDto infoDto = new LolMatchInfoDto();
         BeanUtils.copyProperties(matchInfoEntity, infoDto);
         List<LolMatchParticipantDto> participantDtoList = participantList.stream()
                 .map(participant -> {
                     LolMatchParticipantDto entity = new LolMatchParticipantDto();
                     BeanUtils.copyProperties(participant, entity);
+                    // 챔피언 초상화 URL Set
+                    entity.setChampProfileIconUrl("https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/" + participant.getChampName() + ".png");
                     return entity;
                 })
                 .toList();
@@ -113,6 +122,8 @@ public class LolMatchService {
                     .assists(dto.getAssists())
                     .deaths(dto.getDeaths())
                     .champLevel(dto.getChampLevel())
+                    .champId(dto.getChampionId())
+                    .champName(dto.getChampionName())
                     .totalDamageToChampion(dto.getTotalDamageDealtToChampions())
                     .totalDamageTaken(dto.getTotalDamageTaken())
                     .build());

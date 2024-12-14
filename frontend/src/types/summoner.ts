@@ -1,5 +1,6 @@
 // src/types/summoner.ts
 export interface LolSummonerDto {
+    puuid: string
     lolAccountSeq: number
     summonerId: string
     accountId: string

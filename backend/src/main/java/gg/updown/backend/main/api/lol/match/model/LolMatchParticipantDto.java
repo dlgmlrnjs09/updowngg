@@ -19,6 +19,9 @@ public class LolMatchParticipantDto {
     private int assists;
     private int deaths;
     private int champLevel;
+    private int champId;
+    private String champName;
+    private String champProfileIconUrl;
     private int totalDamageToChampion;
     private int totalDamageTaken;
 }

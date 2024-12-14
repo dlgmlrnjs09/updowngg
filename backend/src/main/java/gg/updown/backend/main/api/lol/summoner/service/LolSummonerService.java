@@ -31,12 +31,12 @@ public class LolSummonerService {
     private final SummonerApiService summonerApiService;
     private final RiotAccountMapper riotAccountMapper;
 
-    public LolSummonerProfileResDto conflictSummonerInfo(String summonerId, String tagLine) {
+    public LolSummonerProfileResDto conflictSummonerInfo(String gameName, String tagLine) {
         LolSummonerProfileResDto resultDto = new LolSummonerProfileResDto();
-//        AccountInfoResDto resDto = accountApiService.getAccountInfoByRiotId(summonerId, tagLine);
 
         // 라이엇 계정정보 저장 및 조회
-        RiotAccountInfoEntity accountEntity = this.getAndConflictAccountInfo(summonerId, tagLine);
+        RiotAccountInfoEntity accountEntity = this.getAndConflictAccountInfo(gameName, tagLine);
+        // 롤 소환사 정보 저장 및 조회
         LolSummonerDto summonerEntity = this.getAndConflictSummonerInfo(accountEntity.getPuuid());
 
         resultDto.setRiotAccountInfoEntity(accountEntity);
@@ -45,8 +45,21 @@ public class LolSummonerService {
         return resultDto;
     }
 
-    private RiotAccountInfoEntity getAndConflictAccountInfo(String summonerId, String tagLine) {
-        AccountInfoResDto resDto = accountApiService.getAccountInfoByRiotId(summonerId, tagLine);
+    public void conflictSummonerInfo(String puuid, String gameName, String tagLine) {
+        // 라이엇 계정정보 저장 및 조회
+        this.getAndConflictAccountInfo(puuid, gameName, tagLine);
+        // 롤 소환사 정보 저장 및 조회
+        this.getAndConflictSummonerInfo(puuid);
+    }
+
+    /**
+     * 라이엇 계정정보 DB저장 및 리턴
+     * @param gameName
+     * @param tagLine
+     * @return
+     */
+    private RiotAccountInfoEntity getAndConflictAccountInfo(String gameName, String tagLine) {
+        AccountInfoResDto resDto = accountApiService.getAccountInfoByRiotId(gameName, tagLine);
 
         // 라이엇 계정정보 저장
         RiotAccountInfoEntity paramAccountInfoEntity = RiotAccountInfoEntity.builder()
@@ -59,6 +72,24 @@ public class LolSummonerService {
         return paramAccountInfoEntity;
     }
 
+    private RiotAccountInfoEntity getAndConflictAccountInfo(String puuid, String gamename, String tagLine) {
+
+        // 라이엇 계정정보 저장
+        RiotAccountInfoEntity paramAccountInfoEntity = RiotAccountInfoEntity.builder()
+                .puuid(puuid)
+                .gameName(gamename)
+                .tagLine(tagLine)
+                .build();
+        riotAccountMapper.conflictAccountBasicInfo(paramAccountInfoEntity);
+
+        return paramAccountInfoEntity;
+    }
+
+    /**
+     * 롤 계정정보 DB저장 및 리턴
+     * @param puuid
+     * @return
+     */
     private LolSummonerDto getAndConflictSummonerInfo(String puuid) {
         LolSummonerDto returnDto = new LolSummonerDto();
         LolSummonerEntity summonerEntity = lolSummonerMapper.getSummonerInfoByPuuid(puuid);
@@ -73,6 +104,7 @@ public class LolSummonerService {
                 .externalModDt(DateUtil.msToLocalDateTime(summonerDto.getRevisionDate()))
                 .profileIconId(summonerDto.getProfileIconId())
                 .build();
+
         if (summonerEntity == null) {
             // 새로운 계정 검색한 경우
             lolSummonerMapper.insertSummonerInfo(paramSummonerEntity);

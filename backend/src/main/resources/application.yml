@@ -32,8 +32,10 @@ logging:
       sqltiming: OFF     # SQL 쿼리문과 실행 시간 로그
       audit: OFF         # ResultSet을 제외한 모든 JDBC 호출 정보
       resultset: OFF     # ResultSet을 포함한 모든 JDBC 호출 정보
-      resultsettable: INFO  # SQL 결과 데이터 테이블
+      resultsettable: OFF  # SQL 결과 데이터 테이블
       connection: OFF    # 커넥션 연결/해제 정보
+#  pattern:
+#    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg"
 
 riot:
   ddragon:
