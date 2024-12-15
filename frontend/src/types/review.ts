@@ -1,4 +1,16 @@
 export interface ReviewTagDto {
-    tag_code: string
-    tag_value: string
+    tagCode: string
+    tagValue: string
+    tagDescription: string
+}
+
+export interface ReviewRequestDto {
+    reviewerSiteCode: string;
+    reviewerPuuid: string;
+    targetPuuid: string;
+    skillRating: number;
+    teamworkRating: number;
+    mannerRating: number;
+    comment?: string;
+    tagCodeList: string[];  // 선택한 태그의 코드 배열
 }

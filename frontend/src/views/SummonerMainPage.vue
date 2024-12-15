@@ -90,7 +90,7 @@ const openReviewModal = (player: any) => {
   showReviewModal.value = true
 }
 
-const getReviewTags = async () => {
+const fetchReviewTags = async () => {
   const response = await reviewApi.getTagList();
   reviewTags.value = response.data
 }
@@ -98,6 +98,7 @@ const getReviewTags = async () => {
 onMounted(async () => {
   await fetchSummonerInfo()
   await fetchMatchList()
+  await fetchReviewTags()
 })
 </script>
 

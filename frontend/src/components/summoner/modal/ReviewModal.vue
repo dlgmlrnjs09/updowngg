@@ -77,12 +77,12 @@
         <div class="tags-container">
           <button
               v-for="tag in reviewTags"
-              :key="tag.tag_code"
+              :key="tag.tagCode"
               class="tag"
-              :class="{ active: selectedStyleTags.includes(tag.tag_code) }"
-              @click="toggleTag(tag.tag_code, 'style')"
+              :class="{ active: selectedStyleTags.includes(tag.tagCode) }"
+              @click="toggleTag(tag.tagCode, 'style')"
           >
-            {{ tag.tag_value }}
+            {{ tag.tagValue }}
           </button>
         </div>
       </div>
@@ -104,6 +104,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type {ReviewTagDto} from "@/types/review.ts";
+import {reviewApi} from "@/api/review.ts";
 
 const props = defineProps<{
   playerName: string
@@ -129,22 +130,6 @@ const hoverRating = ref({
   manner: 0
 })
 
-// 태그 목록
-const styleTags = [
-  '에이스',
-  '침착함',
-  '캐리력',
-  '안정적',
-  '공격적',
-  '수비적',
-  '오브젝트 중심',
-  '로밍 중심',
-  '팀파이트 강함',
-  '스플릿 강함',
-  '초반 강세',
-  '후반 강세'
-]
-
 // 태그 토글 함수
 const toggleTag = (tag: string, type: 'style') => {
   const index = selectedStyleTags.value.indexOf(tag)
@@ -160,14 +145,20 @@ const toggleTag = (tag: string, type: 'style') => {
 // 제출 함수
 const handleSubmit = () => {
   const review = {
+    reviewerSiteCode: '123456',
+    reviewerPuuid: '123456',
+    targetPuuid: '123456',
     skillRating: skillRating.value,
     teamworkRating: teamworkRating.value,
     mannerRating: mannerRating.value,
-    styleTags: selectedStyleTags.value,
-    comment: comment.value
+    comment: comment.value,
+    tagCodeList: selectedStyleTags.value
   }
 
-  emit('submit', review)
+  const response = reviewApi.submitReview(review)
+  console.log(response)
+
+  // emit('submit', review)
   emit('close')
 }
 </script>

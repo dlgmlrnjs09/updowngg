@@ -1,11 +1,11 @@
 package gg.updown.backend.main.api.review.controller;
 
+import gg.updown.backend.main.api.review.model.ReviewSubmitReqDto;
 import gg.updown.backend.main.api.review.model.ReviewTagEntity;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,5 +19,10 @@ public class ReviewController {
     @GetMapping("/tag")
     public List<ReviewTagEntity> getReviewTagList() {
         return reviewService.getReviewTagList();
+    }
+
+    @PutMapping("/submit")
+    public void submitReview(@RequestBody ReviewSubmitReqDto reviewSubmitReqDto) {
+        reviewService.submitReview(reviewSubmitReqDto, HttpMethod.PUT);
     }
 }

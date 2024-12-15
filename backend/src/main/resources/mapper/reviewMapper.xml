@@ -9,4 +9,37 @@
         FROM
             site_review_tag
     </select>
+
+    <!-- 리뷰 등록 -->
+    <insert id="insertReview" parameterType="ReviewSubmitReqDto" useGeneratedKeys="true" keyProperty="summonerReviewSeq">
+        INSERT INTO site_summoner_review (
+            reviewer_site_code,
+            reviewer_puuid,
+            target_puuid,
+            skill_rating,
+            teamwork_rating,
+            manner_rating,
+            comment
+        ) VALUES (
+             #{reviewerSiteCode},
+             #{reviewerPuuid},
+             #{targetPuuid},
+             #{skillRating},
+             #{teamworkRating},
+             #{mannerRating},
+             #{comment}
+         )
+    </insert>
+
+    <!-- 리뷰 태그 등록 -->
+    <insert id="insertReviewTags" parameterType="java.util.Map">
+        INSERT INTO site_summoner_review_tag (
+        summoner_review_seq,
+        tag_code
+        ) VALUES
+        <foreach collection="tagCodeList" item="tagCode" separator=",">
+            (#{reviewSeq}, #{tagCode})
+        </foreach>
+    </insert>
 </mapper>
+
