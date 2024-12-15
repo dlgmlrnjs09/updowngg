@@ -5,6 +5,7 @@ import gg.updown.backend.external.riot.api.lol.match.model.*;
 import gg.updown.backend.external.riot.api.lol.match.service.MatchApiService;
 import gg.updown.backend.main.api.lol.match.mapper.LolMatchMapper;
 import gg.updown.backend.main.api.lol.match.model.*;
+import gg.updown.backend.main.api.lol.summoner.model.LolMatchModelConverter;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,14 @@ public class LolMatchService {
     private final LolMatchMapper matchMapper;
     private final LolMatchTransactionService transactionService;
     private final LolSummonerService lolSummonerService;
+    private final LolMatchModelConverter lolMatchModelConverter;
+
+    /**
+     * match 페이징 목록 DB에서 가져오기
+     */
+    public List<LolMatchInfoResDto> getMatchListFromDb(String puuid, int startIndex, int count) {
+        return matchMapper.getMatchesByPuuid(puuid, startIndex, count);
+    }
 
     /**
      * match 페이징 목록 가져오기 및 DB에 없는 match 정보 저장하기
@@ -59,8 +68,8 @@ public class LolMatchService {
             participantList = matchMapper.getMatchParticipantList(matchId);
         } else {
             MatchDto matchDto = matchApiService.getMatchDetailByMatchId(matchId);
-            matchInfoEntity = this.convertMatchDtoToLolMatchEntity(matchDto);
-            participantList = this.convertMatchDtoToLolMatchParticipantList(matchDto);
+            matchInfoEntity = lolMatchModelConverter.convertMatchDtoToLolMatchEntity(matchDto);
+            participantList = lolMatchModelConverter.convertMatchDtoToLolMatchParticipantList(matchDto);
             transactionService.saveMatchWithParticipants(matchInfoEntity, participantList);
         }
 
@@ -85,51 +94,6 @@ public class LolMatchService {
             .matchInfo(infoDto)
             .participantList(participantDtoList)
         .build();
-    }
-
-    private LolMatchEntity convertMatchDtoToLolMatchEntity(MatchDto matchDto) {
-        InfoDto infoDto = matchDto.getInfo();
-        return LolMatchEntity.builder()
-            .matchId(matchDto.getMetadata().getMatchId())
-            .gameCreateDt(DateUtil.msToLocalDateTime(infoDto.getGameCreation()))
-            .gameDuration(infoDto.getGameDuration())
-            .gameId(infoDto.getGameId())
-            .gameMode(infoDto.getGameMode())
-            .gameName(infoDto.getGameName())
-            .gameStartDt(DateUtil.msToLocalDateTime(infoDto.getGameStartTimestamp()))
-            .gameType(infoDto.getGameType())
-            .gameVersion(infoDto.getGameVersion())
-            .mapId(infoDto.getMapId())
-        .build();
-    }
-
-    private List<LolMatchParticipantEntity> convertMatchDtoToLolMatchParticipantList(MatchDto matchDto) {
-        List<LolMatchParticipantEntity> resultParticipantDtoList = new ArrayList<>();
-        List<ParticipantDto> participantDtoList = matchDto.getInfo().getParticipants();
-        for (ParticipantDto dto : participantDtoList) {
-            resultParticipantDtoList.add(LolMatchParticipantEntity.builder()
-                    .matchId(matchDto.getMetadata().getMatchId())
-                    .puuid(dto.getPuuid())
-                    .riotIdGameName(dto.getRiotIdGameName())
-                    .riotIdTagline(dto.getRiotIdTagline())
-                    .role(dto.getRole())
-                    .summonerId(dto.getSummonerId())
-                    .summonerName(dto.getSummonerName())
-                    .summonerLevel(dto.getSummonerLevel())
-                    .teamId(dto.getTeamId())
-                    .timePlayed(dto.getTimePlayed())
-                    .kills(dto.getKills())
-                    .assists(dto.getAssists())
-                    .deaths(dto.getDeaths())
-                    .champLevel(dto.getChampLevel())
-                    .champId(dto.getChampionId())
-                    .champName(dto.getChampionName())
-                    .totalDamageToChampion(dto.getTotalDamageDealtToChampions())
-                    .totalDamageTaken(dto.getTotalDamageTaken())
-                    .build());
-        }
-
-        return resultParticipantDtoList;
     }
 
     /**

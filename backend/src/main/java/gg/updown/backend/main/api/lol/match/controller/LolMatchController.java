@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
@@ -21,6 +22,12 @@ public class LolMatchController {
 
     @GetMapping("/list")
     public ResponseEntity<List<LolMatchInfoResDto>> getMatchList(String puuid, int startIndex, int count) {
+        List<LolMatchInfoResDto> responseDto = lolMatchService.getMatchListFromDb(puuid, startIndex, count);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    @GetMapping("/update")
+    public ResponseEntity<List<LolMatchInfoResDto>> updateMatchList(String puuid, int startIndex, int count) {
         List<LolMatchInfoResDto> responseDto = lolMatchService.getAndInsertMatchList(puuid, startIndex, count);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }

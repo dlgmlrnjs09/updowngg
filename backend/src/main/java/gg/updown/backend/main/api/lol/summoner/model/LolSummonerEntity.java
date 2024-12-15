@@ -17,4 +17,5 @@ public class LolSummonerEntity {
     private Long summonerLevel;
     private LocalDateTime externalModDt;
     private String profileIconId;
+    private LocalDateTime lastUpdateRecordDt;
 }

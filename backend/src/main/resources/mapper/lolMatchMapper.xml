@@ -69,6 +69,63 @@
             match_id = #{matchId}
     </select>
 
+    <resultMap id="matchInfoResultMap" type="gg.updown.backend.main.api.lol.match.model.LolMatchInfoResDto">
+        <id property="matchInfo.matchId" column="match_id"/>
+        <result property="matchInfo.gameDuration" column="game_duration"/>
+        <result property="matchInfo.gameMode" column="game_mode"/>
+        <result property="matchInfo.gameStartDt" column="game_start_dt"/>
+        <result property="matchInfo.gameType" column="game_type"/>
+        <collection property="participantList" ofType="gg.updown.backend.main.api.lol.match.model.LolMatchParticipantDto">
+            <id property="matchId" column="match_id"/>
+            <id property="puuid" column="puuid"/>
+            <result property="riotIdGameName" column="riot_id_game_name"/>
+            <result property="riotIdTagline" column="riot_id_tagline"/>
+            <result property="role" column="role"/>
+            <result property="teamId" column="team_id"/>
+            <result property="kills" column="kills"/>
+            <result property="assists" column="assists"/>
+            <result property="deaths" column="deaths"/>
+            <result property="champLevel" column="champ_level"/>
+            <result property="champId" column="champ_id"/>
+            <result property="champName" column="champ_name"/>
+            <result property="totalDamageToChampion" column="total_damage_to_champion"/>
+            <result property="totalDamageTaken" column="total_damage_taken"/>
+            <result property="champProfileIconUrl" column="champ_profile_icon_url"/>
+        </collection>
+    </resultMap>
+
+    <select id="getMatchesByPuuid" resultMap="matchInfoResultMap">
+        WITH target_matches AS (
+            SELECT DISTINCT mp.match_id
+            FROM lol_match_participant mp
+            WHERE mp.puuid = #{puuid}
+            LIMIT #{limit} OFFSET #{offset}
+        )
+        SELECT
+            m.match_id,
+            m.game_duration,
+            m.game_mode,
+            m.game_start_dt,
+            m.game_type,
+            p.puuid,
+            p.riot_id_game_name,
+            p.riot_id_tagline,
+            p.role,
+            p.team_id,
+            p.kills,
+            p.assists,
+            p.deaths,
+            p.champ_level,
+            p.champ_id,
+            p.champ_name,
+            p.total_damage_to_champion,
+            p.total_damage_taken,
+            CONCAT('https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/', p.champ_name, '.png') as champ_profile_icon_url
+        FROM target_matches tm
+                 INNER JOIN lol_match m ON m.match_id = tm.match_id
+                 INNER JOIN lol_match_participant p ON m.match_id = p.match_id
+    </select>
+
     <insert id="insertMatch" parameterType="LolMatchEntity">
         INSERT INTO lol_match (
             match_id,

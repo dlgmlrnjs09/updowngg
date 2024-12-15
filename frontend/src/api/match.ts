@@ -9,5 +9,13 @@ export const matchApi = {
                 startIndex,
                 count
             }
+        }),
+    updateMatchList: (puuid: string, startIndex: number, count: number) =>
+        apiClient.get<LolMatchInfoRes[]>('/match/update', {
+            params: {
+                puuid,
+                startIndex,
+                count
+            }
         })
 }
