@@ -12,15 +12,19 @@
       <div class="modal-section">
         <h2 class="section-title">실력/기술</h2>
         <div class="rating-group">
-          <div class="rating-title">라인전 능력</div>
           <div class="stars">
-            <button
-                v-for="star in 5"
-                :key="star"
-                class="star"
-                :class="{ active: skillRating >= star }"
-                @click="skillRating = star"
-            >★</button>
+            <div class="star-rating">
+              <span
+                  v-for="i in 10"
+                  :key="i"
+                  class="star-half"
+                  :class="{ active: skillRating >= i/2 }"
+                  @click="skillRating = i/2"
+                  @mouseover="hoverRating.skill = i/2"
+                  @mouseleave="hoverRating.skill = 0"
+              ></span>
+            </div>
+            <span class="rating-value">{{ skillRating }}점</span>
           </div>
         </div>
       </div>
@@ -28,29 +32,55 @@
       <!-- 팀워크 평가 -->
       <div class="modal-section">
         <h2 class="section-title">팀워크</h2>
-        <div class="tags-container">
-          <button
-              v-for="tag in teamworkTags"
-              :key="tag"
-              class="tag"
-              :class="{ active: selectedTeamworkTags.includes(tag) }"
-              @click="toggleTag(tag, 'teamwork')"
-          >
-            {{ tag }}
-          </button>
+        <div class="rating-group">
+          <div class="stars">
+            <div class="star-rating">
+              <span
+                  v-for="i in 10"
+                  :key="i"
+                  class="star-half"
+                  :class="{ active: teamworkRating >= i/2 }"
+                  @click="teamworkRating = i/2"
+                  @mouseover="hoverRating.teamwork = i/2"
+                  @mouseleave="hoverRating.teamwork = 0"
+              ></span>
+            </div>
+            <span class="rating-value">{{ teamworkRating }}점</span>
+          </div>
         </div>
       </div>
 
       <!-- 매너/태도 평가 -->
       <div class="modal-section">
         <h2 class="section-title">매너/태도</h2>
+        <div class="rating-group">
+          <div class="stars">
+            <div class="star-rating">
+              <span
+                  v-for="i in 10"
+                  :key="i"
+                  class="star-half"
+                  :class="{ active: mannerRating >= i/2 }"
+                  @click="mannerRating = i/2"
+                  @mouseover="hoverRating.manner = i/2"
+                  @mouseleave="hoverRating.manner = 0"
+              ></span>
+            </div>
+            <span class="rating-value">{{ mannerRating }}점</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 태그 선택 -->
+      <div class="modal-section">
+        <h2 class="section-title">플레이 스타일</h2>
         <div class="tags-container">
           <button
-              v-for="tag in mannerTags"
+              v-for="tag in styleTags"
               :key="tag"
               class="tag"
-              :class="{ active: selectedMannerTags.includes(tag) }"
-              @click="toggleTag(tag, 'manner')"
+              :class="{ active: selectedStyleTags.includes(tag) }"
+              @click="toggleTag(tag, 'style')"
           >
             {{ tag }}
           </button>
@@ -85,34 +115,43 @@ const emit = defineEmits<{
 
 // 평가 상태
 const skillRating = ref(0)
-const selectedTeamworkTags = ref<string[]>([])
-const selectedMannerTags = ref<string[]>([])
+const teamworkRating = ref(0)
+const mannerRating = ref(0)
+const selectedStyleTags = ref<string[]>([])
 const comment = ref('')
 
-// 태그 목록
-const teamworkTags = [
-  '소통이 원활해요',
-  '갱 요청에 잘 반응해요',
-  '오브젝트 싸움에 적극적이에요',
-  '라인전 후 적절히 로밍해요'
-]
+// 호버 상태 관리
+const hoverRating = ref({
+  skill: 0,
+  teamwork: 0,
+  manner: 0
+})
 
-const mannerTags = [
-  '긍정적인 태도에요',
-  '피드백을 잘 수용해요',
-  '끝까지 최선을 다해요',
-  '팀을 독려해요'
+// 태그 목록
+const styleTags = [
+  '에이스',
+  '침착함',
+  '캐리력',
+  '안정적',
+  '공격적',
+  '수비적',
+  '오브젝트 중심',
+  '로밍 중심',
+  '팀파이트 강함',
+  '스플릿 강함',
+  '초반 강세',
+  '후반 강세'
 ]
 
 // 태그 토글 함수
-const toggleTag = (tag: string, type: 'teamwork' | 'manner') => {
-  const targetRef = type === 'teamwork' ? selectedTeamworkTags : selectedMannerTags
-  const index = targetRef.value.indexOf(tag)
-
+const toggleTag = (tag: string, type: 'style') => {
+  const index = selectedStyleTags.value.indexOf(tag)
   if (index === -1) {
-    targetRef.value.push(tag)
+    if (selectedStyleTags.value.length < 3) {
+      selectedStyleTags.value.push(tag)
+    }
   } else {
-    targetRef.value.splice(index, 1)
+    selectedStyleTags.value.splice(index, 1)
   }
 }
 
@@ -120,8 +159,9 @@ const toggleTag = (tag: string, type: 'teamwork' | 'manner') => {
 const handleSubmit = () => {
   const review = {
     skillRating: skillRating.value,
-    teamworkTags: selectedTeamworkTags.value,
-    mannerTags: selectedMannerTags.value,
+    teamworkRating: teamworkRating.value,
+    mannerRating: mannerRating.value,
+    styleTags: selectedStyleTags.value,
     comment: comment.value
   }
 
@@ -174,6 +214,7 @@ const handleSubmit = () => {
 .modal-title {
   font-size: 20px;
   font-weight: 600;
+  color: #fff;
 }
 
 .modal-section {
@@ -185,34 +226,52 @@ const handleSubmit = () => {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 16px;
+  color: #fff;
 }
 
 .rating-group {
   margin-bottom: 16px;
 }
 
-.rating-title {
-  font-size: 14px;
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.star-half {
+  position: relative;
+  width: 12px;
+  height: 24px;
+  background: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.star-half.active {
+  background: #FFD700;
+}
+
+.star-half:nth-child(odd) {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.star-half:nth-child(even) {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.rating-value {
+  margin-left: 12px;
   color: #CCC;
-  margin-bottom: 8px;
+  font-size: 14px;
+  min-width: 45px;
 }
 
 .stars {
   display: flex;
-  gap: 8px;
-}
-
-.star {
-  background: none;
-  border: none;
-  color: #333;
-  font-size: 24px;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.star.active {
-  color: #FFD700;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .tags-container {
@@ -230,6 +289,7 @@ const handleSubmit = () => {
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
+  user-select: none;
 }
 
 .tag:hover {
@@ -255,11 +315,16 @@ const handleSubmit = () => {
   resize: vertical;
   min-height: 100px;
   margin-bottom: 16px;
+  font-family: inherit;
 }
 
 .comment-input:focus {
   border-color: #2979FF;
   outline: none;
+}
+
+.comment-input::placeholder {
+  color: #666;
 }
 
 .submit-btn {
@@ -277,5 +342,51 @@ const handleSubmit = () => {
 
 .submit-btn:hover {
   background: #2262CC;
+}
+
+.submit-btn:active {
+  background: #1B4FA0;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .modal-section {
+    padding: 16px;
+  }
+
+  .tag {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+  }
+
+  .section-title {
+    font-size: 16px;
+  }
 }
 </style>
