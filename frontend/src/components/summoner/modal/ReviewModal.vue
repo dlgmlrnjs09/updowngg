@@ -76,13 +76,13 @@
         <h2 class="section-title">플레이 스타일</h2>
         <div class="tags-container">
           <button
-              v-for="tag in styleTags"
-              :key="tag"
+              v-for="tag in reviewTags"
+              :key="tag.tag_code"
               class="tag"
-              :class="{ active: selectedStyleTags.includes(tag) }"
-              @click="toggleTag(tag, 'style')"
+              :class="{ active: selectedStyleTags.includes(tag.tag_code) }"
+              @click="toggleTag(tag.tag_code, 'style')"
           >
-            {{ tag }}
+            {{ tag.tag_value }}
           </button>
         </div>
       </div>
@@ -103,9 +103,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import type {ReviewTagDto} from "@/types/review.ts";
 
 const props = defineProps<{
   playerName: string
+  reviewTags: ReviewTagDto[]
 }>()
 
 const emit = defineEmits<{

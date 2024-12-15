@@ -24,6 +24,7 @@
         v-if="showReviewModal"
         :player-name="selectedPlayer"
         @close="showReviewModal = false"
+        :review-tags="reviewTags"
         @submit="handleReviewSubmit"
     />
   </div>
@@ -38,12 +39,15 @@ import DetailModal from '@/components/summoner/modal/DetailModal.vue'
 import ReviewModal from '@/components/summoner/modal/ReviewModal.vue'
 import { summonerApi } from '@/api/summoner'
 import { matchApi } from '@/api/match'
+import { reviewApi } from '@/api/review'
 import type { LolSummonerProfileResDto } from '@/types/summoner'
 import type { LolMatchInfoRes } from '@/types/match'
+import type {ReviewTagDto} from "@/types/review.ts";
 
 const route = useRoute()
 const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
 const matches = ref<LolMatchInfoRes[]>([])
+const reviewTags = ref<ReviewTagDto[]>([])
 const showDetailModal = ref(false)
 const showReviewModal = ref(false)
 const selectedPlayer = ref('')
@@ -84,6 +88,11 @@ const updateMatchList = async () => {
 const openReviewModal = (player: any) => {
   selectedPlayer.value = player.riotIdGameName
   showReviewModal.value = true
+}
+
+const getReviewTags = async () => {
+  const response = await reviewApi.getTagList();
+  reviewTags.value = response.data
 }
 
 onMounted(async () => {
