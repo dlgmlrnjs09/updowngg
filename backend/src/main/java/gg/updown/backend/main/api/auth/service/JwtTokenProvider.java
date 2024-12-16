@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
@@ -128,6 +130,7 @@ public class JwtTokenProvider {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(secretKey)
+//                    .setSigningKey(Base64.getEncoder().encodeToString(secretKey.getBytes()))
                     .build()
                     .parseClaimsJws(token);
             return true;
@@ -142,6 +145,16 @@ public class JwtTokenProvider {
      */
     public boolean validateRefreshToken(String username, String refreshToken) {
         String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + username);
-        return refreshToken.equals(storedRefreshToken) && validateToken(refreshToken);
+
+        log.info("username: {}", username);
+        log.info("Received refreshToken: {}", refreshToken);
+        log.info("Stored refreshToken in Redis: {}", storedRefreshToken);
+
+        // 토큰 동일성 체크
+        boolean isTokenEqual = refreshToken.equals(storedRefreshToken);
+        // 토큰 유효성 체크
+        boolean isTokenValid = validateToken(refreshToken);
+
+        return isTokenEqual && isTokenValid;
     }
 }

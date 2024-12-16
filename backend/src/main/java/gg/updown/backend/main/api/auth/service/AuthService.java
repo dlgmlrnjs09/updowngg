@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -63,7 +65,7 @@ public class AuthService {
     public JwtToken refreshAccessToken(String refreshToken) {
         // Refresh Token에서 사용자 정보 추출
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
+                .setSigningKey(Base64.getEncoder().encodeToString(secretKey.getBytes()))
                 .build()
                 .parseClaimsJws(refreshToken)
                 .getBody();

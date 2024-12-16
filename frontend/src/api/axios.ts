@@ -1,27 +1,72 @@
 // src/api/axios.ts
 import axios from 'axios'
 import router from "@/router";
+import {useAuthStore} from "@/stores/auth.ts";
 
 const apiClient = axios.create({
     baseURL: 'http://localhost:8080',
     timeout: 100000
 })
 
+// JWT 디코딩 및 만료 체크 함수들
+function parseJwt(token: string) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        return null;
+    }
+}
+
+function isTokenExpired(token: string): boolean {
+    const decodedToken = parseJwt(token);
+    if (!decodedToken) return true;
+
+    // exp는 초 단위로 저장되어 있으므로 1000을 곱해 밀리초로 변환
+    const expirationTime = decodedToken.exp * 1000;
+    return Date.now() >= expirationTime;
+}
+
 // 인증 불필요
 const publicPaths = ['/auth/login', '/auth/signup', '/auth/refresh'];
-
-// Request Interceptor
 apiClient.interceptors.request.use(
-    (config) => {
-        // URL이 publicPaths에 포함되어 있지 않은 경우에만 토큰 추가
+    async (config) => {
         const isPublicPath = publicPaths.some(path => config.url?.includes(path));
-        console.log('Request URL:', config.url);  // 추가
-        console.log('Is public path:', isPublicPath);  // 추가
+        const token = localStorage.getItem('accessToken');
 
-        if (!isPublicPath) {
-            const token = localStorage.getItem('accessToken');
-            console.log('Token exists:', JSON.stringify(token));  // 추가
-            if (token) {
+        if (!isPublicPath && token) {
+            // 토큰이 만료되었는지 확인
+            if (isTokenExpired(token)) {
+                // 토큰이 만료된 경우, 리프레시 시도
+                try {
+                    const refreshToken = localStorage.getItem('refreshToken');
+                    if (!refreshToken) throw new Error('No refresh token available');
+
+                    const response = await apiClient.post('/auth/refresh', {
+                        refreshToken: refreshToken
+                    });
+
+                    const newAccessToken = response.data.accessToken;
+                    const authStore = useAuthStore();
+                    authStore.initializeAuth();
+                    localStorage.setItem('accessToken', newAccessToken);
+                    config.headers.Authorization = `Bearer ${newAccessToken}`;
+
+                    console.log('Token Refresh! new Token : ', newAccessToken);
+
+                } catch (error) {
+                    // 리프레시 실패 시 로그아웃
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    router.push('/login');
+                    return Promise.reject(error);
+                }
+            } else {
+                // 토큰이 유효한 경우 그대로 사용
                 config.headers.Authorization = `Bearer ${token}`;
             }
         }
@@ -43,6 +88,7 @@ apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        const authStore = useAuthStore();
 
         // 401 에러이고 아직 재시도하지 않은 경우에만 처리
         if (error.response.status === 401 && !originalRequest._retry) {
@@ -61,6 +107,7 @@ apiClient.interceptors.response.use(
 
                 const newAccessToken = response.data.accessToken;
                 localStorage.setItem('accessToken', newAccessToken);
+                authStore.initializeAuth();
 
                 // 새로운 토큰으로 원래 요청 재시도
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
