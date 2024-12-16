@@ -5,7 +5,7 @@
       <button class="modal-close" @click="$emit('close')">×</button>
 
       <div class="modal-header">
-        <div class="modal-title">{{ playerName }} 평가하기</div>
+        <div class="modal-title">{{ player.riotIdGameName }} 평가하기</div>
       </div>
 
       <!-- 실력/기술 평가 -->
@@ -105,16 +105,22 @@
 import { ref } from 'vue'
 import type {ReviewTagDto} from "@/types/review.ts";
 import {reviewApi} from "@/api/review.ts";
+import {useAuthStore} from "@/stores/auth.ts";
+import type {LolMatchParticipant} from "@/types/match.ts";
+import {useToast} from "vue-toastification";
 
 const props = defineProps<{
-  playerName: string
+  player: LolMatchParticipant
   reviewTags: ReviewTagDto[]
 }>()
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', review: any): void
+  (e: 'submit'): void
 }>()
+
+const authStore = useAuthStore();
+const toast = useToast();
 
 // 평가 상태
 const skillRating = ref(0)
@@ -144,10 +150,15 @@ const toggleTag = (tag: string, type: 'style') => {
 
 // 제출 함수
 const handleSubmit = () => {
+  if (!authStore.isAuthenticated) {
+    toast.error('로그인이 필요합니다');
+    return;
+  }
+
   const review = {
-    reviewerSiteCode: '123456',
-    reviewerPuuid: '123456',
-    targetPuuid: '123456',
+    reviewerSiteCode: authStore.user?.memberSiteCode,
+    reviewerPuuid: authStore.user?.puuid,
+    targetPuuid: props.player.puuid,
     skillRating: skillRating.value,
     teamworkRating: teamworkRating.value,
     mannerRating: mannerRating.value,
@@ -158,7 +169,7 @@ const handleSubmit = () => {
   const response = reviewApi.submitReview(review)
   console.log(response)
 
-  // emit('submit', review)
+  emit('submit')
   emit('close')
 }
 </script>

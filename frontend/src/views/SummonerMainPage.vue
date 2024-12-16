@@ -22,10 +22,10 @@
 
     <ReviewModal
         v-if="showReviewModal"
-        :player-name="selectedPlayer"
+        :player="selectedPlayer"
         @close="showReviewModal = false"
         :review-tags="reviewTags"
-        @submit="handleReviewSubmit"
+        @submit="fetchMatchList"
     />
   </div>
 </template>
@@ -41,7 +41,7 @@ import { summonerApi } from '@/api/summoner'
 import { matchApi } from '@/api/match'
 import { reviewApi } from '@/api/review'
 import type { LolSummonerProfileResDto } from '@/types/summoner'
-import type { LolMatchInfoRes } from '@/types/match'
+import type {LolMatchInfoRes, LolMatchParticipant} from '@/types/match'
 import type {ReviewTagDto} from "@/types/review.ts";
 
 const route = useRoute()
@@ -50,7 +50,7 @@ const matches = ref<LolMatchInfoRes[]>([])
 const reviewTags = ref<ReviewTagDto[]>([])
 const showDetailModal = ref(false)
 const showReviewModal = ref(false)
-const selectedPlayer = ref('')
+const selectedPlayer = ref(<LolMatchParticipant>({}));
 
 const fetchSummonerInfo = async () => {
   try {
@@ -86,7 +86,7 @@ const updateMatchList = async () => {
 }
 
 const openReviewModal = (player: any) => {
-  selectedPlayer.value = player.riotIdGameName
+  selectedPlayer.value = player
   showReviewModal.value = true
 }
 
