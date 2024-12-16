@@ -11,13 +11,21 @@
         <RouterLink to="/stats">통계</RouterLink>
         <RouterLink to="/faq">FAQ</RouterLink>
       </nav>
-      <button class="login-btn" @click="handleLogin">로그인</button>
+
+      <div v-if="authStore.isAuthenticated">
+        <button @click="authStore.logout">로그아웃</button>
+      </div>
+      <div v-else>
+        <router-link to="/login">로그인</router-link>
+      </div>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
+import {useAuthStore} from "@/stores/auth.ts";
+const authStore = useAuthStore();
 
 const handleLogin = () => {
   // 로그인 처리 로직

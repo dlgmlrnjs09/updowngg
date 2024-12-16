@@ -15,12 +15,14 @@
       <div class="teams-container">
         <match-team
             :participants="match.participantList.filter(p => p.teamId === 100)"
+            :all-participants="match.participantList"
             :team-type="'blue'"
             @review-player="openReview"
         />
         <div class="teams-divider"></div>
         <match-team
             :participants="match.participantList.filter(p => p.teamId === 200)"
+            :all-participants="match.participantList"
             :team-type="'red'"
             @review-player="openReview"
         />

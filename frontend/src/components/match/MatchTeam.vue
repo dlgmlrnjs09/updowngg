@@ -1,4 +1,3 @@
-<!-- src/components/summoner/MatchTeam.vue -->
 <template>
   <div class="team">
     <div class="team-title" :class="teamType">
@@ -8,11 +7,25 @@
       <div v-for="player in participants"
            :key="player.puuid"
            class="player"
-           :class="teamType"
+           :class="[teamType, { 'not-reviewable': !player.reviewable }]"
            @click="$emit('reviewPlayer', player)">
+        <div class="review-scores" v-if="!player.reviewable">
+          <span class="score-item">
+            <span class="score-value">{{ player.skillScore || 4.8 }}</span>
+            실력
+          </span>
+          <span class="score-item">
+            <span class="score-value">{{ player.teamworkScore || 4.6 }}</span>
+            팀워크
+          </span>
+          <span class="score-item">
+            <span class="score-value">{{ player.mannerScore || 4.9 }}</span>
+            매너
+          </span>
+        </div>
         <div class="champion-wrapper">
           <div class="champion-icon">
-            <img :src="player.champProfileIconUrl" :alt="player.championName">
+            <img :src="player.champProfileIconUrl" :alt="player.champName">
           </div>
           <div class="champion-level">{{ player.champLevel }}</div>
         </div>
@@ -60,15 +73,16 @@ import { computed } from 'vue'
 
 const props = defineProps<{
   participants: LolMatchParticipant[]
+  allParticipants: LolMatchParticipant[]
   teamType: 'blue' | 'red'
 }>()
 
 const maxDamage = computed(() =>
-    Math.max(...props.participants.map(p => p.totalDamageToChampion))
+    Math.max(...props.allParticipants.map(p => p.totalDamageToChampion))
 )
 
 const maxDamageTaken = computed(() =>
-    Math.max(...props.participants.map(p => p.totalDamageTaken))
+    Math.max(...props.allParticipants.map(p => p.totalDamageTaken))
 )
 
 const calculateKDA = (player: LolMatchParticipant) => {
@@ -106,6 +120,7 @@ const calculateKDA = (player: LolMatchParticipant) => {
 }
 
 .player {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -113,22 +128,34 @@ const calculateKDA = (player: LolMatchParticipant) => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid transparent;
 }
 
-.player:hover {
+/* 리뷰 가능한 카드 스타일 (reviewable true) */
+.player:not(.not-reviewable) {
+  background: rgba(41, 121, 255, 0.08);
+  border: 2px solid rgba(41, 121, 255, 0.2);
+  box-shadow: 0 0 8px rgba(41, 121, 255, 0.1);
+}
+
+/* 리뷰 불가능한 카드 스타일 (reviewable false) */
+.player.not-reviewable {
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.8;
+}
+
+/* hover 효과 */
+.player:not(.not-reviewable):hover {
+  transform: translateX(4px);
+  border-color: rgba(41, 121, 255, 0.4);
+  background: rgba(41, 121, 255, 0.12);
+}
+
+.player.not-reviewable:hover {
+  transform: translateX(4px);
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.1);
-  transform: translateX(4px);
-}
-
-.player.blue:hover {
-  border-color: rgba(41, 121, 255, 0.2);
-}
-
-.player.red:hover {
-  border-color: rgba(255, 82, 82, 0.2);
 }
 
 .champion-wrapper {
@@ -228,6 +255,29 @@ const calculateKDA = (player: LolMatchParticipant) => {
   padding-right: 8px;
 }
 
+.review-scores {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 16px;
+}
+
+.score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+  color: #666;
+}
+
+.score-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2979FF;
+  margin-bottom: 2px;
+}
+
 @media (max-width: 768px) {
   .player {
     padding: 8px;
@@ -239,6 +289,20 @@ const calculateKDA = (player: LolMatchParticipant) => {
   }
 
   .player-name {
+    font-size: 13px;
+  }
+
+  .review-scores {
+    gap: 8px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .score-item {
+    font-size: 11px;
+  }
+
+  .score-value {
     font-size: 13px;
   }
 }

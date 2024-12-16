@@ -23,6 +23,7 @@ export interface LolMatchParticipant {
     champProfileIconUrl: string;
     totalDamageToChampion: number;
     totalDamageTaken: number;
+    reviewable: boolean;
 }
 
 export interface LolMatchInfoRes {

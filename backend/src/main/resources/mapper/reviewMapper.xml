@@ -41,5 +41,15 @@
             (#{reviewSeq}, #{tagCode})
         </foreach>
     </insert>
+
+    <select id="getWroteReviewTargetPuuidList" parameterType="String" resultType="String">
+        SELECT
+            target_puuid
+        FROM
+            site_summoner_review
+        WHERE
+            reviewer_puuid = #{reviewerPuuid}
+            and del_dt IS NULL
+    </select>
 </mapper>
 

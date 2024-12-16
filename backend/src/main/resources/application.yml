@@ -16,7 +16,7 @@ spring:
 
 external:
   riot:
-    api-key: RGAPI-357d1766-038b-4cc5-b355-31f054d8badf
+    api-key: RGAPI-9cc5247f-1d3a-49f5-8636-29221696036a
 
 mybatis:
   type-aliases-package: gg.updown.backend
@@ -24,6 +24,9 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
     jdbc-type-for-null: null
+
+jwt:
+  secret: 36B3DECE2D9ADA4EEEACF844F322B74E4B42EFEAE04E9C4C181027F9A7CE24DE
 
 logging:
   level:

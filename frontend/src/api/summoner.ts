@@ -1,5 +1,5 @@
 // src/api/summoner.ts
-import { apiClient } from './axios'
+import apiClient from './axios'
 import type { LolSummonerProfileResDto } from '@/types/summoner'
 
 export const summonerApi = {

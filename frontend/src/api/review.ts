@@ -1,4 +1,4 @@
-import { apiClient } from './axios'
+import apiClient from './axios'
 import type {ReviewRequestDto, ReviewTagDto} from '@/types/review'
 
 export const reviewApi = {

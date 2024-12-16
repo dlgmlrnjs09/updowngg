@@ -19,6 +19,10 @@ public class ReviewService {
         return reviewMapper.getReviewTagList();
     }
 
+    public List<String> getWroteReviewTargetPuuidList(String reviewerPuuid) {
+        return reviewMapper.getWroteReviewTargetPuuidList(reviewerPuuid);
+    }
+
     public void submitReview(ReviewSubmitReqDto reqDto, HttpMethod httpMethod) {
         if (httpMethod == HttpMethod.PUT) {
             transactionService.insertSummonerReview(reqDto);

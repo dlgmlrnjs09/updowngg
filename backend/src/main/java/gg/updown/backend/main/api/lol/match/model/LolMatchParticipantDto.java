@@ -24,4 +24,7 @@ public class LolMatchParticipantDto {
     private String champProfileIconUrl;
     private int totalDamageToChampion;
     private int totalDamageTaken;
+
+    // 리뷰작성가능 여부
+    private boolean isReviewable;
 }

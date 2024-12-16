@@ -15,22 +15,33 @@ const router = createRouter({
             name: 'summoner',
             component: () => import('@/views/SummonerMainPage.vue')
         },
-        // {
-        //     path: '/ranking',
-        //     name: 'ranking',
-        //     component: () => import('@/views/RankingPage.vue')
-        // },
-        // {
-        //     path: '/stats',
-        //     name: 'stats',
-        //     component: () => import('@/views/StatsPage.vue')
-        // },
-        // {
-        //     path: '/faq',
-        //     name: 'faq',
-        //     component: () => import('@/views/FaqPage.vue')
-        // }
+        {
+            path: '/login',
+            name: 'login',
+            component: () => import('@/views/LoginPage.vue')
+        },
+        {
+            path: '/signup',
+            name: 'signup',
+            component: () => import('@/views/SignupPage.vue')
+        }
     ]
+});
+
+/**
+ * 네비게이션 가드 설정
+ */
+router.beforeEach((to, from, next) => {
+    const auth = localStorage.getItem('accessToken');
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth ?? false);
+
+    if (requiresAuth && !auth) {
+        next('/login');
+    } else if (auth && to.path === '/login') {
+        next('/');
+    } else {
+        next();
+    }
 });
 
 export default router;

@@ -10,6 +10,7 @@ import java.util.List;
 @Mapper
 public interface ReviewMapper {
     List<ReviewTagEntity> getReviewTagList();
-    int insertReview(ReviewSubmitReqDto reqDto);
+    void insertReview(ReviewSubmitReqDto reqDto);
     void insertReviewTags(@Param("reviewSeq") int reviewSeq, @Param("tagCodeList") List<String> tagCodeList);
+    List<String> getWroteReviewTargetPuuidList(String reviewerPuuid);
 }

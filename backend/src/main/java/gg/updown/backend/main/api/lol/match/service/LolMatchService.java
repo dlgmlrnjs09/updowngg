@@ -7,6 +7,7 @@ import gg.updown.backend.main.api.lol.match.mapper.LolMatchMapper;
 import gg.updown.backend.main.api.lol.match.model.*;
 import gg.updown.backend.main.api.lol.summoner.model.LolMatchModelConverter;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
+import gg.updown.backend.main.api.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -26,12 +27,24 @@ public class LolMatchService {
     private final LolMatchTransactionService transactionService;
     private final LolSummonerService lolSummonerService;
     private final LolMatchModelConverter lolMatchModelConverter;
+    private final ReviewService reviewService;
 
     /**
      * match 페이징 목록 DB에서 가져오기
      */
     public List<LolMatchInfoResDto> getMatchListFromDb(String puuid, int startIndex, int count) {
-        return matchMapper.getMatchesByPuuid(puuid, startIndex, count);
+        List<LolMatchInfoResDto> resDtoList = matchMapper.getMatchesByPuuid(puuid, startIndex, count);
+        Set<String> wrotePuuidList = new HashSet<>(reviewService.getWroteReviewTargetPuuidList(puuid));
+        for (LolMatchInfoResDto resDto : resDtoList) {
+            for (LolMatchParticipantDto dto : resDto.getParticipantList()) {
+                if (wrotePuuidList.contains(dto.getPuuid())) {
+                    dto.setReviewable(false);
+                } else {
+                    dto.setReviewable(true);
+                }
+            }
+        }
+        return resDtoList;
     }
 
     /**

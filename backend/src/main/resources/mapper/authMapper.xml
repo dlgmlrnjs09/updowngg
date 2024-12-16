@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.auth.mapper.AuthMapper">
+    <select id="getSiteAccountByEmail" parameterType="String" resultType="SiteAccountEntity">
+        SELECT member_site_code,
+               puuid,
+               member_email,
+               member_password
+        FROM site_account
+        WHERE member_email = #{email}
+            AND del_dt IS NULL
+    </select>
+
+    <select id="isExistDuplicateEmail" parameterType="String" resultType="boolean">
+        SELECT CASE when count(*) > 0 THEN true ELSE false END
+        FROM site_account
+        WHERE member_email = #{email}
+            AND del_dt IS NULL
+    </select>
+
+    <insert id="insertSiteAccount" parameterType="map">
+        INSERT INTO site_account (puuid, member_email, member_password)
+        VALUES (#{puuid}, #{memberEmail}, #{memberPassword})
+    </insert>
+</mapper>
