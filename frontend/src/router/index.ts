@@ -1,6 +1,7 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '@/views/MainPage.vue';
+import {useAuthStore} from "@/stores/auth.ts";
 
 const router = createRouter({
     history: createWebHistory(/*import.meta.env.BASE_URL*/),
@@ -32,7 +33,9 @@ const router = createRouter({
  * 네비게이션 가드 설정
  */
 router.beforeEach((to, from, next) => {
-    const auth = localStorage.getItem('accessToken');
+    // const auth = localStorage.getItem('accessToken');
+    const authStore = useAuthStore();
+    const auth = authStore.isAuthenticated;
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth ?? false);
 
     if (requiresAuth && !auth) {
