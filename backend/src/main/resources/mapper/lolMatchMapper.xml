@@ -124,6 +124,8 @@
         FROM target_matches tm
                  INNER JOIN lol_match m ON m.match_id = tm.match_id
                  INNER JOIN lol_match_participant p ON m.match_id = p.match_id
+        ORDER BY lol_match_seq DESC
+
     </select>
 
     <insert id="insertMatch" parameterType="LolMatchEntity">

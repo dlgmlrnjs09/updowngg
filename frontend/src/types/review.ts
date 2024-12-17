@@ -5,6 +5,7 @@ export interface ReviewTagDto {
 }
 
 export interface ReviewRequestDto {
+    summonerReviewSeq: number
     reviewerSiteCode: string;
     reviewerPuuid: string;
     targetPuuid: string;
@@ -13,4 +14,5 @@ export interface ReviewRequestDto {
     mannerRating: number;
     comment?: string;
     tagCodeList: string[];  // 선택한 태그의 코드 배열
+    reviewable: boolean | false;
 }

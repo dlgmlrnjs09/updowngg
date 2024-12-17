@@ -17,4 +17,11 @@ public class ReviewTransactionService {
         reviewMapper.insertReview(reqDto);
         reviewMapper.insertReviewTags(reqDto.getSummonerReviewSeq(), reqDto.getTagCodeList());
     }
+
+    @Transactional
+    public void updateSummonerReview(ReviewSubmitReqDto reqDto) {
+        reviewMapper.updateReview(reqDto);
+        reviewMapper.deleteReviewTags(reqDto.getSummonerReviewSeq());
+        reviewMapper.insertReviewTags(reqDto.getSummonerReviewSeq(), reqDto.getTagCodeList());
+    }
 }

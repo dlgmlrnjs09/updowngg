@@ -1,6 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="gg.updown.backend.main.api.review.mapper.ReviewMapper">
+
+    <resultMap id="reviewWithTagsMap" type="reviewDto">
+        <!-- review 테이블의 컬럼들 매핑 -->
+        <id property="summonerReviewSeq" column="summoner_review_seq"/>
+        <result property="reviewerSiteCode" column="reviewer_site_code"/>
+        <result property="reviewerPuuid" column="reviewer_puuid"/>
+        <result property="targetPuuid" column="target_puuid"/>
+        <result property="skillRating" column="skill_rating"/>
+        <result property="teamworkRating" column="teamwork_rating"/>
+        <result property="mannerRating" column="manner_rating"/>
+        <result property="comment" column="comment"/>
+        <result property="regDt" column="reg_dt"/>
+        <result property="updDt" column="upd_dt"/>
+        <result property="delDt" column="del_dt"/>
+
+        <!-- tag_code들을 List<String>으로 매핑 -->
+        <collection property="tagCodeList" ofType="string" javaType="list">
+            <result column="tag_code"/>
+        </collection>
+    </resultMap>
+
+    <select id="getWroteReviewList" parameterType="String" resultMap="reviewWithTagsMap">
+        SELECT
+            r.summoner_review_seq,
+            reviewer_site_code,
+            reviewer_puuid,
+            target_puuid,
+            skill_rating,
+            teamwork_rating,
+            manner_rating,
+            comment,
+            reg_dt,
+            upd_dt,
+            del_dt,
+            t.tag_code
+        FROM
+            site_summoner_review r
+            LEFT JOIN site_summoner_review_tag t ON r.summoner_review_seq = t.summoner_review_seq
+        WHERE
+            reviewer_puuid = #{reviewerPuuid}
+          and del_dt IS NULL
+    </select>
+
     <select id="getReviewTagList" parameterType="String">
         SELECT
             tag_code,
@@ -42,14 +85,18 @@
         </foreach>
     </insert>
 
-    <select id="getWroteReviewTargetPuuidList" parameterType="String" resultType="String">
-        SELECT
-            target_puuid
-        FROM
-            site_summoner_review
+    <delete id="deleteReviewTags" parameterType="Long">
+        DELETE FROM site_summoner_review_tag WHERE summoner_review_seq = #{reviewSeq}
+    </delete>
+
+    <update id="updateReview" parameterType="ReviewSubmitReqDto">
+        UPDATE site_summoner_review
+        SET skill_rating = #{skillRating}
+            , teamwork_rating = #{teamworkRating}
+            , manner_rating = #{mannerRating}
+            , comment = #{comment}
         WHERE
-            reviewer_puuid = #{reviewerPuuid}
-            and del_dt IS NULL
-    </select>
+            summoner_review_seq = #{summonerReviewSeq}
+    </update>
 </mapper>
 

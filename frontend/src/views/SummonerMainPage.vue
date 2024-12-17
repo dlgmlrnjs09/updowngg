@@ -1,6 +1,8 @@
 <!-- src/views/SummonerMainPage.vue -->
 <template>
   <div class="container">
+<!--    {{matches}}-->
+
     <Profile
         v-if="summonerInfo"
         :profile-data="summonerInfo"
@@ -61,6 +63,25 @@ const fetchSummonerInfo = async () => {
   } catch (error) {
     console.error('Failed to fetch summoner info:', error)
   }
+}
+
+const handleReviewSubmit = (review: any) => {
+  // 해당 플레이어의 reviewDto와 reviewable 상태를 즉시 업데이트
+  // matches.value = matches.value.map(match => ({
+  //   ...match,
+  //   participantList: match.participantList.map(player =>
+  //       player.puuid === review.targetPuuid
+  //           ? {
+  //             ...player,
+  //             reviewable: false,
+  //             reviewDto: review
+  //           }
+  //           : player
+  //   )
+  // }))
+
+  // 서버에서 최신 데이터 다시 가져오기
+  fetchMatchList()
 }
 
 const fetchMatchList = async () => {

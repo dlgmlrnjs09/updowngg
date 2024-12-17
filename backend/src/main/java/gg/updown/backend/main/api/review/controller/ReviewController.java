@@ -21,8 +21,13 @@ public class ReviewController {
         return reviewService.getReviewTagList();
     }
 
-    @PutMapping("/submit")
+    @PostMapping("/submit")
     public void submitReview(@RequestBody ReviewSubmitReqDto reviewSubmitReqDto) {
+        reviewService.submitReview(reviewSubmitReqDto, HttpMethod.POST);
+    }
+
+    @PutMapping("/update")
+    public void updateReview(@RequestBody ReviewSubmitReqDto reviewSubmitReqDto) {
         reviewService.submitReview(reviewSubmitReqDto, HttpMethod.PUT);
     }
 }

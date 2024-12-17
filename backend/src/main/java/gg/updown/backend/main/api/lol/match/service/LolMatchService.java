@@ -3,14 +3,18 @@ package gg.updown.backend.main.api.lol.match.service;
 import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.external.riot.api.lol.match.model.*;
 import gg.updown.backend.external.riot.api.lol.match.service.MatchApiService;
+import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.lol.match.mapper.LolMatchMapper;
 import gg.updown.backend.main.api.lol.match.model.*;
 import gg.updown.backend.main.api.lol.summoner.model.LolMatchModelConverter;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
+import gg.updown.backend.main.api.review.model.ReviewDto;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -29,22 +33,83 @@ public class LolMatchService {
     private final LolMatchModelConverter lolMatchModelConverter;
     private final ReviewService reviewService;
 
+//    public List<LolMatchInfoResDto> getMatchListFromDb(String searchPuuid, int startIndex, int count, @AuthenticationPrincipal UserDetails userDetails) {
+//        String loginUserPuuid = "";
+//        if (userDetails != null) {
+//            loginUserPuuid = ((UserDetailImpl)userDetails).getPuuid();
+//        }
+//
+//        List<LolMatchInfoResDto> resDtoList = matchMapper.getMatchesByPuuid(searchPuuid, startIndex, count);
+//        List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid);
+//
+//        for (LolMatchInfoResDto resDto : resDtoList) {
+//            for (LolMatchParticipantDto dto : resDto.getParticipantList()) {
+//                dto.setReviewDto(new ReviewDto());
+//                dto.getReviewDto().setReviewable(true);
+//                for (ReviewDto wroteDto : wroteReviewList) {
+//                    if (dto.getPuuid().equals(wroteDto.getTargetPuuid())) {
+//                        dto.setReviewDto(wroteDto);
+//                        dto.getReviewDto().setReviewable(false);
+//                        System.out.println("false = " + dto.getRiotIdGameName());
+//                    }
+//                }
+//            }
+//        }
+//        return resDtoList;
+//    }
+
     /**
      * match 페이징 목록 DB에서 가져오기
      */
-    public List<LolMatchInfoResDto> getMatchListFromDb(String puuid, int startIndex, int count) {
-        List<LolMatchInfoResDto> resDtoList = matchMapper.getMatchesByPuuid(puuid, startIndex, count);
-        Set<String> wrotePuuidList = new HashSet<>(reviewService.getWroteReviewTargetPuuidList(puuid));
+    public List<LolMatchInfoResDto> getMatchListFromDb(String searchPuuid, int startIndex, int count, @AuthenticationPrincipal UserDetails userDetails) {
+        // 1. 매치 리스트 조회
+        List<LolMatchInfoResDto> resDtoList = matchMapper.getMatchesByPuuid(searchPuuid, startIndex, count);
+
+        // 2. 로그인하지 않은 경우 모든 플레이어를 리뷰 불가능으로 처리
+        if (userDetails == null) {
+            setAllPlayersReviewable(resDtoList, false);
+            return resDtoList;
+        }
+
+        // 3. 로그인한 경우 작성한 리뷰 목록 조회
+        String loginUserPuuid = ((UserDetailImpl)userDetails).getPuuid();
+        List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid);
+        Map<String, ReviewDto> reviewMap = wroteReviewList.stream()
+                .collect(Collectors.toMap(ReviewDto::getTargetPuuid, review -> review));
+
+        // 4. 리뷰 정보 설정
         for (LolMatchInfoResDto resDto : resDtoList) {
             for (LolMatchParticipantDto dto : resDto.getParticipantList()) {
-                if (wrotePuuidList.contains(dto.getPuuid())) {
-                    dto.setReviewable(false);
+                // 자기 자신은 리뷰 불가능
+                if (loginUserPuuid.equals(dto.getPuuid())) {
+                    dto.setReviewDto(new ReviewDto());
+                    dto.getReviewDto().setReviewable(false);
+                    continue;
+                }
+
+                // 이미 리뷰한 플레이어 처리
+                ReviewDto existingReview = reviewMap.get(dto.getPuuid());
+                if (existingReview != null) {
+                    dto.setReviewDto(existingReview);
+                    dto.getReviewDto().setReviewable(false);
                 } else {
-                    dto.setReviewable(true);
+                    // 리뷰하지 않은 플레이어는 리뷰 가능으로 설정
+                    dto.setReviewDto(new ReviewDto());
+                    dto.getReviewDto().setReviewable(true);
                 }
             }
         }
+
         return resDtoList;
+    }
+
+    private void setAllPlayersReviewable(List<LolMatchInfoResDto> matches, boolean reviewable) {
+        matches.forEach(match ->
+                match.getParticipantList().forEach(player -> {
+                    player.setReviewDto(new ReviewDto());
+                    player.getReviewDto().setReviewable(reviewable);
+                })
+        );
     }
 
     /**

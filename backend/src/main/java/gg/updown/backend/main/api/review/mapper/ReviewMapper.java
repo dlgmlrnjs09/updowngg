@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.review.mapper;
 
+import gg.updown.backend.main.api.review.model.ReviewDto;
 import gg.updown.backend.main.api.review.model.ReviewSubmitReqDto;
 import gg.updown.backend.main.api.review.model.ReviewTagEntity;
 import org.apache.ibatis.annotations.Mapper;
@@ -11,6 +12,8 @@ import java.util.List;
 public interface ReviewMapper {
     List<ReviewTagEntity> getReviewTagList();
     void insertReview(ReviewSubmitReqDto reqDto);
-    void insertReviewTags(@Param("reviewSeq") int reviewSeq, @Param("tagCodeList") List<String> tagCodeList);
-    List<String> getWroteReviewTargetPuuidList(String reviewerPuuid);
+    void insertReviewTags(@Param("reviewSeq") Long reviewSeq, @Param("tagCodeList") List<String> tagCodeList);
+    void updateReview(ReviewSubmitReqDto reqDto);
+    void deleteReviewTags(Long reviewSeq);
+    List<ReviewDto> getWroteReviewList(String reviewerPuuid);
 }

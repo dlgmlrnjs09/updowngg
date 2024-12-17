@@ -66,7 +66,7 @@
                   @mouseleave="hoverRating.manner = 0"
               ></span>
             </div>
-            <span class="rating-value">{{ mannerRating }}점</span>
+            <span class="rating-value">{{ mannerRating}}점</span>
           </div>
         </div>
       </div>
@@ -79,7 +79,7 @@
               v-for="tag in reviewTags"
               :key="tag.tagCode"
               class="tag"
-              :class="{ active: selectedStyleTags.includes(tag.tagCode) }"
+              :class="{ active: selectedStyleTags.includes(tag.tagCode) || player.reviewDto?.tagCodeList?.includes(tag.tagCode) }"
               @click="toggleTag(tag.tagCode, 'style')"
           >
             {{ tag.tagValue }}
@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import {onMounted, ref} from 'vue'
 import type {ReviewTagDto} from "@/types/review.ts";
 import {reviewApi} from "@/api/review.ts";
 import {useAuthStore} from "@/stores/auth.ts";
@@ -123,11 +123,36 @@ const authStore = useAuthStore();
 const toast = useToast();
 
 // 평가 상태
+const reviewSeq = ref(0)
 const skillRating = ref(0)
 const teamworkRating = ref(0)
 const mannerRating = ref(0)
 const selectedStyleTags = ref<string[]>([])
 const comment = ref('')
+
+// Init
+onMounted(() => {
+  init();
+})
+
+const init = () => {
+  console.log('reviewmodal init = ' + JSON.stringify(props.player.reviewDto))
+  if (props.player.reviewDto) {
+    reviewSeq.value = props.player.reviewDto.summonerReviewSeq
+    skillRating.value = props.player.reviewDto.skillRating
+    teamworkRating.value = props.player.reviewDto.teamworkRating
+    mannerRating.value = props.player.reviewDto.mannerRating
+    selectedStyleTags.value = props.player.reviewDto.tagCodeList || []
+    comment.value = props.player.reviewDto.comment || ''
+  } else {
+    reviewSeq.value = 0
+    skillRating.value = 0
+    teamworkRating.value = 0
+    mannerRating.value = 0
+    selectedStyleTags.value = []
+    comment.value = ''
+  }
+}
 
 // 호버 상태 관리
 const hoverRating = ref({
@@ -149,13 +174,14 @@ const toggleTag = (tag: string, type: 'style') => {
 }
 
 // 제출 함수
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!authStore.isAuthenticated) {
     toast.error('로그인이 필요합니다');
     return;
   }
 
   const review = {
+    summonerReviewSeq: reviewSeq.value,
     reviewerSiteCode: authStore.user?.memberSiteCode,
     reviewerPuuid: authStore.user?.puuid,
     targetPuuid: props.player.puuid,
@@ -166,8 +192,11 @@ const handleSubmit = () => {
     tagCodeList: selectedStyleTags.value
   }
 
-  const response = reviewApi.submitReview(review)
-  console.log(response)
+  if (!props.player.reviewDto) {
+    await reviewApi.submitReview(review)
+  } else {
+    await reviewApi.updateReview(review)
+  }
 
   emit('submit')
   emit('close')

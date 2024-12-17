@@ -6,6 +6,9 @@ export const reviewApi = {
         apiClient.get<ReviewTagDto[]>('/review/tag', {}),
 
     submitReview: (reviewData: ReviewRequestDto) =>
-        apiClient.put('/review/submit', reviewData)
+        apiClient.post('/review/submit', reviewData),
+
+    updateReview: (reviewData: ReviewRequestDto) =>
+        apiClient.put('/review/update', reviewData)
 }
 

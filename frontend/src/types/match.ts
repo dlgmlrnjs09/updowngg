@@ -1,3 +1,5 @@
+import type {ReviewRequestDto} from "@/types/review.ts";
+
 export interface LolMatchInfo {
     matchId: string;
     gameDuration: number;
@@ -23,7 +25,9 @@ export interface LolMatchParticipant {
     champProfileIconUrl: string;
     totalDamageToChampion: number;
     totalDamageTaken: number;
-    reviewable: boolean;
+    // reviewable: boolean;
+    isReviewable: boolean;
+    reviewDto: ReviewRequestDto
 }
 
 export interface LolMatchInfoRes {

@@ -1,6 +1,7 @@
 package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
+import gg.updown.backend.main.api.review.model.ReviewDto;
 import gg.updown.backend.main.api.review.model.ReviewSubmitReqDto;
 import gg.updown.backend.main.api.review.model.ReviewTagEntity;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +20,15 @@ public class ReviewService {
         return reviewMapper.getReviewTagList();
     }
 
-    public List<String> getWroteReviewTargetPuuidList(String reviewerPuuid) {
-        return reviewMapper.getWroteReviewTargetPuuidList(reviewerPuuid);
+    public List<ReviewDto> getWroteReviewList(String reviewerPuuid) {
+        return reviewMapper.getWroteReviewList(reviewerPuuid);
     }
 
     public void submitReview(ReviewSubmitReqDto reqDto, HttpMethod httpMethod) {
-        if (httpMethod == HttpMethod.PUT) {
+        if (httpMethod == HttpMethod.POST) {
             transactionService.insertSummonerReview(reqDto);
+        } else {
+            transactionService.updateSummonerReview(reqDto);
         }
     }
 }

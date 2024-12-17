@@ -7,19 +7,26 @@
       <div v-for="player in participants"
            :key="player.puuid"
            class="player"
-           :class="[teamType, { 'not-reviewable': !player.reviewable }]"
-           @click="$emit('reviewPlayer', player)">
-        <div class="review-scores" v-if="!player.reviewable">
+           :class="[
+           teamType,
+             {
+               'not-reviewable': !player.reviewDto?.reviewable && !(auth.isAuthenticated && auth.user?.puuid == player.puuid), // 이미 리뷰 작성내역 있음(수정)
+               'self-profile': auth.isAuthenticated && auth.user?.puuid == player.puuid // 자기자신은 선택 불가능하도록
+             }
+           ]"
+           @click="!(auth.isAuthenticated && auth.user?.puuid == player.puuid) && $emit('reviewPlayer', player)"
+      >
+        <div class="review-scores" v-if="!player.reviewDto?.reviewable">
           <span class="score-item">
-            <span class="score-value">{{ player.skillScore || 4.8 }}</span>
+            <span class="score-value">{{ player.reviewDto?.skillRating }}</span>
             실력
           </span>
           <span class="score-item">
-            <span class="score-value">{{ player.teamworkScore || 4.6 }}</span>
+            <span class="score-value">{{ player.reviewDto?.teamworkRating }}</span>
             팀워크
           </span>
           <span class="score-item">
-            <span class="score-value">{{ player.mannerScore || 4.9 }}</span>
+            <span class="score-value">{{ player.reviewDto?.mannerRating }}</span>
             매너
           </span>
         </div>
@@ -42,7 +49,7 @@
                 <span :class="{ 'highlight': player.assists > 0 }">{{ player.assists }}</span>
               </span>
               <span class="kda-ratio" v-if="calculateKDA(player) > 0">
-                {{ calculateKDA(player).toFixed(1) }} KDA
+                KDA {{ calculateKDA(player).toFixed(1) }}
               </span>
             </div>
             <div class="damage-bars">
@@ -70,12 +77,15 @@
 import type { LolMatchParticipant } from '@/types/match'
 import DamageBar from './DamageBar.vue'
 import { computed } from 'vue'
+import {useAuthStore} from "@/stores/auth.ts";
 
 const props = defineProps<{
   participants: LolMatchParticipant[]
   allParticipants: LolMatchParticipant[]
   teamType: 'blue' | 'red'
 }>()
+
+const auth = useAuthStore();
 
 const maxDamage = computed(() =>
     Math.max(...props.allParticipants.map(p => p.totalDamageToChampion))
@@ -90,6 +100,7 @@ const calculateKDA = (player: LolMatchParticipant) => {
       ? player.kills + player.assists
       : (player.kills + player.assists) / player.deaths
 }
+
 </script>
 
 <style scoped>
@@ -132,27 +143,31 @@ const calculateKDA = (player: LolMatchParticipant) => {
   border: 2px solid transparent;
 }
 
+.player.self-profile {
+  cursor: default;
+}
+
 /* 리뷰 가능한 카드 스타일 (reviewable true) */
-.player:not(.not-reviewable) {
+.player:not(.not-reviewable):not(.self-profile) {
   background: rgba(41, 121, 255, 0.08);
   border: 2px solid rgba(41, 121, 255, 0.2);
   box-shadow: 0 0 8px rgba(41, 121, 255, 0.1);
 }
 
 /* 리뷰 불가능한 카드 스타일 (reviewable false) */
-.player.not-reviewable {
+.player.not-reviewable, .self-profile {
   background: rgba(255, 255, 255, 0.02);
   opacity: 0.8;
 }
 
 /* hover 효과 */
-.player:not(.not-reviewable):hover {
+.player:not(.not-reviewable):not(.self-profile):hover {
   transform: translateX(4px);
   border-color: rgba(41, 121, 255, 0.4);
   background: rgba(41, 121, 255, 0.12);
 }
 
-.player.not-reviewable:hover {
+.player.not-reviewable:hover{
   transform: translateX(4px);
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.1);
