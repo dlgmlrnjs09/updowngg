@@ -9,12 +9,14 @@
            class="player"
            :class="[
            teamType,
-             {
+           auth.user?.puuid != profileData.riotAccountInfoEntity.puuid
+           ? 'someone-else' // 다른사람의 프로필은 선택 불가능
+             : {
                'not-reviewable': !player.reviewDto?.reviewable && !(auth.isAuthenticated && auth.user?.puuid == player.puuid), // 이미 리뷰 작성내역 있음(수정)
-               'self-profile': auth.isAuthenticated && auth.user?.puuid == player.puuid // 자기자신은 선택 불가능하도록
+               'self-profile': auth.isAuthenticated && auth.user?.puuid == player.puuid, // 자기자신은 선택 불가능
              }
            ]"
-           @click="!(auth.isAuthenticated && auth.user?.puuid == player.puuid) && $emit('reviewPlayer', player)"
+           @click="handlePlayerClick(player)"
       >
         <div class="review-scores" v-if="!player.reviewDto?.reviewable">
           <span class="score-item">
@@ -76,13 +78,19 @@
 <script setup lang="ts">
 import type { LolMatchParticipant } from '@/types/match'
 import DamageBar from './DamageBar.vue'
-import { computed } from 'vue'
+import { computed} from 'vue'
 import {useAuthStore} from "@/stores/auth.ts";
+import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 
 const props = defineProps<{
+  profileData: LolSummonerProfileResDto
   participants: LolMatchParticipant[]
   allParticipants: LolMatchParticipant[]
   teamType: 'blue' | 'red'
+}>()
+
+const emit = defineEmits<{
+  (e: 'reviewPlayer', player: LolMatchParticipant): void
 }>()
 
 const auth = useAuthStore();
@@ -99,6 +107,20 @@ const calculateKDA = (player: LolMatchParticipant) => {
   return player.deaths === 0
       ? player.kills + player.assists
       : (player.kills + player.assists) / player.deaths
+}
+
+const handlePlayerClick = (player:any) => {
+  // 자기 자신인 경우
+  if (auth.isAuthenticated && auth.user?.puuid == player.puuid) {
+    return
+  }
+
+  // 다른 사람의 프로필인 경우
+  if (auth.user?.puuid !== props.profileData.riotAccountInfoEntity.puuid) {
+    return
+  }
+
+  emit('reviewPlayer', player)
 }
 
 </script>
@@ -143,25 +165,25 @@ const calculateKDA = (player: LolMatchParticipant) => {
   border: 2px solid transparent;
 }
 
-.player.self-profile {
+.player.self-profile, .someone-else {
   cursor: default;
 }
 
 /* 리뷰 가능한 카드 스타일 (reviewable true) */
-.player:not(.not-reviewable):not(.self-profile) {
+.player:not(.not-reviewable):not(.self-profile):not(.someone-else) {
   background: rgba(41, 121, 255, 0.08);
   border: 2px solid rgba(41, 121, 255, 0.2);
   box-shadow: 0 0 8px rgba(41, 121, 255, 0.1);
 }
 
 /* 리뷰 불가능한 카드 스타일 (reviewable false) */
-.player.not-reviewable, .self-profile {
+.player.not-reviewable, .self-profile, .someone-else {
   background: rgba(255, 255, 255, 0.02);
   opacity: 0.8;
 }
 
 /* hover 효과 */
-.player:not(.not-reviewable):not(.self-profile):hover {
+.player:not(.not-reviewable):not(.self-profile):not(.someone-else):hover {
   transform: translateX(4px);
   border-color: rgba(41, 121, 255, 0.4);
   background: rgba(41, 121, 255, 0.12);

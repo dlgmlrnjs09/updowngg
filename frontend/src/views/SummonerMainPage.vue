@@ -1,8 +1,6 @@
 <!-- src/views/SummonerMainPage.vue -->
 <template>
   <div class="container">
-<!--    {{matches}}-->
-
     <Profile
         v-if="summonerInfo"
         :profile-data="summonerInfo"
@@ -13,6 +11,7 @@
     <MatchList
         v-if="matches.length"
         :matches="matches"
+        :profile-data="summonerInfo"
         @review-player="openReviewModal"
     />
 
@@ -45,6 +44,11 @@ import { reviewApi } from '@/api/review'
 import type { LolSummonerProfileResDto } from '@/types/summoner'
 import type {LolMatchInfoRes, LolMatchParticipant} from '@/types/match'
 import type {ReviewTagDto} from "@/types/review.ts";
+import {useToast} from "vue-toastification";
+import {useAuthStore} from "@/stores/auth.ts";
+
+const toast = useToast();
+const authStore = useAuthStore();
 
 const route = useRoute()
 const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
@@ -63,25 +67,6 @@ const fetchSummonerInfo = async () => {
   } catch (error) {
     console.error('Failed to fetch summoner info:', error)
   }
-}
-
-const handleReviewSubmit = (review: any) => {
-  // 해당 플레이어의 reviewDto와 reviewable 상태를 즉시 업데이트
-  // matches.value = matches.value.map(match => ({
-  //   ...match,
-  //   participantList: match.participantList.map(player =>
-  //       player.puuid === review.targetPuuid
-  //           ? {
-  //             ...player,
-  //             reviewable: false,
-  //             reviewDto: review
-  //           }
-  //           : player
-  //   )
-  // }))
-
-  // 서버에서 최신 데이터 다시 가져오기
-  fetchMatchList()
 }
 
 const fetchMatchList = async () => {
@@ -108,7 +93,11 @@ const updateMatchList = async () => {
 
 const openReviewModal = (player: any) => {
   selectedPlayer.value = player
-  showReviewModal.value = true
+  if (authStore.isAuthenticated) {
+    showReviewModal.value = true
+  } else {
+    toast.error('리뷰작성은 로그인 후에 가능합니다.')
+  }
 }
 
 const fetchReviewTags = async () => {

@@ -17,6 +17,7 @@
             :participants="match.participantList.filter(p => p.teamId === 100)"
             :all-participants="match.participantList"
             :team-type="'blue'"
+            :profile-data="profileData"
             @review-player="openReview"
         />
         <div class="teams-divider"></div>
@@ -24,6 +25,7 @@
             :participants="match.participantList.filter(p => p.teamId === 200)"
             :all-participants="match.participantList"
             :team-type="'red'"
+            :profile-data="profileData"
             @review-player="openReview"
         />
       </div>
@@ -36,9 +38,11 @@
 import { ref } from 'vue'
 import type { LolMatchInfoRes } from '@/types/match'
 import MatchTeam from './MatchTeam.vue'
+import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 
 const props = defineProps<{
   matches: LolMatchInfoRes[]
+  profileData: LolSummonerProfileResDto
 }>()
 
 const emit = defineEmits<{
