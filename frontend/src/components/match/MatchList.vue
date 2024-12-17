@@ -1,7 +1,19 @@
 <!-- src/components/summoner/MatchList.vue -->
 <template>
   <div class="games-section">
-    <div v-for="match in matches" :key="match.matchInfo.matchId" class="game-item">
+    <div class="tab-container">
+      <button
+          v-for="tab in tabs"
+          :key="tab.value"
+          class="tab-button"
+          :class="{ active: selectedTab === tab.value }"
+          @click="selectedTab = tab.value"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <div v-for="match in filteredMatches" :key="match.matchInfo.matchId" class="game-item">
       <div class="game-header">
         <div class="game-info">
           <div class="game-type">{{ match.matchInfo.gameModeName }}</div>
@@ -34,11 +46,20 @@
 </template>
 
 <script setup lang="ts">
-// Script 부분은 동일하게 유지
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { LolMatchInfoRes } from '@/types/match'
 import MatchTeam from './MatchTeam.vue'
-import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
+import type { LolSummonerProfileResDto } from "@/types/summoner.ts"
+import { useAuthStore } from "@/stores/auth"
+
+const auth = useAuthStore()
+const selectedTab = ref('all')
+
+const tabs = [
+  { label: '전체', value: 'all' },
+  { label: '평가완료', value: 'reviewed' },
+  { label: '평가대기', value: 'pending' }
+]
 
 const props = defineProps<{
   matches: LolMatchInfoRes[]
@@ -48,6 +69,27 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'reviewPlayer', player: any): void
 }>()
+
+const filteredMatches = computed(() => {
+  switch (selectedTab.value) {
+    case 'reviewed':
+      return props.matches.filter(match =>
+          match.participantList.some(player =>
+              !player.reviewDto?.reviewable &&
+              player.puuid !== auth.user?.puuid
+          )
+      )
+    case 'pending':
+      return props.matches.filter(match =>
+          match.participantList.some(player =>
+              player.reviewDto?.reviewable &&
+              player.puuid !== auth.user?.puuid
+          )
+      )
+    default:
+      return props.matches
+  }
+})
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString()
@@ -70,6 +112,35 @@ const openReview = (player: any) => {
   flex-direction: column;
   gap: 12px;
   padding: 16px 0;
+}
+
+.tab-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #999;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.tab-button:hover {
+  background: rgba(41, 121, 255, 0.1);
+  border-color: rgba(41, 121, 255, 0.2);
+  color: #fff;
+}
+
+.tab-button.active {
+  background: rgba(41, 121, 255, 0.2);
+  border-color: #2979FF;
+  color: #fff;
 }
 
 .game-item {
@@ -141,6 +212,15 @@ const openReview = (player: any) => {
 }
 
 @media (max-width: 768px) {
+  .tab-container {
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .tab-button {
+    white-space: nowrap;
+  }
+
   .game-item {
     padding: 16px;
   }

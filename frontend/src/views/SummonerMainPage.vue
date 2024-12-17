@@ -73,7 +73,7 @@ const fetchMatchList = async () => {
   try {
     console.log('fetchMatchList')
     if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
-    const response = await matchApi.getMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 3);
+    const response = await matchApi.getMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 5);
     matches.value = response.data
   } catch (error) {
     console.error('Failed to fetch matches:', error)
@@ -84,7 +84,7 @@ const updateMatchList = async () => {
   try {
     console.log('updateMatchList')
     if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
-    const response = await matchApi.updateMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 3);
+    const response = await matchApi.updateMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 5);
     matches.value = response.data
   } catch (error) {
     console.error('Failed to fetch matches:', error)
