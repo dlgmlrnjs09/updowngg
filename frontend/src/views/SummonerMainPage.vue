@@ -1,57 +1,66 @@
-<!-- src/views/SummonerMainPage.vue -->
 <template>
   <div class="container">
-    <Profile
-        v-if="summonerInfo"
-        :profile-data="summonerInfo"
-        :review-stats="reviewStatsInfo"
-        @show-detail="showDetailModal = true"
-        @update-matches="updateMatchList"
-    />
+    <template v-if="isLoading">
+      <ProfileSkeleton />
+      <MatchListSkeleton class="mt-6" />
+    </template>
 
-    <MatchList
-        v-if="matches.length"
-        :matches="matches"
-        :profile-data="summonerInfo"
-        @review-player="openReviewModal"
-    />
+    <template v-else>
+      <Profile
+          v-if="summonerInfo"
+          :profile-data="summonerInfo"
+          :review-stats="reviewStatsInfo"
+          @show-detail="showDetailModal = true"
+          @update-matches="updateMatchList"
+      />
 
-    <DetailModal
-        v-if="showDetailModal"
-        :name="summonerInfo?.riotAccountInfoEntity.gameName"
-        @close="showDetailModal = false"
-    />
+      <MatchList
+          v-if="matches.length"
+          :matches="matches"
+          :profile-data="summonerInfo"
+          @review-player="openReviewModal"
+      />
 
-    <ReviewModal
-        v-if="showReviewModal"
-        :player="selectedPlayer"
-        @close="showReviewModal = false"
-        :review-tags="reviewTags"
-        @submit="fetchMatchList"
-    />
+      <DetailModal
+          v-if="showDetailModal"
+          :name="summonerInfo?.riotAccountInfoEntity.gameName"
+          @close="showDetailModal = false"
+      />
+
+      <ReviewModal
+          v-if="showReviewModal"
+          :player="selectedPlayer"
+          @close="showReviewModal = false"
+          :review-tags="reviewTags"
+          @submit="fetchMatchList"
+      />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import Profile from '@/components/summoner/SummonerProfile.vue'
 import MatchList from '@/components/match/MatchList.vue'
 import DetailModal from '@/components/summoner/modal/DetailModal.vue'
 import ReviewModal from '@/components/summoner/modal/ReviewModal.vue'
+import ProfileSkeleton from '@/components/summoner/SummonerProfileSkeleton.vue'
+import MatchListSkeleton from '@/components/match/MatchListSkeleton.vue'
 import { summonerApi } from '@/api/summoner'
 import { matchApi } from '@/api/match'
 import { reviewApi } from '@/api/review'
 import type { LolSummonerProfileResDto } from '@/types/summoner'
-import type {LolMatchInfoRes, LolMatchParticipant} from '@/types/match'
-import type {ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
-import {useToast} from "vue-toastification";
-import {useAuthStore} from "@/stores/auth.ts";
+import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match'
+import type { ReviewStatsDto, ReviewTagDto } from "@/types/review.ts";
+import { useToast } from "vue-toastification";
+import { useAuthStore } from "@/stores/auth.ts";
 
 const toast = useToast();
 const authStore = useAuthStore();
+const route = useRoute();
+const isLoading = ref(true);
 
-const route = useRoute()
 const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
 const reviewStatsInfo = ref<ReviewStatsDto | null>(null)
 const matches = ref<LolMatchInfoRes[]>([])
@@ -116,10 +125,23 @@ const fetchReviewTags = async () => {
   reviewTags.value = response.data
 }
 
+watchEffect(async () => {
+  const name = route.params.name;
+  const tag = route.params.tag;
+  if (name && tag) {
+    isLoading.value = true;
+    try {
+      await fetchSummonerInfo();
+      await fetchSummonerReviewStats();
+      await fetchMatchList();
+      await fetchReviewTags();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+});
+
 onMounted(async () => {
-  await fetchSummonerInfo()
-  await fetchSummonerReviewStats()
-  await fetchMatchList()
   await fetchReviewTags()
 })
 </script>
