@@ -26,6 +26,7 @@ public class LolMatchModelConverter {
                 .gameType(infoDto.getGameType())
                 .gameVersion(infoDto.getGameVersion())
                 .mapId(infoDto.getMapId())
+                .queueId(infoDto.getQueueId())
                 .build();
     }
 

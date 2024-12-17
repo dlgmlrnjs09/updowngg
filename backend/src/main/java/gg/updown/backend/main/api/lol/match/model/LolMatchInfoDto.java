@@ -13,6 +13,8 @@ public class LolMatchInfoDto {
     private String matchId;
     private Long gameDuration;
     private String gameMode;
+    private String gameModeName;
     private LocalDateTime gameStartDt;
     private String gameType;
+    private int queueId;
 }

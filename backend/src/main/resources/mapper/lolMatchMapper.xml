@@ -35,6 +35,7 @@
             , game_type
             , game_version
             , map_id
+            , queue_id
         FROM
             lol_match
         WHERE
@@ -75,6 +76,7 @@
         <result property="matchInfo.gameMode" column="game_mode"/>
         <result property="matchInfo.gameStartDt" column="game_start_dt"/>
         <result property="matchInfo.gameType" column="game_type"/>
+        <result property="matchInfo.queueId" column="queue_id"/>
         <collection property="participantList" ofType="gg.updown.backend.main.api.lol.match.model.LolMatchParticipantDto">
             <id property="matchId" column="match_id"/>
             <id property="puuid" column="puuid"/>
@@ -107,6 +109,7 @@
             m.game_mode,
             m.game_start_dt,
             m.game_type,
+            m.queue_id,
             p.puuid,
             p.riot_id_game_name,
             p.riot_id_tagline,
@@ -139,7 +142,8 @@
             game_start_dt,
             game_type,
             game_version,
-            map_id
+            map_id,
+            queue_id
         ) VALUES (
              #{matchId},
              #{gameCreateDt},
@@ -150,7 +154,8 @@
              #{gameStartDt},
              #{gameType},
              #{gameVersion},
-             #{mapId}
+             #{mapId},
+             #{queueId}
          )
     </insert>
 

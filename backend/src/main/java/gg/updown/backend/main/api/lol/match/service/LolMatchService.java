@@ -1,6 +1,6 @@
 package gg.updown.backend.main.api.lol.match.service;
 
-import gg.updown.backend.common.util.DateUtil;
+import gg.updown.backend.external.riot.api.lol.match.enums.MatchQueueId;
 import gg.updown.backend.external.riot.api.lol.match.model.*;
 import gg.updown.backend.external.riot.api.lol.match.service.MatchApiService;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
@@ -17,8 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,7 +65,11 @@ public class LolMatchService {
 
         // 2. 로그인하지 않은 경우 모든 플레이어를 리뷰 불가능으로 처리
         if (userDetails == null) {
-            setAllPlayersReviewable(resDtoList, false);
+            setAllPlayersReviewable(resDtoList);
+            // gameMode명 세팅
+            for (LolMatchInfoResDto resDto : resDtoList) {
+                resDto.getMatchInfo().setGameModeName(MatchQueueId.getQueueName(resDto.getMatchInfo().getQueueId()));
+            }
             return resDtoList;
         }
 
@@ -80,6 +82,7 @@ public class LolMatchService {
         // 4. 리뷰 정보 설정
         for (LolMatchInfoResDto resDto : resDtoList) {
             for (LolMatchParticipantDto dto : resDto.getParticipantList()) {
+                resDto.getMatchInfo().setGameModeName(MatchQueueId.getQueueName(resDto.getMatchInfo().getQueueId()));
                 // 자기 자신은 리뷰 불가능
                 if (loginUserPuuid.equals(dto.getPuuid())) {
                     dto.setReviewDto(new ReviewDto());
@@ -103,11 +106,11 @@ public class LolMatchService {
         return resDtoList;
     }
 
-    private void setAllPlayersReviewable(List<LolMatchInfoResDto> matches, boolean reviewable) {
+    private void setAllPlayersReviewable(List<LolMatchInfoResDto> matches) {
         matches.forEach(match ->
                 match.getParticipantList().forEach(player -> {
                     player.setReviewDto(new ReviewDto());
-                    player.getReviewDto().setReviewable(reviewable);
+                    player.getReviewDto().setReviewable(false);
                 })
         );
     }

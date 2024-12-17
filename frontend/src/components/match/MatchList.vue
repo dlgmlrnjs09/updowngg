@@ -4,7 +4,7 @@
     <div v-for="match in matches" :key="match.matchInfo.matchId" class="game-item">
       <div class="game-header">
         <div class="game-info">
-          <div class="game-type">{{ match.matchInfo.gameType }}</div>
+          <div class="game-type">{{ match.matchInfo.gameModeName }}</div>
           <div class="game-meta">
             <span class="game-date">{{ formatDate(match.matchInfo.gameStartDt) }}</span>
             <span class="separator">•</span>

@@ -4,6 +4,7 @@ export interface LolMatchInfo {
     matchId: string;
     gameDuration: number;
     gameMode: string;
+    gameModeName: string;
     gameStartDt: string;
     gameType: string;
 }

@@ -17,6 +17,7 @@ public class LolMatchEntity {
     private Long gameId;
     private String gameMode;
     private String gameName;
+    private int queueId;
     private LocalDateTime gameStartDt;
     private String gameType;
     private String gameVersion;
