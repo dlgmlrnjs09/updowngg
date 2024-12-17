@@ -7,7 +7,7 @@
       <div class="profile-info">
         <div class="summoner-name">{{ profileData.riotAccountInfoEntity.gameName }}</div>
         <div class="profile-stats">평가 {{ reviewStats?.totalReviewCnt ?? 0 }}회 · 최근 30일 {{ reviewStats?.last30DayReviewCnt ?? 0 }}회</div>
-        <div class="rating-stats">
+        <div class="rating-stats" >
           <div class="rating-item">
             <span class="rating-value">{{ reviewStats?.skillRatingAvg ?? '0.0' }}</span>
             <span class="rating-label">실력</span>
@@ -24,9 +24,9 @@
       </div>
       <div class="button-group">
         <button class="secondary-button" @click="$emit('updateMatches')">전적 갱신</button>
-        <button class="expand-button" @click="isExpanded = !isExpanded">
-          {{ isExpanded ? '접기' : '더보기' }}
-        </button>
+<!--        <button class="expand-button" @click="isExpanded = !isExpanded">-->
+<!--          {{ isExpanded ? '접기' : '더보기' }}-->
+<!--        </button>-->
       </div>
     </div>
 
@@ -76,28 +76,29 @@
         </div>
       </div>
 
-      <!-- 최근 평가 -->
+      <!-- 최근 평가 섹션 수정 -->
       <div class="recent-reviews">
         <div class="stats-title">최근 받은 평가</div>
         <div class="reviews-container">
-          <div class="review-item">
-            <div class="review-header">
-              <div class="review-rating">4.8</div>
-              <div class="review-date">2024.12.14</div>
+          <transition-group
+              name="slide"
+              tag="div"
+              class="review-wrapper"
+          >
+            <div
+                v-for="review in displayReview"
+                :key="review.id"
+                class="review-item"
+            >
+              <div class="review-header">
+                <div class="review-rating">{{ review.rating }}</div>
+                <div class="review-date">{{ review.date }}</div>
+              </div>
+              <div class="review-content">
+                "{{ review.content }}"
+              </div>
             </div>
-            <div class="review-content">
-              "팀워크가 좋고 피드백을 잘 수용하는 플레이어입니다. 게임 내내 긍정적인 분위기를 만들어주셨어요."
-            </div>
-          </div>
-          <div class="review-item">
-            <div class="review-header">
-              <div class="review-rating">4.5</div>
-              <div class="review-date">2024.12.13</div>
-            </div>
-            <div class="review-content">
-              "어려운 상황에서도 침착하게 플레이하시는 모습이 인상적이었습니다."
-            </div>
-          </div>
+          </transition-group>
         </div>
       </div>
     </div>
@@ -105,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import {onMounted, ref, onUnmounted, computed} from 'vue'
 import type { LolSummonerProfileResDto } from '@/types/summoner.ts'
 import type {ReviewStatsDto} from "@/types/review.ts";
 
@@ -119,11 +120,52 @@ defineEmits<{
   (e: 'updateMatches'): void
 }>()
 
-onMounted(() => {
+// 리뷰 데이터
+const reviews = [
+  {
+    id: 1,
+    rating: 4.8,
+    date: "2024.12.14",
+    content: "팀워크가 좋고 피드백을 잘 수용하는 플레이어입니다. 게임 내내 긍정적인 분위기를 만들어주셨어요."
+  },
+  {
+    id: 2,
+    rating: 4.5,
+    date: "2024.12.13",
+    content: "어려운 상황에서도 침착하게 플레이하시는 모습이 인상적이었습니다."
+  },
+  {
+    id: 3,
+    rating: 4.7,
+    date: "2024.12.12",
+    content: "적절한 타이밍에 로밍해주시고 팀 밸런스를 잘 맞춰주셨습니다."
+  }
+]
 
+const currentIndex = ref(0)
+const displayReview = computed(() => {
+  return [reviews[currentIndex.value % reviews.length]]
 })
 
-const isExpanded = ref(false)
+let timer: number | null = null
+
+const startCarousel = () => {
+  timer = window.setInterval(() => {
+    currentIndex.value++
+  }, 3000)
+}
+
+onMounted(() => {
+  startCarousel()
+})
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer)
+  }
+})
+
+const isExpanded = ref(true)
 </script>
 
 <style scoped>
@@ -356,5 +398,40 @@ const isExpanded = ref(false)
   color: #e0e0e0;
   font-size: 14px;
   line-height: 1.5;
+}
+
+/* 리뷰 섹션 관련 스타일 수정 */
+.reviews-container {
+  position: relative;
+  margin-bottom: 2px; /* stats-grid와 동일한 마진 유지 */
+}
+
+.review-wrapper {
+  position: relative;
+  min-height: 80px;
+}
+
+.review-item {
+  position: absolute;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+/* 슬라이드 애니메이션 */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.5s ease;
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
 }
 </style>
