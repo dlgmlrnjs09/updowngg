@@ -6,18 +6,18 @@
       </div>
       <div class="profile-info">
         <div class="summoner-name">{{ profileData.riotAccountInfoEntity.gameName }}</div>
-        <div class="profile-stats">평가 312회 · 최근 30일 89회</div>
+        <div class="profile-stats">평가 {{ reviewStats?.totalReviewCnt ?? 0 }}회 · 최근 30일 {{ reviewStats?.last30DayReviewCnt ?? 0 }}회</div>
         <div class="rating-stats">
           <div class="rating-item">
-            <span class="rating-value">4.8</span>
+            <span class="rating-value">{{ reviewStats?.skillRatingAvg ?? '0.0' }}</span>
             <span class="rating-label">실력</span>
           </div>
           <div class="rating-item">
-            <span class="rating-value">4.6</span>
+            <span class="rating-value">{{ reviewStats?.teamworkRatingAvg ?? '0.0' }}</span>
             <span class="rating-label">팀워크</span>
           </div>
           <div class="rating-item">
-            <span class="rating-value">4.9</span>
+            <span class="rating-value">{{ reviewStats?.mannerRatingAvg ?? '0.0'}}</span>
             <span class="rating-label">매너</span>
           </div>
         </div>
@@ -105,17 +105,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import {onMounted, ref} from 'vue'
 import type { LolSummonerProfileResDto } from '@/types/summoner.ts'
+import type {ReviewStatsDto} from "@/types/review.ts";
 
-defineProps<{
+const props = defineProps<{
   profileData: LolSummonerProfileResDto
+  reviewStats: ReviewStatsDto
 }>()
 
 defineEmits<{
   (e: 'showDetail'): void
   (e: 'updateMatches'): void
 }>()
+
+onMounted(() => {
+
+})
 
 const isExpanded = ref(false)
 </script>

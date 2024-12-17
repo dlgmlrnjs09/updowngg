@@ -1,5 +1,6 @@
 import apiClient from './axios'
-import type {ReviewRequestDto, ReviewTagDto} from '@/types/review'
+import type {ReviewRequestDto, ReviewStatsDto, ReviewTagDto} from '@/types/review'
+import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 
 export const reviewApi = {
     getTagList: () =>
@@ -9,6 +10,13 @@ export const reviewApi = {
         apiClient.post('/review/submit', reviewData),
 
     updateReview: (reviewData: ReviewRequestDto) =>
-        apiClient.put('/review/update', reviewData)
+        apiClient.put('/review/update', reviewData),
+
+    getReviewStats: (puuid: string) =>
+        apiClient.get<ReviewStatsDto>('/review/stats', {
+            params: {
+                puuid
+            }
+        })
 }
 

@@ -16,3 +16,12 @@ export interface ReviewRequestDto {
     tagCodeList: string[];  // 선택한 태그의 코드 배열
     reviewable: boolean | false;
 }
+
+export interface ReviewStatsDto {
+    puuid: string;
+    skillRatingAvg: number;
+    teamworkRatingAvg: number;
+    mannerRatingAvg: number;
+    totalReviewCnt: number;
+    last30DayReviewCnt: number;
+}

@@ -4,6 +4,7 @@
     <Profile
         v-if="summonerInfo"
         :profile-data="summonerInfo"
+        :review-stats="reviewStatsInfo"
         @show-detail="showDetailModal = true"
         @update-matches="updateMatchList"
     />
@@ -43,7 +44,7 @@ import { matchApi } from '@/api/match'
 import { reviewApi } from '@/api/review'
 import type { LolSummonerProfileResDto } from '@/types/summoner'
 import type {LolMatchInfoRes, LolMatchParticipant} from '@/types/match'
-import type {ReviewTagDto} from "@/types/review.ts";
+import type {ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
 import {useToast} from "vue-toastification";
 import {useAuthStore} from "@/stores/auth.ts";
 
@@ -52,6 +53,7 @@ const authStore = useAuthStore();
 
 const route = useRoute()
 const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
+const reviewStatsInfo = ref<ReviewStatsDto | null>(null)
 const matches = ref<LolMatchInfoRes[]>([])
 const reviewTags = ref<ReviewTagDto[]>([])
 const showDetailModal = ref(false)
@@ -69,9 +71,19 @@ const fetchSummonerInfo = async () => {
   }
 }
 
+const fetchSummonerReviewStats = async () => {
+  try {
+    if (summonerInfo.value) {
+      const response = await reviewApi.getReviewStats(summonerInfo?.value.riotAccountInfoEntity.puuid);
+      reviewStatsInfo.value = response.data;
+    }
+  } catch (error) {
+    console.error('Failed to fetch summoner review stats:', error)
+  }
+}
+
 const fetchMatchList = async () => {
   try {
-    console.log('fetchMatchList')
     if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
     const response = await matchApi.getMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 5);
     matches.value = response.data
@@ -82,7 +94,6 @@ const fetchMatchList = async () => {
 
 const updateMatchList = async () => {
   try {
-    console.log('updateMatchList')
     if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
     const response = await matchApi.updateMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 5);
     matches.value = response.data
@@ -107,6 +118,7 @@ const fetchReviewTags = async () => {
 
 onMounted(async () => {
   await fetchSummonerInfo()
+  await fetchSummonerReviewStats()
   await fetchMatchList()
   await fetchReviewTags()
 })

@@ -29,7 +29,6 @@ const authStore = useAuthStore();
 
 const handleLogin = () => {
   // 로그인 처리 로직
-  console.log('로그인 클릭');
 };
 </script>
 

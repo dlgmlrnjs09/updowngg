@@ -2,6 +2,7 @@ package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
 import gg.updown.backend.main.api.review.model.ReviewDto;
+import gg.updown.backend.main.api.review.model.ReviewStatsDto;
 import gg.updown.backend.main.api.review.model.ReviewSubmitReqDto;
 import gg.updown.backend.main.api.review.model.ReviewTagEntity;
 import lombok.RequiredArgsConstructor;
@@ -30,5 +31,9 @@ public class ReviewService {
         } else {
             transactionService.updateSummonerReview(reqDto);
         }
+    }
+
+    public ReviewStatsDto getReviewStats(String targetPuuid) {
+        return reviewMapper.getReviewStatus(targetPuuid);
     }
 }

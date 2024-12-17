@@ -102,7 +102,6 @@ const handleLogin = async () => {
     const response = await authStore.login(credentials)
 
     if (!response) {
-      console.log('로그인 실패')
       toast.error('로그인에 실패했습니다.');
     } else {
       toast.success(credentials.email + ' 님, 환영합니다!')

@@ -136,7 +136,6 @@ onMounted(() => {
 })
 
 const init = () => {
-  console.log('reviewmodal init = ' + JSON.stringify(props.player.reviewDto))
   if (props.player.reviewDto) {
     reviewSeq.value = props.player.reviewDto.summonerReviewSeq
     skillRating.value = props.player.reviewDto.skillRating
