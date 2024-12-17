@@ -26,7 +26,11 @@ const router = createRouter({
             name: 'signup',
             component: () => import('@/views/SignupPage.vue')
         }
-    ]
+    ],
+    scrollBehavior(to, from, savedPosition) {
+        // 항상 페이지 상단으로 스크롤
+        return { top: 0 }
+    }
 });
 
 /**

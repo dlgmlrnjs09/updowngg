@@ -58,9 +58,9 @@ const handleSearch = async () => {
           tag: tagLine
         },
         // 소환사 정보를 state로 전달
-        state: {
-          summonerInfo: response.data
-        }
+        // state: {
+        //   summonerInfo: response.data
+        // }
       })
     }
   } catch (error) {

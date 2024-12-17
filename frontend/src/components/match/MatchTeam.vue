@@ -18,7 +18,7 @@
            ]"
            @click="handlePlayerClick(player)"
       >
-        <div class="review-scores" v-if="!player.reviewDto?.reviewable">
+        <div class="review-scores" v-if="!player.reviewDto?.reviewable && !(auth.isAuthenticated && auth.user?.puuid == player.puuid)">
           <span class="score-item">
             <span class="score-value">{{ player.reviewDto?.skillRating }}</span>
             실력
@@ -40,7 +40,7 @@
         </div>
         <div class="player-info">
           <div class="player-name-wrapper">
-            <div class="player-name">{{ player.riotIdGameName }}</div>
+            <div class="player-name" @click.stop="goSelectedSummonerProfile(player)">{{ player.riotIdGameName }}</div>
             <div class="player-tag">#{{ player.riotIdTagline }}</div>
           </div>
           <div class="player-stats">
@@ -81,6 +81,7 @@ import DamageBar from './DamageBar.vue'
 import { computed} from 'vue'
 import {useAuthStore} from "@/stores/auth.ts";
 import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
+import {useRouter} from "vue-router";
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto
@@ -94,6 +95,7 @@ const emit = defineEmits<{
 }>()
 
 const auth = useAuthStore();
+const router = useRouter();
 
 const maxDamage = computed(() =>
     Math.max(...props.allParticipants.map(p => p.totalDamageToChampion))
@@ -121,6 +123,21 @@ const handlePlayerClick = (player:any) => {
   }
 
   emit('reviewPlayer', player)
+}
+
+const goSelectedSummonerProfile = (player:any) => {
+  console.log('click')
+  router.push({
+    name: 'summoner',
+    params: {
+      name: player.riotIdGameName,
+      tag: player.riotIdTagline,
+    },
+    // 소환사 정보를 state로 전달
+    // state: {
+    //   summonerInfo: response.data
+    // }
+  })
 }
 
 </script>
@@ -159,7 +176,7 @@ const handlePlayerClick = (player:any) => {
   gap: 12px;
   padding: 12px;
   border-radius: 8px;
-  cursor: pointer;
+  cursor: cell;
   transition: all 0.2s ease;
   background: rgba(255, 255, 255, 0.04);
   border: 2px solid transparent;
@@ -246,6 +263,13 @@ const handlePlayerClick = (player:any) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.player-name:hover {
+  color: #2979FF; /* 파란색으로 변경 */
+  text-decoration: underline; /* 밑줄 추가 */
 }
 
 .player-tag {
