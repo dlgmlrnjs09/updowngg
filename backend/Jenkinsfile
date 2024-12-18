@@ -15,14 +15,11 @@ pipeline {
                         export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto.x86_64
                         export PATH=$JAVA_HOME/bin:$PATH
 
-                        # Java 버전 확인
-                        java -version
-
                         # Gradle 속성 설정
-                        export GRADLE_OPTS="-Dorg.gradle.java.home=$JAVA_HOME"
+                        export GRADLE_OPTS="-Dorg.gradle.java.home=$JAVA_HOME -Dorg.gradle.daemon=false"
 
                         chmod +x ./gradlew
-                        ./gradlew clean build --info --stacktrace
+                        ./gradlew clean build --no-daemon --info
                     '''
                 }
             }
