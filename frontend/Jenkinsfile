@@ -29,10 +29,14 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
-                        sudo chown -R jenkins:jenkins /usr/share/nginx/html
-                        sudo rm -rf /usr/share/nginx/html/*
-                        sudo cp -r dist/* /usr/share/nginx/html/
-                        sudo systemctl restart nginx
+                        echo "Current directory:"
+                        pwd
+                        echo "Env file content:"
+                        cat .env.production
+                        rm -rf node_modules
+                        rm package-lock.json
+                        npm install @rollup/rollup-linux-x64-gnu --save-optional
+                        npm run build
                     '''
                 }
             }
