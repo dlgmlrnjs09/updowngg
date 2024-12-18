@@ -16,7 +16,7 @@ pipeline {
             steps {
                 dir('backend') {
                     sh '''
-                        echo "JASYPT_PASSWORD: ${JASYPT_PASSWORD}"
+                        echo "JASYPT_PASSWORD: ${JASYPT_PASSWORD != null ? 'YES' : 'NO'}"
                         export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto.x86_64
                         export PATH=$JAVA_HOME/bin:$PATH
                         chmod +x ./gradlew
