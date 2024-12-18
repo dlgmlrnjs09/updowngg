@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         JASYPT_PASSWORD = credentials('JASYPT_PASSWORD')
-        GRADLE_OPTS = '-Dorg.gradle.jvmargs=-Xmx256m -XX:MaxMetaspaceSize=128m'  // Gradle 메모리 제한
+        GRADLE_OPTS = '-Dorg.gradle.jvmargs=-Xmx512m -XX:MaxMetaspaceSize=256m -Dfile.encoding=UTF-8'
     }
 
     stages {
