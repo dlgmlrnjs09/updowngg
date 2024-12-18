@@ -16,7 +16,9 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
-                        npm install
+                        rm -rf node_modules
+                        rm package-lock.json
+                        npm install --no-optional
                         npm run build
                     '''
                 }
@@ -27,6 +29,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
+                        sudo chown -R jenkins:jenkins /usr/share/nginx/html
                         sudo rm -rf /usr/share/nginx/html/*
                         sudo cp -r dist/* /usr/share/nginx/html/
                         sudo systemctl restart nginx
