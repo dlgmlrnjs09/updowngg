@@ -4,7 +4,14 @@ import router from "@/router";
 import {useAuthStore} from "@/stores/auth.ts";
 
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: (() => {
+        const url = import.meta.env.VITE_API_URL;
+        if (!url) {
+            console.error('API URL not found in environment variables');
+            throw new Error('API URL not configured');
+        }
+        return url;
+    })(),
     timeout: 100000
 })
 
