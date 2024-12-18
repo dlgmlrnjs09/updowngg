@@ -16,7 +16,7 @@ spring:
 
 jasypt:
   encryptor:
-    password: ${JASYPT_PASSWORD:0}
+    password: ${JASYPT_PASSWORD}
 
 external:
   riot:
