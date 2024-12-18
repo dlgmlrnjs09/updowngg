@@ -16,6 +16,12 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
+                        echo "Current directory: $(pwd)"
+                        echo "Files in directory:"
+                        ls -la
+                        echo "Environment file content:"
+                        cat .env.production
+                        echo "Starting build..."
                         rm -rf node_modules
                         rm package-lock.json
                         npm install @rollup/rollup-linux-x64-gnu --save-optional
