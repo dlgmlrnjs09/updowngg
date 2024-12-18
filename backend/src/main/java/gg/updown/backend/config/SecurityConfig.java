@@ -62,6 +62,7 @@ public class SecurityConfig {
 
         // 허용할 origin 설정
         configuration.addAllowedOrigin("http://localhost:5173");
+        configuration.addAllowedOrigin("http://13.124.117.180:5173");
         // 허용할 HTTP 메서드 설정
         configuration.addAllowedMethod("*");
         // 허용할 헤더 설정
