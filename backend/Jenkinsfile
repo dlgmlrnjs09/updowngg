@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        JASYPT_PASSWORD = credentials('gmlrnjs0')
+        JASYPT_PASSWORD = 'gmlrnjs0'
     }
 
     stages {
