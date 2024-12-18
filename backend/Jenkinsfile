@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        JAVA_HOME = '/usr/lib/jvm/java-17-amazon-corretto.x86_64'
+        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -12,14 +17,9 @@ pipeline {
             steps {
                 dir('backend') {
                     sh '''
-                        export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto.x86_64
-                        export PATH=$JAVA_HOME/bin:$PATH
-
-                        # Gradle 속성 설정
-                        export GRADLE_OPTS="-Dorg.gradle.java.home=$JAVA_HOME -Dorg.gradle.daemon=false"
-
+                        java -version
                         chmod +x ./gradlew
-                        ./gradlew clean build --no-daemon --info
+                        ./gradlew clean build -Dorg.gradle.java.home=${JAVA_HOME} --no-daemon --info
                     '''
                 }
             }
@@ -29,14 +29,12 @@ pipeline {
             steps {
                 dir('backend') {
                     sh '''
-                        # 기존 프로세스 종료
                         pid=$(ps -ef | grep java | grep jar | awk '{print $2}')
                         if [ ! -z "$pid" ]; then
                             kill -9 $pid
                         fi
 
-                        # JAR 파일 배포
-                        nohup java -jar build/libs/backend-0.0.1-SNAPSHOT.jar &
+                        nohup ${JAVA_HOME}/bin/java -jar build/libs/backend-0.0.1-SNAPSHOT.jar &
                     '''
                 }
             }
