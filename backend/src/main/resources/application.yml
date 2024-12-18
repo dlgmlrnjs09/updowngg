@@ -10,13 +10,17 @@ spring:
     name: Spring-Boot-MyBatis
   datasource:
     driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    url: jdbc:log4jdbc:postgresql://localhost:5432/updowngg
-    username: postgres
-    password: gmlrnjs0
+    url: ENC(FKBxPnwegDTDlEwRZAa052MiAvvBqk+Q2u2sas39nDhxEcER4uAhb1qdILunpTyJFPy32JH2pPvOsyVUCK8USw==)
+    username: ENC(pSyAFpvEgOIPZzvNgmOMPsaJPF6Bhm2F)
+    password: ENC(5qiRFjj/43uSdo/o5B1V4zqEIgYP1Ea+)
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_PASSWORD:0}
 
 external:
   riot:
-    api-key: RGAPI-2168b12b-474f-4bc9-8f9c-cbe1f61cd5ca
+    api-key: ENC(r6+EfOvoztXsP2yLIDUccgEHV1SbnboBzZQnAf6FkKNyoKnR1Vv/EqU9iS3+UiV2iXmILjYnDy4=)
 
 mybatis:
   type-aliases-package: gg.updown.backend
@@ -26,7 +30,7 @@ mybatis:
     jdbc-type-for-null: null
 
 jwt:
-  secret: 36B3DECE2D9ADA4EEEACF844F322B74E4B42EFEAE04E9C4C181027F9A7CE24DE
+  secret: ENC(TUKoYPDLmPRVqjpPzHCQN/6uISl+SYWHM1O2Hh/HUSCCQiD31FMoXZcUGn0RiMtNOpGNZpSGBRK6whLHCz8gwwl+JnS3wYJnkB8kAa2jEMs=)
 
 logging:
   level:
