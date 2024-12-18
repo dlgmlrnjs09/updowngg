@@ -10,9 +10,9 @@ spring:
     name: Spring-Boot-MyBatis
   datasource:
     driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    url: ENC(FKBxPnwegDTDlEwRZAa052MiAvvBqk+Q2u2sas39nDhxEcER4uAhb1qdILunpTyJFPy32JH2pPvOsyVUCK8USw==)
-    username: ENC(pSyAFpvEgOIPZzvNgmOMPsaJPF6Bhm2F)
-    password: ENC(5qiRFjj/43uSdo/o5B1V4zqEIgYP1Ea+)
+    url: ENC(VAz68ioTtC6JnKtbAtpIr1GOaUF3zourBWvCntal70qLZdAY7D+pdAPgJ+RjjG/PyJla1ciZ1Js6nCg5LWyGBA==)
+    username: ENC(1eiVfgCpK4dwAA8T/iJTViruVkHKw+5U)
+    password: ENC(1xXL/JyLoxe87uWTnkj2X54LQgRs8toK)
 
 jasypt:
   encryptor:
@@ -20,7 +20,7 @@ jasypt:
 
 external:
   riot:
-    api-key: ENC(r6+EfOvoztXsP2yLIDUccgEHV1SbnboBzZQnAf6FkKNyoKnR1Vv/EqU9iS3+UiV2iXmILjYnDy4=)
+    api-key: ENC(lUQyY8egr8d7Fra1tn9Qygz68EjTmr7M9NHim/iUWzKQKuB8q92AMguyuzCEI3Hy8VQWrPOJRD8=)
 
 mybatis:
   type-aliases-package: gg.updown.backend
@@ -30,7 +30,7 @@ mybatis:
     jdbc-type-for-null: null
 
 jwt:
-  secret: ENC(TUKoYPDLmPRVqjpPzHCQN/6uISl+SYWHM1O2Hh/HUSCCQiD31FMoXZcUGn0RiMtNOpGNZpSGBRK6whLHCz8gwwl+JnS3wYJnkB8kAa2jEMs=)
+  secret: ENC(rxgHJDVWHgIcfL35yWiFJkCK4v38A/WYD1HTG8mPdhNGymp+0gBK3F3DKwMZik51BF94fpuo5kJJ476Tvod8w0Yt1eGjetcl27JPgSwsSic=)
 
 logging:
   level:
