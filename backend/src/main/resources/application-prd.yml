@@ -1,0 +1,49 @@
+spring:
+  devtools:
+    livereload:
+      enabled: false
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: false
+  application:
+    name: Spring-Boot-MyBatis
+  datasource:
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: ENC(mdkATQFeBLwWSyyF2yp9zC1dtHedOE0Vu8NNM3uljJl9nsOG2WBRgB/TYf7ZhUfHx2pUSXB07Bw=)
+    username: ENC(l7YPdNw2lppMoZtGKlgs4MqXjzweZhui)
+    password: ENC(sceu7+NueM1kJ8Rfa39Sd7W6SyEuprJd)
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_PASSWORD:0}
+
+external:
+  riot:
+    api-key: ENC(WWrL5hOTRJmG9lf2bIf/khOJCdBeBL2YHJES6nt9SylCar66GlUt3LXOdH4fVM/WCYq2wkjPuM8=)
+
+mybatis:
+  type-aliases-package: gg.updown.backend
+  mapper-locations: classpath:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    jdbc-type-for-null: null
+
+jwt:
+  secret: ENC(Xj54XsuTDlvc/RbKY11tsCEBcX7TO5+uQHjoZa8veg+sf4X6SQNSzmAtVUV8kTnu1Pa9AT6vCPSAV5+cPGuSstcZGJoYWuJgPCJi7Yaop4Y=)
+
+logging:
+  level:
+    jdbc:
+      sqlonly: INFO      # SQL 쿼리문만 로그로 남기기
+      sqltiming: OFF     # SQL 쿼리문과 실행 시간 로그
+      audit: OFF         # ResultSet을 제외한 모든 JDBC 호출 정보
+      resultset: OFF     # ResultSet을 포함한 모든 JDBC 호출 정보
+      resultsettable: OFF  # SQL 결과 데이터 테이블
+      connection: OFF    # 커넥션 연결/해제 정보
+#  pattern:
+#    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg"
+
+riot:
+  ddragon:
+    basepath: "https://ddragon.leagueoflegends.com"
