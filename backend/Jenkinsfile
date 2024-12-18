@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         JASYPT_PASSWORD = credentials('JASYPT_PASSWORD')
-        GRADLE_OPTS = '-Dorg.gradle.jvmargs=-Xmx512m -XX:MaxMetaspaceSize=256m -Dfile.encoding=UTF-8'
+        GRADLE_OPTS = '-Dorg.gradle.jvmargs=-Xmx256m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8'
     }
 
     stages {
@@ -20,7 +20,7 @@ pipeline {
                         export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto.x86_64
                         export PATH=$JAVA_HOME/bin:$PATH
                         chmod +x ./gradlew
-                        ./gradlew clean build -x test --no-daemon --no-parallel
+                        ./gradlew clean build -x test --no-daemon --no-parallel --offline
                     '''
                 }
             }
