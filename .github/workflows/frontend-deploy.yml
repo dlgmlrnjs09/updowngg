@@ -31,26 +31,31 @@ jobs:
           npm install --legacy-peer-deps
 
           # vite 실행
-          export NODE_OPTIONS="--experimental-json-modules"
-          node -e "
-            const path = require('path');
-            const vite = require('vite');
-          
-            async function build() {
-              try {
-                const config = await import(path.resolve('./vite.config.js'));
-                await vite.build({
-                  ...config.default,
-                  mode: 'production'
-                });
-              } catch (err) {
-                console.error('Build error:', err);
-                process.exit(1);
-              }
+          cat > build.mjs << 'EOF'
+          import { fileURLToPath } from 'url';
+          import { dirname, resolve } from 'path';
+          import { build } from 'vite';
+
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = dirname(__filename);
+
+          async function runBuild() {
+            try {
+              const configModule = await import('./vite.config.js');
+              await build({
+                ...configModule.default,
+                mode: 'production'
+              });
+            } catch (err) {
+              console.error('Build error:', err);
+              process.exit(1);
             }
-          
-            build();
-          "
+          }
+
+          runBuild();
+          EOF
+
+          node build.mjs
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
