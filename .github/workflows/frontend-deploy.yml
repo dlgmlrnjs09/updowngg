@@ -21,10 +21,8 @@ jobs:
       - name: Build Frontend
         run: |
           cd frontend
-          rm -f package-lock.json
-          npm install --no-package-lock --force
-          npm install vite@5.0.0 --save-dev --force
-          npx --no-install vite build --mode production
+          npm ci
+          npm run build
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
