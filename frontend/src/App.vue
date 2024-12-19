@@ -35,6 +35,6 @@ body {
   min-height: 100vh;
   background: #0A0A0A;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* test */
 }
 </style>
