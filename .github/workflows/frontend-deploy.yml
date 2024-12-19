@@ -24,19 +24,33 @@ jobs:
           rm -f package-lock.json
           rm -f tsconfig.json
           echo '{
-            "extends": "@vue/tsconfig/tsconfig.json",
-            "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
             "compilerOptions": {
+              "target": "ES2020",
+              "useDefineForClassFields": true,
+              "module": "ESNext",
+              "lib": ["ES2020", "DOM", "DOM.Iterable"],
+              "skipLibCheck": true,
+              "moduleResolution": "node",
+              "allowImportingTsExtensions": true,
+              "resolveJsonModule": true,
+              "isolatedModules": true,
+              "noEmit": true,
+              "jsx": "preserve",
+              "strict": true,
+              "noUnusedLocals": true,
+              "noUnusedParameters": true,
+              "noFallthroughCasesInSwitch": true,
               "baseUrl": ".",
               "paths": {
                 "@/*": ["./src/*"]
-              },
-              "moduleResolution": "bundler",
-              "allowImportingTsExtensions": true
-            }
+              }
+            },
+            "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+            "references": [{ "path": "./tsconfig.node.json" }]
           }' > tsconfig.json
+          npm install -g typescript
           npm install --force
-          npx vue-tsc --noEmit && vite build --mode production
+          npx vite build --mode production
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
