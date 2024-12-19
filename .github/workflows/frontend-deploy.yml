@@ -24,7 +24,8 @@ jobs:
           echo "Current directory: $(pwd)"
           echo "Files in directory:"
           ls -la
-          npm ci
+          rm -f package-lock.json  # 기존 lock 파일 삭제
+          npm install
           npm run build
         env:
           NODE_ENV: production
