@@ -34,7 +34,7 @@ body {
 .app {
   min-height: 100vh;
   background: #0A0A0A;
-  display: flex;  /* 추가 */
-  flex-direction: column;  /* 추가 */
+  display: flex;
+  flex-direction: column;
 }
 </style>
