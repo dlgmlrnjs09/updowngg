@@ -30,17 +30,26 @@ pipeline {
             steps {
                 dir('backend') {
                     sh '''
-                        # 기존 프로세스 종료
-                        pid=$(ps -ef | grep java | grep 'backend-0.0.1-SNAPSHOT.jar' | awk '{print $2}')
+                        pid=$(ps -ef | grep backend-0.0.1-SNAPSHOT.jar | grep java | awk '{print $2}')
                         if [ ! -z "$pid" ]; then
+                            echo "Killing existing process: $pid"
                             kill -9 $pid
                         fi
 
-                        # JAR 파일 배포
-                        nohup java -jar \
-                            -Dspring.profiles.active=prd \
-                            -DJASYPT_PASSWORD=${JASYPT_PASSWORD} \
-                            build/libs/backend-0.0.1-SNAPSHOT.jar &
+                        echo "Starting Spring Boot application..."
+                        nohup java -jar -Dspring.profiles.active=prd -DJASYPT_PASSWORD=gmlrnjs0 build/libs/backend-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
+
+                        echo "Waiting for application to start..."
+                        sleep 10
+
+                        # 프로세스 실행 확인
+                        if ps -ef | grep backend-0.0.1-SNAPSHOT.jar | grep java; then
+                            echo "Application started successfully"
+                        else
+                            echo "Failed to start application"
+                            cat nohup.out
+                            exit 1
+                        fi
                     '''
                 }
             }
