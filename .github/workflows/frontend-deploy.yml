@@ -18,45 +18,54 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Build Frontend
         working-directory: ./frontend
         run: |
-          # EC2에서 디렉토리 확인
-          echo "$EC2_SSH_KEY" > /tmp/ec2_key.pem
-          chmod 600 /tmp/ec2_key.pem
-          ssh -i /tmp/ec2_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "ls -la /home/ec2-user/updowngg"
-          # 권한 수정
-          sudo chown -R ec2-user:ec2-user /home/ec2-user/updowngg/frontend
-          # 빌드 명령어 실행
-          npm install
+          # 기존 설정 파일 삭제
+          rm -rf node_modules package-lock.json
+
+          # package.json 업데이트
+          cat > package.json << 'EOF'
+          {
+            "name": "frontend",
+            "version": "0.0.0",
+            "private": true,
+            "type": "module",
+            "scripts": {
+              "dev": "./node_modules/vite/bin/vite.js",
+              "build": "./node_modules/vite/bin/vite.js build",
+              "preview": "./node_modules/vite/bin/vite.js preview"
+            },
+            "dependencies": {
+              "axios": "^1.7.9",
+              "pinia": "^2.3.0",
+              "vue": "^3.5.13",
+              "vue-router": "^4.5.0",
+              "vue-toastification": "^2.0.0-rc.5"
+            },
+            "devDependencies": {
+              "@types/node": "^20.11.5",
+              "@vitejs/plugin-vue": "^5.2.1",
+              "@vue/tsconfig": "^0.5.1",
+              "autoprefixer": "^10.4.20",
+              "postcss": "^8.4.49",
+              "tailwindcss": "^3.4.16",
+              "typescript": "^5.3.3",
+              "vite": "^6.0.1",
+              "vite-plugin-vue-devtools": "^7.6.5"
+            }
+          }
+          EOF
+
+          # 의존성 설치 및 빌드
+          npm install --no-package-lock
           chmod +x node_modules/vite/bin/vite.js
           npm run build
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Archive build files
-        run: tar -czf dist.tar.gz -C frontend/dist .
-
-      - name: Copy build archive to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: dist.tar.gz
-          target: ~/dist.tar.gz
-
-      - name: Extract and deploy on EC2
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -64,7 +73,16 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo rm -rf /usr/share/nginx/html/*
-            sudo tar -xzf ~/dist.tar.gz -C /usr/share/nginx/html
+
+      - name: Copy build files to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "frontend/dist/*"
+          target: "/usr/share/nginx/html"
+          strip_components: 2
 
       - name: Restart Nginx
         uses: appleboy/ssh-action@master
