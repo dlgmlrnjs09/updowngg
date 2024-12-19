@@ -35,6 +35,6 @@ body {
   min-height: 100vh;
   background: #0A0A0A;
   display: flex;
-  flex-direction: column; /* 절대경로 2*/
+  flex-direction: column; /* 절대경로 3*/
 }
 </style>

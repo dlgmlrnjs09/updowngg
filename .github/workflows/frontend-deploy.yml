@@ -30,7 +30,9 @@ jobs:
         working-directory: ./frontend
         run: |
           # EC2에서 디렉토리 확인
-          ssh -i ${{ secrets.EC2_SSH_KEY }} ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "ls -la /home/ec2-user/updowngg"
+          echo "$EC2_SSH_KEY" > /tmp/ec2_key.pem
+          chmod 600 /tmp/ec2_key.pem
+          ssh -i /tmp/ec2_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "ls -la /home/ec2-user/updowngg"
           # 권한 수정
           sudo chown -R ec2-user:ec2-user /home/ec2-user/updowngg/frontend
           # 빌드 명령어 실행
@@ -40,6 +42,7 @@ jobs:
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
 
       - name: Archive build files
         run: tar -czf dist.tar.gz -C frontend/dist .
