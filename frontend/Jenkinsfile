@@ -16,13 +16,14 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
+                        chmod +x /home/ubuntu/frontend/node_modules/vite/bin/vite.js
                         echo "Current directory: $(pwd)"
                         echo "Files in directory:"
                         ls -la
                         echo "Environment file content:"
                         cat .env.production
                         echo "Starting build..."
-                        rm -rf node_modules
+                        rm -rf /home/ubuntu/frontend/node_modules
                         rm package-lock.json
                         npm install @rollup/rollup-linux-x64-gnu --save-optional
                         npm run build
