@@ -22,35 +22,12 @@ jobs:
         run: |
           cd frontend
           rm -f package-lock.json
-          rm -f tsconfig.json
-          echo '{
-            "compilerOptions": {
-              "target": "ES2020",
-              "useDefineForClassFields": true,
-              "module": "ESNext",
-              "lib": ["ES2020", "DOM", "DOM.Iterable"],
-              "skipLibCheck": true,
-              "moduleResolution": "node",
-              "allowImportingTsExtensions": true,
-              "resolveJsonModule": true,
-              "isolatedModules": true,
-              "noEmit": true,
-              "jsx": "preserve",
-              "strict": true,
-              "noUnusedLocals": true,
-              "noUnusedParameters": true,
-              "noFallthroughCasesInSwitch": true,
-              "baseUrl": ".",
-              "paths": {
-                "@/*": ["./src/*"]
-              }
-            },
-            "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
-            "references": [{ "path": "./tsconfig.node.json" }]
-          }' > tsconfig.json
-          npm install -g typescript
+          # vite 먼저 설치
+          npm install vite@5.0.0 --save-dev --force
+          # 나머지 의존성 설치  
           npm install --force
-          npx vite build --mode production
+          # 빌드
+          ./node_modules/.bin/vite build --mode production
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
