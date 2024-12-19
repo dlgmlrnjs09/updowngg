@@ -20,7 +20,7 @@ jasypt:
 
 external:
   riot:
-    api-key: ENC(ehucucYx0vDosX8nw7R0k9xmBLLG+N9kB8Bmd2DrkjULjr6ij1vrPLt+QgP6Bz8IQsaZuFiKxdU=)
+    api-key: ENC(iow85Vj9R1PaiAJ0hs80PH/MewUsTG16GkiuAWPfa0LGh03tofehaXRF3iWMm8wQkqgxQSAwemY=)
 
 mybatis:
   type-aliases-package: gg.updown.backend

@@ -7,7 +7,8 @@
     "dev": "vite --mode development",
     "build": "vite build --mode production",
     "type-check": "vue-tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "node deploy"
   },
   "dependencies": {
     "axios": "^1.7.9",
@@ -21,6 +22,7 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/tsconfig": "^0.5.1",
     "autoprefixer": "^10.4.20",
+    "ftp-deploy": "^2.4.7",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
     "typescript": "^5.3.3",
