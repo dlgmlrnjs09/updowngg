@@ -26,6 +26,7 @@ public class JasyptConfigDES {
         config.setSaltGeneratorClassName("org.jasypt.salt.RandomSaltGenerator"); // salt 생성 클래스
         config.setStringOutputType("base64"); //인코딩 방식
         encryptor.setConfig(config);
+        System.out.println("JasyptConfigDES Bean");
         return encryptor;
     }
 }
