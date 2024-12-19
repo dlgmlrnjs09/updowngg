@@ -24,8 +24,8 @@ jobs:
         working-directory: ./frontend
         run: |
           # 의존성 설치
+          npm install vite@5.0.0
           npm install @vitejs/plugin-vue@5.0.0
-          npm install vite@6.0.3
           npm install vite-plugin-vue-devtools@7.0.0
           npm install @vue/tsconfig --save-dev
           npm install --legacy-peer-deps
