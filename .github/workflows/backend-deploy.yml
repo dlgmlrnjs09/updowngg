@@ -39,6 +39,7 @@ jobs:
             if [ ! -z "$pid" ]; then
               echo "Killing existing process: $pid"
               kill -9 $pid || true
+              sleep 5
             fi
 
       - name: Copy jar file to EC2
@@ -57,6 +58,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: false
           script: |
             cd ~/app/backend
             nohup java -Xms128m -Xmx256m -jar -Dspring.profiles.active=prd -DJASYPT_PASSWORD=${{ secrets.JASYPT_PASSWORD }} backend-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
