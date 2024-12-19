@@ -23,10 +23,11 @@ jobs:
           cd frontend
           rm -f package-lock.json
           npm install --legacy-peer-deps
-          npx vite build --mode production --skipTypeCheck
+          npx vite build --mode production
         env:
           NODE_ENV: production
-          VITE_APP_ENV: production  # 환경변수 추가
+          VITE_APP_ENV: production
+          TSC_COMPILE_ON_ERROR: true
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
