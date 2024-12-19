@@ -17,50 +17,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Build Frontend
         working-directory: ./frontend
         run: |
-          # 기존 설정 파일 삭제
-          rm -rf node_modules package-lock.json
-
-          # package.json 업데이트 - EC2의 정확한 버전으로
-          cat > package.json << 'EOF'
-          {
-            "name": "frontend",
-            "version": "0.0.0",
-            "private": true,
-            "type": "module",
-            "scripts": {
-              "dev": "vite",
-              "build": "vite build",
-              "preview": "vite preview"
-            },
-            "dependencies": {
-              "axios": "1.7.9",
-              "pinia": "2.3.0",
-              "vue": "3.5.13",
-              "vue-router": "4.5.0",
-              "vue-toastification": "2.0.0-rc.5"
-            },
-            "devDependencies": {
-              "@types/node": "20.17.10",
-              "@vitejs/plugin-vue": "5.2.1",
-              "@vue/tsconfig": "0.5.1",
-              "autoprefixer": "10.4.20",
-              "postcss": "8.4.49",
-              "tailwindcss": "3.4.17",
-              "typescript": "5.7.2",
-              "vite": "6.0.3",
-              "vite-plugin-vue-devtools": "7.6.8"
-            }
-          }
-          EOF
-
-          # 의존성 설치 및 빌드
+          npm install vite@6.0.3
           npm install
-          ls -la node_modules/.bin/
-          node node_modules/vite/bin/vite.js build
+          export PATH="$PWD/node_modules/.bin:$PATH"
+          vite build --mode production
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
