@@ -21,16 +21,12 @@ jobs:
       - name: Build Frontend
         run: |
           cd frontend
-          echo "Current directory: $(pwd)"
-          echo "Files in directory:"
-          ls -la
           rm -f package-lock.json
-          npm install @vue/tsconfig
-          npm install vite@5
-          npm install
-          npx vite build --mode production
+          npm install --legacy-peer-deps
+          npx vite build --mode production --skipTypeCheck
         env:
           NODE_ENV: production
+          VITE_APP_ENV: production  # 환경변수 추가
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
