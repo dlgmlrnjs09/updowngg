@@ -23,13 +23,22 @@ jobs:
       - name: Build Frontend
         working-directory: ./frontend
         run: |
+          # 기존 설정 파일 삭제
           rm -rf node_modules package-lock.json
+          
+          # tsconfig.json 수정
+          sed -i 's/"@vue\/tsconfig\/tsconfig.dom.json"/"@vue\/tsconfig\/tsconfig.json"/g' tsconfig.json
+          
+          # 의존성 설치
           npm install -g vite@6.0.3
+          npm install @vue/tsconfig --save-dev
           npm install --legacy-peer-deps
-          which vite
-          npm root -g
-          find $(npm root -g) -name "vite.js"
-          $(which vite) build --mode production
+          
+          # vite.config.js 직접 로드
+          node -e "import('./vite.config.js').then(config => { 
+            const vite = require('/opt/hostedtoolcache/node/22.12.0/x64/lib/node_modules/vite');
+            vite.build({...config.default, mode: 'production'});
+          })"
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
