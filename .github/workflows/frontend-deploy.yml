@@ -23,10 +23,11 @@ jobs:
       - name: Build Frontend
         working-directory: ./frontend
         run: |
-          npm install vite@6.0.3
-          npm install
-          find node_modules/vite -name "*.js" | grep cli
-          npx --no-install vite build --mode production
+          rm -rf node_modules package-lock.json
+          npm install -g vite@6.0.3
+          npm install --legacy-peer-deps
+          ls -la /usr/local/lib/node_modules/vite/bin/
+          /usr/local/lib/node_modules/vite/bin/vite.js build --mode production
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
