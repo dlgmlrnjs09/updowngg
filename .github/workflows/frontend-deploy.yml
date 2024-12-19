@@ -22,8 +22,9 @@ jobs:
         working-directory: ./frontend
         run: |
           rm -rf node_modules package-lock.json
+          npm cache clean --force
+          npm install vite@5.0.0 @vitejs/plugin-vue@5.0.0 --save-dev
           npm install
-          npm ls vite  # vite 버전 확인을 위해 추가
           npm run build
         env:
           NODE_ENV: production
