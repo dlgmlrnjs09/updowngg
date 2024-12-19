@@ -25,6 +25,8 @@ jobs:
           echo "Files in directory:"
           ls -la
           rm -f package-lock.json
+          npm install @vue/tsconfig
+          npm install vite@5
           npm install
           npx vite build --mode production
         env:
