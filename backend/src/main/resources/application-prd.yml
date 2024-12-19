@@ -10,9 +10,9 @@ spring:
     name: Spring-Boot-MyBatis
   datasource:
     driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    url: ENC(wX1qtmiZZoApm2RN80VRY8k+G0yG1dOQLhbqfXEdCdNB7KVc1VHMoUDepU9I/blHPIxPnkL9dFw=)
-    username: ENC(dXEO4yJ2giCYeduvyC+db7nxK775JpLL)
-    password: ENC(4do69/rcmDdNSGDtPd8R9mwtOpDoq8j9)
+    url: ENC(VAG4THMOa37CXjKBSzECGJl0rJT76bFk5BETkWA1qouvoEMmgKay7wLJcDN7aFHlnCIXw15z6po5Cd1ON3Z8YQ==)
+    username: ENC(Evp86XC43zvXLAA1WKnD2054T9RdaWX6)
+    password: ENC(gI3EfEWi8CZlDIpY7on0ZaClgfCWib+y)
 
 jasypt:
   encryptor:
