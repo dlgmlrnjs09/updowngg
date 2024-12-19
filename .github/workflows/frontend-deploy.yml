@@ -24,12 +24,12 @@ jobs:
           echo "Current directory: $(pwd)"
           echo "Files in directory:"
           ls -la
-          rm -f package-lock.json  # 기존 lock 파일 삭제
+          rm -f package-lock.json
           npm install
+          export PATH="$PATH:$(pwd)/node_modules/.bin"
           npm run build
         env:
           NODE_ENV: production
-          PATH: ${{ env.PATH }}:./node_modules/.bin  # PATH 환경변수에 node_modules/.bin 추가
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
