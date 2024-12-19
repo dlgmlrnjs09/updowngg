@@ -22,7 +22,7 @@ jobs:
         run: |
           cd frontend
           npm ci
-          npm run build
+          npx vite build --mode production
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
