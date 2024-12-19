@@ -25,7 +25,8 @@ jobs:
         run: |
           npm install vite@6.0.3
           npm install
-          node ./node_modules/vite/dist/node/cli.js build --mode production
+          find node_modules/vite -name "*.js" | grep cli
+          npx --no-install vite build --mode production
         env:
           NODE_ENV: production
           VITE_APP_ENV: production
