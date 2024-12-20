@@ -41,4 +41,12 @@ public class ReviewService {
     public List<ReviewDto> getRecentReviewList(String targetPuuid) {
         return reviewMapper.getRecentReviewList(targetPuuid);
     }
+
+    public List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid) {
+        return reviewMapper.getAvgRatingByChamp(targetPuuid);
+    }
+
+    public List<ReviewRatingByPositionDto> getAvgRatingByPosition(String targetPuuid) {
+        return reviewMapper.getAvgRatingByPosition(targetPuuid);
+    }
 }

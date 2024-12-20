@@ -49,7 +49,7 @@
            puuid,
            riot_id_game_name,
            riot_id_tagline,
-           role,
+           position,
            summoner_id,
            summoner_name,
            summoner_level,
@@ -82,7 +82,7 @@
             <id property="puuid" column="puuid"/>
             <result property="riotIdGameName" column="riot_id_game_name"/>
             <result property="riotIdTagline" column="riot_id_tagline"/>
-            <result property="role" column="role"/>
+            <result property="position" column="position"/>
             <result property="teamId" column="team_id"/>
             <result property="kills" column="kills"/>
             <result property="assists" column="assists"/>
@@ -113,7 +113,7 @@
             p.puuid,
             p.riot_id_game_name,
             p.riot_id_tagline,
-            p.role,
+            p.position,
             p.team_id,
             p.kills,
             p.assists,
@@ -165,7 +165,7 @@
             puuid,
             riot_id_game_name,
             riot_id_tagline,
-            role,
+            position,
             summoner_id,
             summoner_level,
             summoner_name,
@@ -186,7 +186,7 @@
             #{participant.puuid},
             #{participant.riotIdGameName},
             #{participant.riotIdTagline},
-            #{participant.role},
+            #{participant.position},
             #{participant.summonerId},
             #{participant.summonerLevel},
             #{participant.summonerName},

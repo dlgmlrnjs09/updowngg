@@ -13,6 +13,8 @@
           :frequent-tags="frequentTags"
           :recent-reviews="recentReviews"
           :is-updated-match-list="isUpdatedMatchList"
+          :rating-by-position="ratingByPosition"
+          :rating-by-champ="ratingByChamp"
           @show-detail="showDetailModal = true"
           @update-matches="updateMatchList"
       />
@@ -58,7 +60,13 @@ import { matchApi } from '@/api/match'
 import { reviewApi } from '@/api/review'
 import type { LolSummonerProfileResDto } from '@/types/summoner'
 import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match'
-import type {ReviewRequestDto, ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
+import type {
+  ReviewRatingByChampDto,
+  ReviewRatingByPositionDto,
+  ReviewRequestDto,
+  ReviewStatsDto,
+  ReviewTagDto
+} from "@/types/review.ts";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth.ts";
 
@@ -77,6 +85,8 @@ const matches = ref<LolMatchInfoRes[]>([])
 const reviewTags = ref<ReviewTagDto[]>([])
 const frequentTags = ref<ReviewTagDto | null>(null)
 const recentReviews = ref<ReviewRequestDto | null>(null)
+const ratingByChamp = ref<ReviewRatingByChampDto | null>(null)
+const ratingByPosition = ref<ReviewRatingByPositionDto | null>(null)
 const showDetailModal = ref(false)
 const showReviewModal = ref(false)
 const selectedPlayer = ref(<LolMatchParticipant>({}));
@@ -177,6 +187,18 @@ const fetchRecentReviews = async () => {
   recentReviews.value = response.data;
 }
 
+const fetchRatingByChamp = async () => {
+  if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
+  const response = await reviewApi.getRatingByChamp(summonerInfo.value.riotAccountInfoEntity.puuid);
+  ratingByChamp.value = response.data;
+}
+
+const fetchRatingByPosition = async () => {
+  if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
+  const response = await reviewApi.getRatingByPosition(summonerInfo.value.riotAccountInfoEntity.puuid);
+  ratingByPosition.value = response.data;
+}
+
 watchEffect(async () => {
   const name = route.params.name;
   const tag = route.params.tag;
@@ -191,6 +213,8 @@ watchEffect(async () => {
       await fetchReviewTags();
       await fetchFrequentTags();
       await fetchRecentReviews();
+      await fetchRatingByChamp();
+      await fetchRatingByPosition();
     } finally {
       isLoading.value = false;
     }

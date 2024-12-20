@@ -17,4 +17,6 @@ public interface ReviewMapper {
     ReviewStatsDto getReviewStatus(String targetPuuid);
     List<ReviewTagDto> getFrequentTagCount(String targetPuuid);
     List<ReviewDto> getRecentReviewList(String targetPuuid);
+    List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid);
+    List<ReviewRatingByPositionDto> getAvgRatingByPosition(String targetPuuid);
 }

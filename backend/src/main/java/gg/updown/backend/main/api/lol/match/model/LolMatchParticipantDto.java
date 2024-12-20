@@ -13,7 +13,7 @@ public class LolMatchParticipantDto {
     private String puuid;
     private String riotIdGameName;
     private String riotIdTagline;
-    private String role;
+    private String position;
     private int teamId;
     private String teamName;
     private int kills;

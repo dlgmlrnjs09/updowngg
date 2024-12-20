@@ -39,7 +39,7 @@ public class LolMatchModelConverter {
                     .puuid(dto.getPuuid())
                     .riotIdGameName(dto.getRiotIdGameName())
                     .riotIdTagline(dto.getRiotIdTagline())
-                    .role(dto.getRole())
+                    .position(dto.getIndividualPosition())
                     .summonerId(dto.getSummonerId())
                     .summonerName(dto.getSummonerName())
                     .summonerLevel(dto.getSummonerLevel())

@@ -1,5 +1,11 @@
 import apiClient from './axios'
-import type {ReviewRequestDto, ReviewStatsDto, ReviewTagDto} from '@/types/review'
+import type {
+    ReviewRatingByChampDto,
+    ReviewRatingByPositionDto,
+    ReviewRequestDto,
+    ReviewStatsDto,
+    ReviewTagDto
+} from '@/types/review'
 import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 
 export const reviewApi = {
@@ -31,6 +37,20 @@ export const reviewApi = {
             params: {
                 puuid
             }
-        })
+        }),
+
+    getRatingByChamp: (puuid: string) =>
+        apiClient.get<ReviewRatingByChampDto>('/review/rating-avg/champ', {
+            params: {
+                puuid
+            }
+        }),
+
+    getRatingByPosition: (puuid: string) =>
+        apiClient.get<ReviewRatingByPositionDto>('/review/rating-avg/position', {
+            params: {
+                puuid
+            }
+        }),
 }
 

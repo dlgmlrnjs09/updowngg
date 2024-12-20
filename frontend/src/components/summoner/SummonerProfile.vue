@@ -66,18 +66,18 @@
           <!-- 챔피언별 평가 -->
           <div class="stats-column">
             <div class="champion-stats">
-              <div class="champion-item" v-for="i in 3" :key="i">
-                <img src="https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/Ziggs.png" class="position-icon" alt="Champion" />
-                <div class="champion-rating">4.5</div>
+              <div class="champion-item" v-for="rating in ratingByChamp" :key="rating.champId">
+                <img :src="`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${rating.champName}.png`" class="position-icon" alt="Champion" />
+                <div class="champion-rating" :style="{ color: getRatingColor(rating.totalAvgRating ?? 0) }">{{ rating.totalAvgRating }}</div>
               </div>
             </div>
           </div>
           <!-- 포지션별 평가 -->
           <div class="stats-column">
             <div class="position-stats">
-              <div class="position-item" v-for="position in ['TOP', 'JGL', 'MID', 'ADC', 'SUP']" :key="position">
-                <img src="https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/Ziggs.png" class="position-icon" alt="Champion" />
-                <div class="position-rating">4.2</div>
+              <div class="position-item" v-for="(position, index) in ['top', 'jungle', 'mid', 'support', 'ad']" :key="position">
+                <img :src="`/src/assets/icon/position/position_${position}.svg`" class="position-icon" alt="Champion" />
+                <div class="position-rating" :style="{ color: getRatingColor(ratingByPosition?.[index]?.totalAvgRating ?? 0) }">{{ ratingByPosition?.[index]?.totalAvgRating ?? 0 }}</div>
               </div>
             </div>
           </div>
@@ -119,7 +119,13 @@
 <script setup lang="ts">
 import {onMounted, ref, onUnmounted, computed} from 'vue'
 import type { LolSummonerProfileResDto } from '@/types/summoner.ts'
-import type {ReviewRequestDto, ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
+import type {
+  ReviewRatingByChampDto,
+  ReviewRatingByPositionDto,
+  ReviewRequestDto,
+  ReviewStatsDto,
+  ReviewTagDto
+} from "@/types/review.ts";
 import { getRatingColor } from '@/utils/ratingUtil.ts'
 
 const props = defineProps<{
@@ -128,6 +134,8 @@ const props = defineProps<{
   frequentTags: ReviewTagDto[] | null
   recentReviews: ReviewRequestDto[] | null
   isUpdatedMatchList: boolean
+  ratingByChamp: ReviewRatingByChampDto[] | null
+  ratingByPosition: ReviewRatingByPositionDto[] | null
 }>()
 
 defineEmits<{
@@ -367,8 +375,8 @@ const isExpanded = ref(true)
 .position-icon {
   width: 64px;
   height: 64px;
-  background: rgba(41, 121, 255, 0.1);
-  color: #2979FF;
+  /*background: rgba(41, 121, 255, 0.1);*/
+  /*color: #2979FF;*/
   display: flex;
   align-items: center;
   justify-content: center;

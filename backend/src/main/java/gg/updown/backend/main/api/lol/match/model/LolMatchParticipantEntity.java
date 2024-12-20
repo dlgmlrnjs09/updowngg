@@ -13,7 +13,7 @@ public class LolMatchParticipantEntity {
     private String puuid;
     private String riotIdGameName;
     private String riotIdTagline;
-    private String role;
+    private String position;
     private String summonerId;
     private int summonerLevel;
     private String summonerName;

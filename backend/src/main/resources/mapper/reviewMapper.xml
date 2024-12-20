@@ -157,5 +157,52 @@
         group by
             ssrt.tag_code, srt.tag_value, srt.tag_description
     </select>
+
+    <select id="getAvgRatingByChamp" parameterType="String" resultType="reviewRatingByChampDto">
+        select
+            champ_id ,
+            champ_name,
+            count(*) as playCount,
+            ROUND((AVG(skill_rating) + AVG(teamwork_rating) + AVG(manner_rating)) / 3,1) as totalAvgRating
+        from
+            lol_match_participant lm
+                inner join site_summoner_review ssr on (lm.match_id = ssr.match_id and lm.puuid = ssr.target_puuid)
+        where
+            puuid = #{puuid}
+        group by
+            champ_id,
+            champ_name
+        order by
+            count(*) desc
+        limit 5
+    </select>
+
+    <select id="getAvgRatingByPosition" parameterType="String" resultType="reviewRatingByPositionDto">
+        WITH positions AS (
+            SELECT unnest(ARRAY['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY']) as position
+        )
+        SELECT
+            p.position,
+            COUNT(lm.puuid) as playCount,
+            COALESCE(ROUND((AVG(skill_rating) + AVG(teamwork_rating) + AVG(manner_rating)) / 3, 1),0) as totalAvgRating
+        FROM
+            positions p
+                LEFT JOIN lol_match_participant lm ON
+                lm.position = p.position AND
+                lm.puuid = #{puuid}
+                LEFT JOIN site_summoner_review ssr ON
+                lm.match_id = ssr.match_id AND
+                lm.puuid = ssr.target_puuid
+        GROUP BY
+            p.position
+        ORDER BY
+            CASE p.position
+                WHEN 'TOP' THEN 1
+                WHEN 'JUNGLE' THEN 2
+                WHEN 'MIDDLE' THEN 3
+                WHEN 'BOTTOM' THEN 4
+                WHEN 'UTILITY' THEN 5
+            END
+    </select>
 </mapper>
 

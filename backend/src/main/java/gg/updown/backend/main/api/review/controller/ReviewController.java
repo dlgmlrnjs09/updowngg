@@ -49,4 +49,16 @@ public class ReviewController {
         List<ReviewDto> reviewList = reviewService.getRecentReviewList(puuid);
         return ResponseEntity.status(HttpStatus.OK).body(reviewList);
     }
+
+    // TODO
+    @GetMapping("/rating-avg/champ")
+    public ResponseEntity<List<ReviewRatingByChampDto>> getReviewChampRating(String puuid) {
+        List<ReviewRatingByChampDto> resultList = reviewService.getAvgRatingByChamp(puuid);
+        return ResponseEntity.status(HttpStatus.OK).body(resultList);
+    }
+    @GetMapping("/rating-avg/position")
+    public ResponseEntity<List<ReviewRatingByPositionDto>> getReviewPositionRating(String puuid) {
+        List<ReviewRatingByPositionDto> resultList = reviewService.getAvgRatingByPosition(puuid);
+        return ResponseEntity.status(HttpStatus.OK).body(resultList);
+    }
 }

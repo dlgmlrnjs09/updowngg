@@ -14,7 +14,7 @@ export interface LolMatchParticipant {
     puuid: string;
     riotIdGameName: string;
     riotIdTagline: string;
-    role: string;
+    position: string;
     teamId: number;
     teamName: string;
     kills: number;

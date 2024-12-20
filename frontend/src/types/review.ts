@@ -28,3 +28,16 @@ export interface ReviewStatsDto {
     totalReviewCnt: number;
     last30DayReviewCnt: number;
 }
+
+export interface ReviewRatingByChampDto {
+    champId: string;
+    champName: string;
+    playCount: number;
+    totalAvgRating: number;
+}
+
+export interface ReviewRatingByPositionDto {
+    position: string;
+    playCount: number;
+    totalAvgRating: number;
+}
