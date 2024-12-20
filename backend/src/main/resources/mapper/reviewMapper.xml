@@ -44,6 +44,34 @@
           and del_dt IS NULL
     </select>
 
+    <select id="getRecentReviewList" parameterType="String" resultType="reviewDto">
+        SELECT
+            r.summoner_review_seq,
+            r.reviewer_site_code,
+            r.reviewer_puuid,
+            r.target_puuid,
+            r.comment,
+            r.reg_dt,
+            ROUND(COALESCE(t.totalAvgRating, 0), 1) AS totalAvgRating
+        FROM
+            site_summoner_review r
+                LEFT JOIN (
+                SELECT
+                    target_puuid,
+                    (AVG(skill_rating) + AVG(teamwork_rating) + AVG(manner_rating)) / 3 AS totalAvgRating
+                FROM
+                    site_summoner_review
+                WHERE
+                    target_puuid = #{targetPuuid} AND del_dt IS NULL
+                GROUP BY
+                    target_puuid
+            ) t ON r.target_puuid = t.target_puuid
+        WHERE
+            r.target_puuid = #{targetPuuid} AND r.del_dt IS NULL
+        LIMIT
+            20
+    </select>
+
     <select id="getReviewTagList" parameterType="String">
         SELECT
             tag_code,
@@ -111,6 +139,23 @@
         where target_puuid = #{targetPuuid}
           and del_dt is NULL
         group by target_puuid
+    </select>
+
+    <select id="getFrequentTagCount" parameterType="String" resultType="reviewTagDto">
+        select
+            ssrt.tag_code,
+            srt.tag_value,
+            srt.tag_description,
+            count(*) as frequentCount
+        from
+            site_summoner_review ssr
+            inner join site_summoner_review_tag ssrt on (ssr.summoner_review_seq = ssrt.summoner_review_seq)
+            inner join site_review_tag srt on (ssrt.tag_code = srt.tag_code)
+        where
+            target_puuid = #{puuid}
+            and ssr.del_dt IS NULL
+        group by
+            ssrt.tag_code, srt.tag_value, srt.tag_description
     </select>
 </mapper>
 

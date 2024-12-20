@@ -23,7 +23,17 @@
         </div>
       </div>
       <div class="button-group">
-        <button class="secondary-button" @click="$emit('updateMatches')">전적 갱신</button>
+        <button
+            class="secondary-button"
+            @click="$emit('updateMatches')"
+            :disabled="isUpdatedMatchList"
+            :class="{ 'loading': isUpdatedMatchList }"
+        >
+          <div class="button-content">
+            <span v-if="!isUpdatedMatchList">전적 갱신</span>
+            <div v-else class="spinner"></div>
+          </div>
+        </button>
 <!--        <button class="expand-button" @click="isExpanded = !isExpanded">-->
 <!--          {{ isExpanded ? '접기' : '더보기' }}-->
 <!--        </button>-->
@@ -56,21 +66,13 @@
         <div class="stats-column">
           <div class="stats-title">자주 받은 태그</div>
           <div class="tags-container">
-            <div class="tag">
-              <span class="tag-text">포지티브</span>
-              <span class="tag-count">38</span>
-            </div>
-            <div class="tag">
-              <span class="tag-text">침착함</span>
-              <span class="tag-count">27</span>
-            </div>
-            <div class="tag">
-              <span class="tag-text">리더십</span>
-              <span class="tag-count">25</span>
-            </div>
-            <div class="tag">
-              <span class="tag-text">좋은 소통</span>
-              <span class="tag-count">21</span>
+            <div
+                 v-for="tag in frequentTags"
+                 :key="tag.tagCode"
+                 class="tag"
+            >
+              <span class="tag-text">{{ tag.tagValue }}</span>
+              <span class="tag-count">{{ tag.frequentCount }}</span>
             </div>
           </div>
         </div>
@@ -80,25 +82,30 @@
       <div class="recent-reviews">
         <div class="stats-title">최근 받은 평가</div>
         <div class="reviews-container">
-          <transition-group
-              name="slide"
-              tag="div"
-              class="review-wrapper"
-          >
-            <div
-                v-for="review in displayReview"
-                :key="review.id"
-                class="review-item"
+          <template v-if="displayReview">
+            <transition-group
+                name="slide"
+                tag="div"
+                class="review-wrapper"
             >
-              <div class="review-header">
-                <div class="review-rating">{{ review.rating }}</div>
-                <div class="review-date">{{ review.date }}</div>
+              <div
+                  v-for="review in displayReview"
+                  :key="review.summonerReviewSeq"
+                  class="review-item"
+              >
+                <div class="review-header">
+                  <div class="review-rating">{{ review.totalAvgRating }}</div>
+                  <div class="review-date">{{ review.regDt }}</div>
+                </div>
+                <div class="review-content">
+                  "{{ review.comment }}"
+                </div>
               </div>
-              <div class="review-content">
-                "{{ review.content }}"
-              </div>
-            </div>
-          </transition-group>
+            </transition-group>
+          </template>
+          <div v-else class="no-review-message">
+            아직 작성된 리뷰가 없습니다.
+          </div>
         </div>
       </div>
     </div>
@@ -108,11 +115,14 @@
 <script setup lang="ts">
 import {onMounted, ref, onUnmounted, computed} from 'vue'
 import type { LolSummonerProfileResDto } from '@/types/summoner.ts'
-import type {ReviewStatsDto} from "@/types/review.ts";
+import type {ReviewRequestDto, ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto
-  reviewStats: ReviewStatsDto
+  reviewStats: ReviewStatsDto | null
+  frequentTags: ReviewTagDto[] | null
+  recentReviews: ReviewRequestDto[] | null
+  isUpdatedMatchList: boolean
 }>()
 
 defineEmits<{
@@ -120,39 +130,22 @@ defineEmits<{
   (e: 'updateMatches'): void
 }>()
 
-// 리뷰 데이터
-const reviews = [
-  {
-    id: 1,
-    rating: 4.8,
-    date: "2024.12.14",
-    content: "팀워크가 좋고 피드백을 잘 수용하는 플레이어입니다. 게임 내내 긍정적인 분위기를 만들어주셨어요."
-  },
-  {
-    id: 2,
-    rating: 4.5,
-    date: "2024.12.13",
-    content: "어려운 상황에서도 침착하게 플레이하시는 모습이 인상적이었습니다."
-  },
-  {
-    id: 3,
-    rating: 4.7,
-    date: "2024.12.12",
-    content: "적절한 타이밍에 로밍해주시고 팀 밸런스를 잘 맞춰주셨습니다."
-  }
-]
-
 const currentIndex = ref(0)
 const displayReview = computed(() => {
-  return [reviews[currentIndex.value % reviews.length]]
+  if (!props.recentReviews || props.recentReviews.length === 0) {
+    return null;
+  }
+  return [props.recentReviews[currentIndex.value % props.recentReviews.length]]
 })
 
 let timer: number | null = null
 
 const startCarousel = () => {
-  timer = window.setInterval(() => {
-    currentIndex.value++
-  }, 3000)
+  if (props.recentReviews && props.recentReviews.length > 0) {
+    timer = window.setInterval(() => {
+      currentIndex.value++
+    }, 3000)
+  }
 }
 
 onMounted(() => {
@@ -267,10 +260,43 @@ const isExpanded = ref(true)
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  min-width: 100px; /* 버튼 최소 너비 고정 */
 }
 
 .secondary-button:hover {
   background: rgba(41, 121, 255, 0.1);
+}
+
+.secondary-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.secondary-button.loading {
+  background: #4a4a4a;
+  border-color: #4a4a4a;
+  color: #ffffff;
+}
+
+.button-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20px; /* 버튼 내용물 높이 고정 */
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .expand-button {
@@ -433,5 +459,13 @@ const isExpanded = ref(true)
 .slide-leave-to {
   opacity: 0;
   transform: translateY(-30px);
+}
+
+.no-review-message {
+  color: #9e9e9e;
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
 }
 </style>

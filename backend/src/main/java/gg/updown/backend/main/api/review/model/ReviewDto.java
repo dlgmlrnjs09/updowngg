@@ -19,6 +19,7 @@ public class ReviewDto {
     private double skillRating;
     private double teamworkRating;
     private double mannerRating;
+    private double totalAvgRating;
     private String comment;
     private LocalDateTime regDt;
     private LocalDateTime updDt;

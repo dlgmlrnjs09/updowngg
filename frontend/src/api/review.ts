@@ -17,6 +17,20 @@ export const reviewApi = {
             params: {
                 puuid
             }
+        }),
+
+    getReviewTagFrequent: (puuid: string) =>
+        apiClient.get<ReviewTagDto>('/review/tag-frequent', {
+            params: {
+                puuid
+            }
+        }),
+
+    getRecentReviews: (puuid: string) =>
+        apiClient.get<ReviewRequestDto>('/review/recent', {
+            params: {
+                puuid
+            }
         })
 }
 

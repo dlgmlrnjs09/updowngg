@@ -1,10 +1,7 @@
 package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
-import gg.updown.backend.main.api.review.model.ReviewDto;
-import gg.updown.backend.main.api.review.model.ReviewStatsDto;
-import gg.updown.backend.main.api.review.model.ReviewSubmitReqDto;
-import gg.updown.backend.main.api.review.model.ReviewTagEntity;
+import gg.updown.backend.main.api.review.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -35,5 +32,13 @@ public class ReviewService {
 
     public ReviewStatsDto getReviewStats(String targetPuuid) {
         return reviewMapper.getReviewStatus(targetPuuid);
+    }
+
+    public List<ReviewTagDto> getFrequentTagCount(String targetPuuid) {
+        return reviewMapper.getFrequentTagCount(targetPuuid);
+    }
+
+    public List<ReviewDto> getRecentReviewList(String targetPuuid) {
+        return reviewMapper.getRecentReviewList(targetPuuid);
     }
 }

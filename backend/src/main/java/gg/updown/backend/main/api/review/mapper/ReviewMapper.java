@@ -1,9 +1,6 @@
 package gg.updown.backend.main.api.review.mapper;
 
-import gg.updown.backend.main.api.review.model.ReviewDto;
-import gg.updown.backend.main.api.review.model.ReviewStatsDto;
-import gg.updown.backend.main.api.review.model.ReviewSubmitReqDto;
-import gg.updown.backend.main.api.review.model.ReviewTagEntity;
+import gg.updown.backend.main.api.review.model.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,4 +15,6 @@ public interface ReviewMapper {
     void deleteReviewTags(Long reviewSeq);
     List<ReviewDto> getWroteReviewList(String reviewerPuuid);
     ReviewStatsDto getReviewStatus(String targetPuuid);
+    List<ReviewTagDto> getFrequentTagCount(String targetPuuid);
+    List<ReviewDto> getRecentReviewList(String targetPuuid);
 }

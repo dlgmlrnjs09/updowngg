@@ -2,6 +2,7 @@ export interface ReviewTagDto {
     tagCode: string
     tagValue: string
     tagDescription: string
+    frequentCount: number
 }
 
 export interface ReviewRequestDto {
@@ -12,9 +13,11 @@ export interface ReviewRequestDto {
     skillRating: number;
     teamworkRating: number;
     mannerRating: number;
+    totalAvgRating: number;
     comment?: string;
     tagCodeList: string[];  // 선택한 태그의 코드 배열
     reviewable: boolean | false;
+    regDt: string
 }
 
 export interface ReviewStatsDto {

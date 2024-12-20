@@ -10,6 +10,9 @@
           v-if="summonerInfo"
           :profile-data="summonerInfo"
           :review-stats="reviewStatsInfo"
+          :frequent-tags="frequentTags"
+          :recent-reviews="recentReviews"
+          :is-updated-match-list="isUpdatedMatchList"
           @show-detail="showDetailModal = true"
           @update-matches="updateMatchList"
       />
@@ -52,7 +55,7 @@ import { matchApi } from '@/api/match'
 import { reviewApi } from '@/api/review'
 import type { LolSummonerProfileResDto } from '@/types/summoner'
 import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match'
-import type { ReviewStatsDto, ReviewTagDto } from "@/types/review.ts";
+import type {ReviewRequestDto, ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth.ts";
 
@@ -60,11 +63,14 @@ const toast = useToast();
 const authStore = useAuthStore();
 const route = useRoute();
 const isLoading = ref(true);
+const isUpdatedMatchList = ref(false)
 
 const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
 const reviewStatsInfo = ref<ReviewStatsDto | null>(null)
 const matches = ref<LolMatchInfoRes[]>([])
 const reviewTags = ref<ReviewTagDto[]>([])
+const frequentTags = ref<ReviewTagDto | null>(null)
+const recentReviews = ref<ReviewRequestDto | null>(null)
 const showDetailModal = ref(false)
 const showReviewModal = ref(false)
 const selectedPlayer = ref(<LolMatchParticipant>({}));
@@ -104,10 +110,13 @@ const fetchMatchList = async () => {
 const updateMatchList = async () => {
   try {
     if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
+    isUpdatedMatchList.value = true
     const response = await matchApi.updateMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 5);
     matches.value = response.data
   } catch (error) {
     console.error('Failed to fetch matches:', error)
+  } finally {
+    isUpdatedMatchList.value = false
   }
 }
 
@@ -125,6 +134,19 @@ const fetchReviewTags = async () => {
   reviewTags.value = response.data
 }
 
+const fetchFrequentTags = async () => {
+  if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
+  const response = await reviewApi.getReviewTagFrequent(summonerInfo.value.riotAccountInfoEntity.puuid);
+  frequentTags.value = response.data;
+}
+
+const fetchRecentReviews = async () => {
+  if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
+  const response = await reviewApi.getRecentReviews(summonerInfo.value.riotAccountInfoEntity.puuid);
+  console.log('recentReviews', response.data);
+  recentReviews.value = response.data;
+}
+
 watchEffect(async () => {
   const name = route.params.name;
   const tag = route.params.tag;
@@ -135,6 +157,8 @@ watchEffect(async () => {
       await fetchSummonerReviewStats();
       await fetchMatchList();
       await fetchReviewTags();
+      await fetchFrequentTags();
+      await fetchRecentReviews();
     } finally {
       isLoading.value = false;
     }
