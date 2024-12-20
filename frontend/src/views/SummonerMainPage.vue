@@ -21,7 +21,10 @@
           v-if="matches.length"
           :matches="matches"
           :profile-data="summonerInfo"
+          :is-loading="isLoadingMore"
+          :no-more-matches="noMoreMatches"
           @review-player="openReviewModal"
+          @load-more="loadMoreMatches"
       />
 
       <DetailModal
@@ -63,7 +66,10 @@ const toast = useToast();
 const authStore = useAuthStore();
 const route = useRoute();
 const isLoading = ref(true);
-const isUpdatedMatchList = ref(false)
+const isLoadingMore = ref(false);
+const isUpdatedMatchList = ref(false);
+const currentStartIndex = ref(0);
+const noMoreMatches = ref(false);
 
 const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
 const reviewStatsInfo = ref<ReviewStatsDto | null>(null)
@@ -97,13 +103,36 @@ const fetchSummonerReviewStats = async () => {
   }
 }
 
-const fetchMatchList = async () => {
+const fetchMatchList = async (startIndex: number = 0) => {
   try {
     if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
-    const response = await matchApi.getMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 5);
-    matches.value = response.data
+    const response = await matchApi.getMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, startIndex, 5);
+
+    if (startIndex === 0) {
+      matches.value = response.data
+    } else {
+      matches.value = [...matches.value, ...response.data]
+    }
+
+    // 더 이상 불러올 데이터가 없는 경우
+    if (response.data.length < 5) {
+      noMoreMatches.value = true
+    }
+
+    currentStartIndex.value = startIndex
   } catch (error) {
     console.error('Failed to fetch matches:', error)
+  }
+}
+
+const loadMoreMatches = async () => {
+  if (isLoadingMore.value || noMoreMatches.value) return
+
+  isLoadingMore.value = true
+  try {
+    await fetchMatchList(currentStartIndex.value + 5)
+  } finally {
+    isLoadingMore.value = false
   }
 }
 
@@ -111,6 +140,8 @@ const updateMatchList = async () => {
   try {
     if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
     isUpdatedMatchList.value = true
+    currentStartIndex.value = 0
+    noMoreMatches.value = false
     const response = await matchApi.updateMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 5);
     matches.value = response.data
   } catch (error) {
@@ -143,7 +174,6 @@ const fetchFrequentTags = async () => {
 const fetchRecentReviews = async () => {
   if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
   const response = await reviewApi.getRecentReviews(summonerInfo.value.riotAccountInfoEntity.puuid);
-  console.log('recentReviews', response.data);
   recentReviews.value = response.data;
 }
 
@@ -152,6 +182,8 @@ watchEffect(async () => {
   const tag = route.params.tag;
   if (name && tag) {
     isLoading.value = true;
+    currentStartIndex.value = 0;
+    noMoreMatches.value = false;
     try {
       await fetchSummonerInfo();
       await fetchSummonerReviewStats();

@@ -1,17 +1,17 @@
 <!-- src/components/summoner/MatchList.vue -->
 <template>
   <div class="games-section">
-<!--    <div class="tab-container">-->
-<!--      <button-->
-<!--          v-for="tab in tabs"-->
-<!--          :key="tab.value"-->
-<!--          class="tab-button"-->
-<!--          :class="{ active: selectedTab === tab.value }"-->
-<!--          @click="selectedTab = tab.value"-->
-<!--      >-->
-<!--        {{ tab.label }}-->
-<!--      </button>-->
-<!--    </div>-->
+    <!--    <div class="tab-container">-->
+    <!--      <button-->
+    <!--          v-for="tab in tabs"-->
+    <!--          :key="tab.value"-->
+    <!--          class="tab-button"-->
+    <!--          :class="{ active: selectedTab === tab.value }"-->
+    <!--          @click="selectedTab = tab.value"-->
+    <!--      >-->
+    <!--        {{ tab.label }}-->
+    <!--      </button>-->
+    <!--    </div>-->
 
     <div v-for="match in filteredMatches" :key="match.matchInfo.matchId" class="game-item">
       <div class="game-header">
@@ -42,6 +42,25 @@
         />
       </div>
     </div>
+
+    <!-- 더보기 버튼 -->
+    <div v-if="!noMoreMatches" class="load-more-container">
+      <button
+          class="load-more-button"
+          @click="$emit('loadMore')"
+          :disabled="isLoading"
+      >
+        <div class="button-content">
+          <span v-if="!isLoading">더보기</span>
+          <div v-else class="spinner"></div>
+        </div>
+      </button>
+    </div>
+
+    <!-- 더 이상 데이터가 없을 때 표시 -->
+    <div v-if="noMoreMatches" class="no-more-matches">
+      더 이상 매치 기록이 없습니다
+    </div>
   </div>
 </template>
 
@@ -55,19 +74,16 @@ import { useAuthStore } from "@/stores/auth"
 const auth = useAuthStore()
 const selectedTab = ref('all')
 
-const tabs = [
-  { label: '전체', value: 'all' },
-  { label: '평가완료', value: 'reviewed' },
-  { label: '평가대기', value: 'pending' }
-]
-
 const props = defineProps<{
   matches: LolMatchInfoRes[]
   profileData: LolSummonerProfileResDto
+  isLoading: boolean
+  noMoreMatches: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'reviewPlayer', player: any): void
+  (e: 'loadMore'): void
 }>()
 
 const filteredMatches = computed(() => {
@@ -209,6 +225,65 @@ const openReview = (player: any) => {
       transparent
   );
   margin: 0 8px;
+}
+
+/*.load-more-container {
+  margin-top: 12px;
+}*/
+
+.load-more-button {
+  background: #141414;
+  border: 1px solid #2979FF;
+  color: #2979FF;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  height: 48px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.load-more-button:hover:not(:disabled) {
+  background: rgba(41, 121, 255, 0.1);
+}
+
+.load-more-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  border-color: #4a4a4a;
+  color: #4a4a4a;
+}
+
+.button-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20px;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #2979FF;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.no-more-matches {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
