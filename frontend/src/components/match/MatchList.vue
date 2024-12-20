@@ -1,17 +1,17 @@
 <!-- src/components/summoner/MatchList.vue -->
 <template>
   <div class="games-section">
-    <div class="tab-container">
-      <button
-          v-for="tab in tabs"
-          :key="tab.value"
-          class="tab-button"
-          :class="{ active: selectedTab === tab.value }"
-          @click="selectedTab = tab.value"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
+<!--    <div class="tab-container">-->
+<!--      <button-->
+<!--          v-for="tab in tabs"-->
+<!--          :key="tab.value"-->
+<!--          class="tab-button"-->
+<!--          :class="{ active: selectedTab === tab.value }"-->
+<!--          @click="selectedTab = tab.value"-->
+<!--      >-->
+<!--        {{ tab.label }}-->
+<!--      </button>-->
+<!--    </div>-->
 
     <div v-for="match in filteredMatches" :key="match.matchInfo.matchId" class="game-item">
       <div class="game-header">

@@ -20,15 +20,15 @@
       >
         <div class="review-scores" v-if="!player.reviewDto?.reviewable && !(auth.isAuthenticated && auth.user?.puuid == player.puuid)">
           <span class="score-item">
-            <span class="score-value">{{ player.reviewDto?.skillRating }}</span>
+            <span class="score-value" :style="{ color: getRatingColor(player.reviewDto?.skillRating)}">{{ player.reviewDto?.skillRating }}</span>
             실력
           </span>
           <span class="score-item">
-            <span class="score-value">{{ player.reviewDto?.teamworkRating }}</span>
+            <span class="score-value" :style="{ color: getRatingColor(player.reviewDto?.teamworkRating)}">{{ player.reviewDto?.teamworkRating }}</span>
             팀워크
           </span>
           <span class="score-item">
-            <span class="score-value">{{ player.reviewDto?.mannerRating }}</span>
+            <span class="score-value" :style="{ color: getRatingColor(player.reviewDto?.mannerRating)}">{{ player.reviewDto?.mannerRating }}</span>
             매너
           </span>
         </div>
@@ -82,6 +82,7 @@ import { computed} from 'vue'
 import {useAuthStore} from "@/stores/auth.ts";
 import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 import {useRouter} from "vue-router";
+import {getRatingColor} from "@/utils/ratingUtil.ts";
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto

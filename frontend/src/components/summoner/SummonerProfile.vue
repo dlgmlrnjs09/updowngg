@@ -9,15 +9,15 @@
         <div class="profile-stats">평가 {{ reviewStats?.totalReviewCnt ?? 0 }}회 · 최근 30일 {{ reviewStats?.last30DayReviewCnt ?? 0 }}회</div>
         <div class="rating-stats" >
           <div class="rating-item">
-            <span class="rating-value">{{ reviewStats?.skillRatingAvg ?? '0.0' }}</span>
+            <span class="rating-value" :style="{ color: getRatingColor(reviewStats?.skillRatingAvg ?? 0) }" >{{ reviewStats?.skillRatingAvg ?? '0' }}</span>
             <span class="rating-label">실력</span>
           </div>
           <div class="rating-item">
-            <span class="rating-value">{{ reviewStats?.teamworkRatingAvg ?? '0.0' }}</span>
+            <span class="rating-value" :style="{ color: getRatingColor(reviewStats?.skillRatingAvg ?? 0) }">{{ reviewStats?.teamworkRatingAvg ?? '0' }}</span>
             <span class="rating-label">팀워크</span>
           </div>
           <div class="rating-item">
-            <span class="rating-value">{{ reviewStats?.mannerRatingAvg ?? '0.0'}}</span>
+            <span class="rating-value" :style="{ color: getRatingColor(reviewStats?.skillRatingAvg ?? 0) }">{{ reviewStats?.mannerRatingAvg ?? '0'}}</span>
             <span class="rating-label">매너</span>
           </div>
         </div>
@@ -34,80 +34,84 @@
             <div v-else class="spinner"></div>
           </div>
         </button>
-<!--        <button class="expand-button" @click="isExpanded = !isExpanded">-->
-<!--          {{ isExpanded ? '접기' : '더보기' }}-->
-<!--        </button>-->
       </div>
     </div>
 
     <!-- 확장 영역 -->
-    <div v-if="isExpanded" class="expanded-section">
-      <div class="stats-grid">
-        <!-- 평가 통계 -->
-        <div class="stats-column">
-          <div class="stats-title">평가 통계</div>
-          <div class="stats-content">
-            <div class="stat-item">
-              <div class="stat-label">평가자 신뢰도</div>
-              <div class="stat-value rating-badge">4.7</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label">긍정적 평가</div>
-              <div class="stat-value">75%</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label">평가 참여율</div>
-              <div class="stat-value">상위 10%</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 최근 태그 -->
-        <div class="stats-column">
-          <div class="stats-title">자주 받은 태그</div>
-          <div class="tags-container">
+    <div v-if="isExpanded && displayReview" class="expanded-section">
+      <!-- 자주 받은 태그 -->
+      <div class="tags-section">
+        <div class="stats-title">자주 받은 태그</div>
+        <div v-if="frequentTags && frequentTags.length > 0" class="tags-slider">
+          <div class="tags-wrapper">
             <div
-                 v-for="tag in frequentTags"
-                 :key="tag.tagCode"
-                 class="tag"
+                v-for="tag in frequentTags"
+                :key="tag.tagCode"
+                class="tag"
             >
               <span class="tag-text">{{ tag.tagValue }}</span>
               <span class="tag-count">{{ tag.frequentCount }}</span>
             </div>
           </div>
         </div>
+        <div v-else class="no-review-message">
+          받은 태그가 없습니다.
+        </div>
       </div>
 
-      <!-- 최근 평가 섹션 수정 -->
-      <div class="recent-reviews">
-        <div class="stats-title">최근 받은 평가</div>
-        <div class="reviews-container">
-          <template v-if="displayReview">
-            <transition-group
-                name="slide"
-                tag="div"
-                class="review-wrapper"
-            >
-              <div
-                  v-for="review in displayReview"
-                  :key="review.summonerReviewSeq"
-                  class="review-item"
-              >
-                <div class="review-header">
-                  <div class="review-rating">{{ review.totalAvgRating }}</div>
-                  <div class="review-date">{{ review.regDt }}</div>
-                </div>
-                <div class="review-content">
-                  "{{ review.comment }}"
-                </div>
+      <!-- 평가 통계 -->
+      <div class="stats-section">
+        <div class="stats-title">평가 통계</div>
+        <div class="stats-grid">
+          <!-- 챔피언별 평가 -->
+          <div class="stats-column">
+            <div class="champion-stats">
+              <div class="champion-item" v-for="i in 3" :key="i">
+                <img src="https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/Ziggs.png" class="position-icon" alt="Champion" />
+                <div class="champion-rating">4.5</div>
               </div>
-            </transition-group>
-          </template>
-          <div v-else class="no-review-message">
-            아직 작성된 리뷰가 없습니다.
+            </div>
+          </div>
+          <!-- 포지션별 평가 -->
+          <div class="stats-column">
+            <div class="position-stats">
+              <div class="position-item" v-for="position in ['TOP', 'JGL', 'MID', 'ADC', 'SUP']" :key="position">
+                <img src="https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/Ziggs.png" class="position-icon" alt="Champion" />
+                <div class="position-rating">4.2</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- 최근 평가 섹션 -->
+      <div class="recent-reviews">
+        <div class="stats-title">최근 받은 평가</div>
+        <div class="reviews-container">
+          <transition-group
+              name="slide"
+              tag="div"
+              class="review-wrapper"
+          >
+            <div
+                v-for="review in displayReview"
+                :key="review.summonerReviewSeq"
+                class="review-item"
+            >
+              <div class="review-header">
+                <div class="review-rating" :style="{ color: getRatingColor(review.totalAvgRating) }">{{ review.totalAvgRating }}</div>
+                <div class="review-date">{{ formatDate(review.regDt) }}</div>
+              </div>
+              <div class="review-content">
+                "{{ review.comment }}"
+              </div>
+            </div>
+          </transition-group>
+        </div>
+      </div>
+    </div>
+    <div v-else class="no-review-message">
+      아직 작성된 리뷰가 없습니다.
     </div>
   </div>
 </template>
@@ -116,6 +120,7 @@
 import {onMounted, ref, onUnmounted, computed} from 'vue'
 import type { LolSummonerProfileResDto } from '@/types/summoner.ts'
 import type {ReviewRequestDto, ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
+import { getRatingColor } from '@/utils/ratingUtil.ts'
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto
@@ -146,6 +151,15 @@ const startCarousel = () => {
       currentIndex.value++
     }, 3000)
   }
+}
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}.${month}.${day}.`;
 }
 
 onMounted(() => {
@@ -234,22 +248,6 @@ const isExpanded = ref(true)
   gap: 8px;
 }
 
-.primary-button {
-  background: #2979FF;
-  color: white;
-  padding: 8px 24px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.primary-button:hover {
-  background: #2264D1;
-}
-
 .secondary-button {
   background: transparent;
   border: 1px solid #2979FF;
@@ -260,7 +258,7 @@ const isExpanded = ref(true)
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 100px; /* 버튼 최소 너비 고정 */
+  min-width: 100px;
 }
 
 .secondary-button:hover {
@@ -282,7 +280,7 @@ const isExpanded = ref(true)
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 20px; /* 버튼 내용물 높이 고정 */
+  height: 20px;
 }
 
 .spinner {
@@ -299,29 +297,14 @@ const isExpanded = ref(true)
   to { transform: rotate(360deg); }
 }
 
-.expand-button {
-  background: transparent;
-  border: none;
-  color: #9e9e9e;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.expand-button:hover {
-  color: #fff;
-}
-
 .expanded-section {
   margin-top: 20px;
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
+/* 평가 통계 & 태그 섹션 */
+.stats-section, .tags-section {
   margin-bottom: 24px;
 }
 
@@ -332,45 +315,91 @@ const isExpanded = ref(true)
   margin-bottom: 16px;
 }
 
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 6px;
+}
+
 .stats-column {
-  display: flex;
-  flex-direction: column;
+  padding: 0 20px;
 }
 
-.stats-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.stats-column:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.stat-item {
+.stats-subtitle {
+  font-size: 14px;
+  color: #9e9e9e;
+  margin-bottom: 12px;
+}
+
+.champion-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.position-stats {
   display: flex;
   justify-content: space-between;
+  width: 100%;
+}
+
+.champion-item, .position-item {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 8px;
+  min-width: 48px;
 }
 
-.stat-label {
-  color: #9e9e9e;
-  font-size: 14px;
+.champion-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #2979FF;
 }
 
-.stat-value {
-  color: #fff;
-  font-size: 14px;
+.position-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(41, 121, 255, 0.1);
+  color: #2979FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 16px;
   font-weight: 500;
 }
 
-.rating-badge {
-  background: rgba(41, 121, 255, 0.1);
-  color: #2979FF;
-  padding: 2px 8px;
-  border-radius: 4px;
+.champion-rating, .position-rating {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 4px;
 }
 
-.tags-container {
+.tags-slider {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.tags-wrapper {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.tags-wrapper::-webkit-scrollbar {
+  display: none;
 }
 
 .tag {
@@ -380,6 +409,7 @@ const isExpanded = ref(true)
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .tag-text {
@@ -392,13 +422,20 @@ const isExpanded = ref(true)
   font-size: 12px;
 }
 
+/* 최근 평가 섹션 */
 .reviews-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  position: relative;
+  margin-bottom: 2px;
+}
+
+.review-wrapper {
+  position: relative;
+  min-height: 80px;
 }
 
 .review-item {
+  position: absolute;
+  width: 100%;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 6px;
   padding: 16px;
@@ -424,28 +461,11 @@ const isExpanded = ref(true)
   color: #e0e0e0;
   font-size: 14px;
   line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 리뷰 섹션 관련 스타일 수정 */
-.reviews-container {
-  position: relative;
-  margin-bottom: 2px; /* stats-grid와 동일한 마진 유지 */
-}
-
-.review-wrapper {
-  position: relative;
-  min-height: 80px;
-}
-
-.review-item {
-  position: absolute;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-  padding: 16px;
-}
-
-/* 슬라이드 애니메이션 */
 .slide-enter-active,
 .slide-leave-active {
   transition: all 0.5s ease;
@@ -467,5 +487,36 @@ const isExpanded = ref(true)
   padding: 20px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 6px;
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .stats-column:first-child {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 24px;
+  }
+
+  .position-stats {
+    padding: 0 12px;
+  }
+
+  .champion-stats {
+    justify-content: space-between;
+  }
+
+  .main-profile {
+    grid-template-columns: auto 1fr;
+  }
+
+  .button-group {
+    grid-column: span 2;
+    margin-top: 16px;
+  }
 }
 </style>
