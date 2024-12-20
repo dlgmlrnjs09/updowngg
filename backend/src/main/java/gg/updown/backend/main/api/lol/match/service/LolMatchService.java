@@ -121,11 +121,25 @@ public class LolMatchService {
     public List<LolMatchInfoResDto> getAndInsertMatchList(String puuid, int startIndex, int count) {
         List<LolMatchInfoResDto> resultList = new ArrayList<>();
 
+        // 페이징해서 불러오는 코드
         List<String> matchIdList = matchApiService.getMatchIdListByPuuid(GetMatchIdListReqDto.builder()
                 .puuid(puuid)
                 .count(count)
                 .start(startIndex)
                 .build());
+
+        for (String matchId : matchIdList) {
+            resultList.add(this.getMatchResDtoAndInsertConditional(matchId));
+        }
+
+        return resultList;
+    }
+
+    /* 기간 내 저장되지않은 match 전부 불러와 저장하기 */
+    public List<LolMatchInfoResDto> getAndInsertMatchList(String puuid, Long startTime, Long endTime) {
+        List<LolMatchInfoResDto> resultList = new ArrayList<>();
+
+        List<String> matchIdList = this.getNewMatchIdList(puuid, startTime, endTime);
 
         for (String matchId : matchIdList) {
             resultList.add(this.getMatchResDtoAndInsertConditional(matchId));
@@ -185,16 +199,18 @@ public class LolMatchService {
     private List<String> getNewMatchIdList(String puuid, Long startTime, Long endTime) {
         LinkedHashSet<String> newMatchIdList = new LinkedHashSet<>();
         String latestMatchId = matchMapper.getLatestMatchId(puuid);
+        latestMatchId = latestMatchId == null ? "" : latestMatchId;
 
         int startIndex = 0;
         int count = 100;
-        while (true) {
+        final int MAX_LOOP_COUNT = 50;
+        for (int i=0; i<=MAX_LOOP_COUNT; i++) {
             List<String> matchIdList = matchApiService.getMatchIdListByPuuid(GetMatchIdListReqDto.builder()
                 .puuid(puuid)
                 .count(count)
                 .start(startIndex)
-                .startTime(startTime)
-                .endTime(endTime)
+                .startTime(startTime / 1000)
+                .endTime(endTime / 1000)
             .build());
 
             if (matchIdList.isEmpty()) {
@@ -205,8 +221,10 @@ public class LolMatchService {
             if (foundIndex == -1 || latestMatchId.isEmpty()) {
                 newMatchIdList.addAll(matchIdList);
             } else {
-                int beforeIndex = foundIndex - 1;
-                newMatchIdList.addAll(matchIdList.subList(0, beforeIndex));
+                // foundIndex가 0보다 큰 경우에만 이전 매치들을 추가 (foundIndex가 0이면 새로운 match 없음)
+                if (foundIndex > 0) {
+                    newMatchIdList.addAll(matchIdList.subList(0, foundIndex));
+                }
                 break;
             }
 

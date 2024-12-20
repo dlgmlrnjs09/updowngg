@@ -5,11 +5,11 @@
         SELECT
             match_id
         FROM
-            lol_match
+            lol_match_participant
         WHERE
             puuid = #{puuid}
         ORDER BY
-            lol_match_seq DESC
+            match_id DESC
         LIMIT 1
     </select>
 
