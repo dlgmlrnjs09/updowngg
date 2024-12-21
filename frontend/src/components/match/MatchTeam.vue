@@ -18,17 +18,17 @@
            ]"
            @click="handlePlayerClick(player)"
       >
-        <div class="review-scores" v-if="!player.reviewDto?.reviewable && !(auth.isAuthenticated && auth.user?.puuid == player.puuid)">
+        <div class="review-scores" v-if="player.reviewStatsDto">
           <span class="score-item">
-            <span class="score-value" :style="{ color: getRatingColor(player.reviewDto?.skillRating)}">{{ player.reviewDto?.skillRating }}</span>
+            <span class="score-value" :style="{ color: getRatingColor(player.reviewStatsDto.skillRatingAvg)}">{{ player.reviewStatsDto.skillRatingAvg }}</span>
             실력
           </span>
           <span class="score-item">
-            <span class="score-value" :style="{ color: getRatingColor(player.reviewDto?.teamworkRating)}">{{ player.reviewDto?.teamworkRating }}</span>
+            <span class="score-value" :style="{ color: getRatingColor(player.reviewStatsDto.teamworkRatingAvg)}">{{ player.reviewStatsDto.teamworkRatingAvg }}</span>
             팀워크
           </span>
           <span class="score-item">
-            <span class="score-value" :style="{ color: getRatingColor(player.reviewDto?.mannerRating)}">{{ player.reviewDto?.mannerRating }}</span>
+            <span class="score-value" :style="{ color: getRatingColor(player.reviewStatsDto.mannerRatingAvg)}">{{ player.reviewStatsDto.mannerRatingAvg }}</span>
             매너
           </span>
         </div>
@@ -78,11 +78,12 @@
 <script setup lang="ts">
 import type { LolMatchParticipant } from '@/types/match'
 import DamageBar from './DamageBar.vue'
-import { computed} from 'vue'
+import {computed, onMounted} from 'vue'
 import {useAuthStore} from "@/stores/auth.ts";
 import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 import {useRouter} from "vue-router";
 import {getRatingColor} from "@/utils/ratingUtil.ts";
+
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto

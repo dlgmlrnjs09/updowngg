@@ -34,6 +34,10 @@ public class ReviewService {
         return reviewMapper.getReviewStatus(targetPuuid);
     }
 
+    public ReviewStatsDto getReviewAvgRating(String targetPuuid) {
+        return reviewMapper.getReviewAvgRating(targetPuuid);
+    }
+
     public List<ReviewTagDto> getFrequentTagCount(String targetPuuid) {
         return reviewMapper.getFrequentTagCount(targetPuuid);
     }

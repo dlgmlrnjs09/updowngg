@@ -1,4 +1,4 @@
-import type {ReviewRequestDto} from "@/types/review.ts";
+import type {ReviewRequestDto, ReviewStatsDto} from "@/types/review.ts";
 
 export interface LolMatchInfo {
     matchId: string;
@@ -29,6 +29,7 @@ export interface LolMatchParticipant {
     // reviewable: boolean;
     isReviewable: boolean;
     reviewDto: ReviewRequestDto
+    reviewStatsDto: ReviewStatsDto
 }
 
 export interface LolMatchInfoRes {

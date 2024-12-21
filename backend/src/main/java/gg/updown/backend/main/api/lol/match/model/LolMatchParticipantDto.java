@@ -1,6 +1,7 @@
 package gg.updown.backend.main.api.lol.match.model;
 
 import gg.updown.backend.main.api.review.model.ReviewDto;
+import gg.updown.backend.main.api.review.model.ReviewStatsDto;
 import lombok.*;
 
 @Getter
@@ -28,6 +29,6 @@ public class LolMatchParticipantDto {
 
     // 리뷰정보 객체
     private ReviewDto reviewDto;
-    // 리뷰작성가능 여부
-//    private boolean isReviewable;
+    // 리뷰평점 객체
+    private ReviewStatsDto reviewStatsDto;
 }

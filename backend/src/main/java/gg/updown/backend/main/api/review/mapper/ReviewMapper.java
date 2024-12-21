@@ -15,6 +15,7 @@ public interface ReviewMapper {
     void deleteReviewTags(Long reviewSeq);
     List<ReviewDto> getWroteReviewList(String reviewerPuuid);
     ReviewStatsDto getReviewStatus(String targetPuuid);
+    ReviewStatsDto getReviewAvgRating(String targetPuuid);
     List<ReviewTagDto> getFrequentTagCount(String targetPuuid);
     List<ReviewDto> getRecentReviewList(String targetPuuid);
     List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid);

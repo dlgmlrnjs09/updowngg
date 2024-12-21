@@ -103,6 +103,7 @@ const filteredMatches = computed(() => {
           )
       )
     default:
+  console.log('filteredMatches data:', props.matches)
       return props.matches
   }
 })

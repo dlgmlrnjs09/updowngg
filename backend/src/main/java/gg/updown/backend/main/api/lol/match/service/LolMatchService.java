@@ -9,6 +9,7 @@ import gg.updown.backend.main.api.lol.match.model.*;
 import gg.updown.backend.main.api.lol.summoner.model.LolMatchModelConverter;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
 import gg.updown.backend.main.api.review.model.ReviewDto;
+import gg.updown.backend.main.api.review.model.ReviewStatsDto;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,10 +78,13 @@ public class LolMatchService {
                 resDto.getParticipantList().forEach(player -> {
                     player.setReviewDto(new ReviewDto());
                     player.getReviewDto().setReviewable(false);
+                    player.setReviewStatsDto(reviewService.getReviewAvgRating(player.getPuuid()));
                 });
             } else {
                 // 3. 로그인한 경우 작성한 리뷰 목록 조회
                 String loginUserPuuid = userDetails.getPuuid();
+
+                // 로그인한 사용자 작성한 리뷰
                 List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid);
                 Map<String, ReviewDto> reviewMap = wroteReviewList.stream()
                         .collect(Collectors.toMap(ReviewDto::getTargetPuuid, review -> review));
@@ -104,10 +108,13 @@ public class LolMatchService {
                         dto.setReviewDto(new ReviewDto());
                         dto.getReviewDto().setReviewable(true);
                     }
+
+                    // 리뷰평점 객체 Set
+                    dto.setReviewStatsDto(reviewService.getReviewAvgRating(dto.getPuuid()));
                 }
             }
 
-            resultList.add(this.getMatchResDtoAndInsertConditional(matchId));
+            resultList.add(resDto);
         }
 
         return resultList;

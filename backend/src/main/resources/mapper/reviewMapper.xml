@@ -141,6 +141,18 @@
         group by target_puuid
     </select>
 
+    <select id="getReviewAvgRating" parameterType="String" resultType="reviewStatsDto">
+        SELECT
+            target_puuid as puuid,
+            ROUND(AVG(skill_rating), 1) AS skillRatingAvg,
+            ROUND(AVG(teamwork_rating), 1) AS teamworkRatingAvg,
+            ROUND(AVG(manner_rating), 1) AS mannerRatingAvg
+        FROM site_summoner_review
+        where target_puuid = #{targetPuuid}
+          and del_dt is NULL
+        group by target_puuid
+    </select>
+
     <select id="getFrequentTagCount" parameterType="String" resultType="reviewTagDto">
         select
             ssrt.tag_code,
