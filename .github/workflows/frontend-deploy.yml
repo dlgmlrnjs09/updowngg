@@ -20,6 +20,10 @@ jobs:
           pwd
           ls -la
 
+      # frontend 디렉토리로 이동
+      - name: Change to frontend directory
+        run: cd frontend
+
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
