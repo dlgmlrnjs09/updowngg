@@ -68,7 +68,7 @@ jobs:
           # EC2에서 실행할 배포 스크립트
           ssh ec2 'bash -s' << 'EOF'
           
-            cd /home/${{ secrets.EC2_USER }}/app/frontend
+            cd /home/${{ secrets.EC2_USERNAME }}/app/frontend
       
             # serve 패키지 설치 (정적 파일 서빙용)
             npm install -g serve
