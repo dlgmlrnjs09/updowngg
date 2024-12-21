@@ -55,10 +55,14 @@ jobs:
       - name: Deploy to EC2
         if: github.ref == 'refs/heads/master'
         run: |
-          # ecosystem.config.js 파일도 함께 전송
+          # 원격 서버에 디렉토리 생성
+          ssh ec2 'mkdir -p /home/${{ secrets.EC2_USERNAME }}/app/frontend/dist'
+          
+          # ecosystem.config.js 파일 전송
           scp ecosystem.config.js ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
-          # dist 폴더를 EC2로 전송
-          scp -r dist/* ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
+          
+          # dist 폴더 전체를 전송
+          scp -r dist ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
           
           # EC2에서 실행할 배포 스크립트
           ssh ec2 'bash -s' << 'EOF'
