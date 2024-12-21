@@ -61,7 +61,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           # dist 폴더를 EC2로 전송
-          scp -r dist/* ec2:/home/${{ secrets.EC2_USER }}/app/frontend/
+          scp -r dist/* ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
           
           # EC2에서 실행할 배포 스크립트
           ssh ec2 'bash -s' << 'EOF'
@@ -71,7 +71,7 @@ jobs:
             fi
           
             # 앱 디렉토리로 이동
-            cd /home/${{ secrets.EC2_USER }}/app
+            cd /home/${{ secrets.EC2_USERNAME }}/app
           
             # 필요한 경우 서버 재시작
             pm2 restart ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
