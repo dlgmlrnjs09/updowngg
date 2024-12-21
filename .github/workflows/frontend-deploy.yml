@@ -47,7 +47,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           # dist 폴더를 EC2로 전송
-          scp -r dist/* ec2:/home/${{ secrets.EC2_USER }}/app/
+          scp -r dist/* ec2:/home/${{ secrets.EC2_USER }}/app/frontend/
           
           # EC2에서 실행할 배포 스크립트
           ssh ec2 'bash -s' << 'EOF'
