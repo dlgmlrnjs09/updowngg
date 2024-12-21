@@ -14,11 +14,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 디버깅을 위한 디렉토리 구조 확인
+      - name: Check directory structure
+        run: |
+          pwd
+          ls -la
+
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22'
           # cache: 'npm'
+
+      # package.json 위치 확인
+      - name: Check package files
+        run: |
+          ls -la package*.json
 
       - name: Install dependencies
         run: npm ci
