@@ -30,118 +30,83 @@ public class LolMatchService {
     private final LolSummonerService lolSummonerService;
     private final LolMatchModelConverter lolMatchModelConverter;
     private final ReviewService reviewService;
-
-//    public List<LolMatchInfoResDto> getMatchListFromDb(String searchPuuid, int startIndex, int count, @AuthenticationPrincipal UserDetails userDetails) {
-//        String loginUserPuuid = "";
-//        if (userDetails != null) {
-//            loginUserPuuid = ((UserDetailImpl)userDetails).getPuuid();
-//        }
-//
-//        List<LolMatchInfoResDto> resDtoList = matchMapper.getMatchesByPuuid(searchPuuid, startIndex, count);
-//        List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid);
-//
-//        for (LolMatchInfoResDto resDto : resDtoList) {
-//            for (LolMatchParticipantDto dto : resDto.getParticipantList()) {
-//                dto.setReviewDto(new ReviewDto());
-//                dto.getReviewDto().setReviewable(true);
-//                for (ReviewDto wroteDto : wroteReviewList) {
-//                    if (dto.getPuuid().equals(wroteDto.getTargetPuuid())) {
-//                        dto.setReviewDto(wroteDto);
-//                        dto.getReviewDto().setReviewable(false);
-//                        System.out.println("false = " + dto.getRiotIdGameName());
-//                    }
-//                }
-//            }
-//        }
-//        return resDtoList;
-//    }
+    private final LolMatchMapper lolMatchMapper;
 
     /**
-     * match 페이징 목록 DB에서 가져오기
+     * 기간 내 저장되지 않은 match 전부 불러와 matchId, 갱신정보만 저장하기
+     * 갱신버튼 클릭 시
+     * @param puuid
+     * @param startTime
+     * @param endTime
+     * @return
      */
-    public List<LolMatchInfoResDto> getMatchListFromDb(String searchPuuid, int startIndex, int count, @AuthenticationPrincipal UserDetails userDetails) {
-        // 1. 매치 리스트 조회
-        List<LolMatchInfoResDto> resDtoList = matchMapper.getMatchesByPuuid(searchPuuid, startIndex, count);
+    public List<String> getAndInsertMatchIdList(String puuid, Long startTime, Long endTime) {
+        List<String> newMatchIdList = new ArrayList<>();
 
-        // 2. 로그인하지 않은 경우 모든 플레이어를 리뷰 불가능으로 처리
-        if (userDetails == null) {
-            setAllPlayersReviewable(resDtoList);
-            // gameMode명 세팅
-            for (LolMatchInfoResDto resDto : resDtoList) {
-                resDto.getMatchInfo().setGameModeName(MatchQueueId.getQueueName(resDto.getMatchInfo().getQueueId()));
-            }
-            return resDtoList;
+        try {
+            String latestMatchId = matchMapper.getLatestRequestMatchId(puuid);
+            newMatchIdList = this.getNewMatchIdList(puuid, latestMatchId, startTime, endTime);
+            transactionService.saveMatchWithUpdateRequests(puuid, newMatchIdList);
+        } catch (Exception e) {
+            // TODO 예외처리
+            e.printStackTrace();
         }
 
-        // 3. 로그인한 경우 작성한 리뷰 목록 조회
-        String loginUserPuuid = ((UserDetailImpl)userDetails).getPuuid();
-        List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid);
-        Map<String, ReviewDto> reviewMap = wroteReviewList.stream()
-                .collect(Collectors.toMap(ReviewDto::getTargetPuuid, review -> review));
-
-        // 4. 리뷰 정보 설정
-        for (LolMatchInfoResDto resDto : resDtoList) {
-            for (LolMatchParticipantDto dto : resDto.getParticipantList()) {
-                resDto.getMatchInfo().setGameModeName(MatchQueueId.getQueueName(resDto.getMatchInfo().getQueueId()));
-                // 자기 자신은 리뷰 불가능
-                if (loginUserPuuid.equals(dto.getPuuid())) {
-                    dto.setReviewDto(new ReviewDto());
-                    dto.getReviewDto().setReviewable(false);
-                    continue;
-                }
-
-                // 이미 리뷰한 플레이어 처리
-                ReviewDto existingReview = reviewMap.get(dto.getPuuid());
-                if (existingReview != null) {
-                    dto.setReviewDto(existingReview);
-                    dto.getReviewDto().setReviewable(false);
-                } else {
-                    // 리뷰하지 않은 플레이어는 리뷰 가능으로 설정
-                    dto.setReviewDto(new ReviewDto());
-                    dto.getReviewDto().setReviewable(true);
-                }
-            }
-        }
-
-        return resDtoList;
+        return newMatchIdList;
     }
 
-    private void setAllPlayersReviewable(List<LolMatchInfoResDto> matches) {
-        matches.forEach(match ->
-                match.getParticipantList().forEach(player -> {
+    /**
+     * 갱신으로 인해 새로불러온 matchId 조회 후 상세정보 불러오기(DB or API)
+     * 초기 진입시, 더보기버튼 클릭시
+     * @param puuid
+     * @param startIndex
+     * @param count
+     * @return
+     */
+    public List<LolMatchInfoResDto> getAndInsertMatchList(String puuid, int startIndex, int count, UserDetailImpl userDetails) {
+        List<LolMatchInfoResDto> resultList = new ArrayList<>();
+
+        // 갱신을 통해 불러온 matchId 목록 조회
+        List<String> requestedMatchList = matchMapper.selectMatchRequestList(puuid, startIndex, count);
+        for (String matchId : requestedMatchList) {
+            // 이미 DB에 존재하면 DB에서 get, 없으면 API에서 get 및 DB 저장
+            LolMatchInfoResDto resDto = this.getMatchResDtoAndInsertConditional(matchId);
+
+            if (userDetails == null) {
+                // 2. 로그인하지 않은 경우 모든 플레이어를 리뷰 불가능으로 처리
+                resDto.getParticipantList().forEach(player -> {
                     player.setReviewDto(new ReviewDto());
                     player.getReviewDto().setReviewable(false);
-                })
-        );
-    }
+                });
+            } else {
+                // 3. 로그인한 경우 작성한 리뷰 목록 조회
+                String loginUserPuuid = userDetails.getPuuid();
+                List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid);
+                Map<String, ReviewDto> reviewMap = wroteReviewList.stream()
+                        .collect(Collectors.toMap(ReviewDto::getTargetPuuid, review -> review));
 
-    /**
-     * match 페이징 목록 가져오기 및 DB에 없는 match 정보 저장하기
-     */
-    public List<LolMatchInfoResDto> getAndInsertMatchList(String puuid, int startIndex, int count) {
-        List<LolMatchInfoResDto> resultList = new ArrayList<>();
+                // 4. 리뷰 정보 설정
+                for (LolMatchParticipantDto dto : resDto.getParticipantList()) {
+                    // 자기 자신은 리뷰 불가능
+                    if (loginUserPuuid.equals(dto.getPuuid())) {
+                        dto.setReviewDto(new ReviewDto());
+                        dto.getReviewDto().setReviewable(false);
+                        continue;
+                    }
 
-        // 페이징해서 불러오는 코드
-        List<String> matchIdList = matchApiService.getMatchIdListByPuuid(GetMatchIdListReqDto.builder()
-                .puuid(puuid)
-                .count(count)
-                .start(startIndex)
-                .build());
+                    // 이미 리뷰한 플레이어 처리
+                    ReviewDto existingReview = reviewMap.get(dto.getPuuid());
+                    if (existingReview != null) {
+                        dto.setReviewDto(existingReview);
+                        dto.getReviewDto().setReviewable(false);
+                    } else {
+                        // 리뷰하지 않은 플레이어는 리뷰 가능으로 설정
+                        dto.setReviewDto(new ReviewDto());
+                        dto.getReviewDto().setReviewable(true);
+                    }
+                }
+            }
 
-        for (String matchId : matchIdList) {
-            resultList.add(this.getMatchResDtoAndInsertConditional(matchId));
-        }
-
-        return resultList;
-    }
-
-    /* 기간 내 저장되지않은 match 전부 불러와 저장하기 */
-    public List<LolMatchInfoResDto> getAndInsertMatchList(String puuid, Long startTime, Long endTime) {
-        List<LolMatchInfoResDto> resultList = new ArrayList<>();
-
-        List<String> matchIdList = this.getNewMatchIdList(puuid, startTime, endTime);
-
-        for (String matchId : matchIdList) {
             resultList.add(this.getMatchResDtoAndInsertConditional(matchId));
         }
 
@@ -168,13 +133,16 @@ public class LolMatchService {
             transactionService.saveMatchWithParticipants(matchInfoEntity, participantList);
         }
 
-        // 게임 참여자 10명 정보 없으면 Insert
-        for (LolMatchParticipantEntity participantEntity : participantList) {
-            lolSummonerService.conflictSummonerInfo(participantEntity.getPuuid(), participantEntity.getRiotIdGameName(), participantEntity.getRiotIdTagline());
-        }
+        // 게임 참여자 10명 계정정보 없으면 Insert
+        // 굳이 안해도 될듯.. 어차피 경기 목록에는 계정정보 안보여지니까
+//        for (LolMatchParticipantEntity participantEntity : participantList) {
+//            lolSummonerService.conflictSummonerInfo(participantEntity.getPuuid(), participantEntity.getRiotIdGameName(), participantEntity.getRiotIdTagline());
+//        }
 
         LolMatchInfoDto infoDto = new LolMatchInfoDto();
         BeanUtils.copyProperties(matchInfoEntity, infoDto);
+        // gameMode명 세팅
+        infoDto.setGameModeName(MatchQueueId.getQueueName(infoDto.getQueueId()));
         List<LolMatchParticipantDto> participantDtoList = participantList.stream()
                 .map(participant -> {
                     LolMatchParticipantDto entity = new LolMatchParticipantDto();
@@ -196,9 +164,8 @@ public class LolMatchService {
      * @param puuid
      * @return
      */
-    private List<String> getNewMatchIdList(String puuid, Long startTime, Long endTime) {
+    private List<String> getNewMatchIdList(String puuid, String latestMatchId, Long startTime, Long endTime) {
         LinkedHashSet<String> newMatchIdList = new LinkedHashSet<>();
-        String latestMatchId = matchMapper.getLatestMatchId(puuid);
         latestMatchId = latestMatchId == null ? "" : latestMatchId;
 
         int startIndex = 0;
@@ -242,21 +209,5 @@ public class LolMatchService {
         Collections.reverse(returnList);
 
         return returnList;
-    }
-
-    private List<MatchDto> getMatchDetailList(List<String> matchIdList) {
-        List<MatchDto> matchDtoList = new ArrayList<>();
-        for (String matchId : matchIdList) {
-            MatchDto matchDto = matchApiService.getMatchDetailByMatchId(matchId);
-            matchDtoList.add(matchDto);
-
-            try {
-                Thread.sleep(1300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return matchDtoList;
     }
 }

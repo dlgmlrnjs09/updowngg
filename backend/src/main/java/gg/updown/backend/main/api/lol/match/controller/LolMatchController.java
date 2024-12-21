@@ -29,17 +29,17 @@ public class LolMatchController {
 
     @GetMapping("/list")
     public ResponseEntity<List<LolMatchInfoResDto>> getMatchList(@RequestParam("puuid") String searchPuuid, int startIndex, int count, @AuthenticationPrincipal UserDetailImpl userDetail) {
-        List<LolMatchInfoResDto> responseDto = lolMatchService.getMatchListFromDb(searchPuuid, startIndex, count, userDetail);
+        List<LolMatchInfoResDto> responseDto = lolMatchService.getAndInsertMatchList(searchPuuid, startIndex, count, userDetail);
         System.out.println("### startIndex = " + startIndex);
         System.out.println("### count = " + count);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping("/update")
-    public ResponseEntity<List<LolMatchInfoResDto>> updateMatchList(String puuid) {
+    public ResponseEntity<List<String>> updateMatchListV2(String puuid) {
         Long startDate = DateUtil.yyyyMMddToMilliseconds("2024-01-01 00:00");
         Long endDate = DateUtil.getCurrentTimeMillis();
-        List<LolMatchInfoResDto> responseDto = lolMatchService.getAndInsertMatchList(puuid, startDate, endDate);
+        List<String> responseDto = lolMatchService.getAndInsertMatchIdList(puuid, startDate, endDate);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }

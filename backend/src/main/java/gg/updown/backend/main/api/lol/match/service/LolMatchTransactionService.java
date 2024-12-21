@@ -16,7 +16,14 @@ public class LolMatchTransactionService {
 
     @Transactional
     public void saveMatchWithParticipants(LolMatchEntity match, List<LolMatchParticipantEntity> participants) {
-        lolMatchMapper.insertMatch(match);
+//        lolMatchMapper.insertMatch(match);
+        lolMatchMapper.updateMatch(match);
         lolMatchMapper.insertMatchParticipants(participants);
+    }
+
+    @Transactional
+    public void saveMatchWithUpdateRequests(String puuid, List<String> newMatchIdList) {
+        lolMatchMapper.insertMatchIdList(newMatchIdList);
+        lolMatchMapper.insertMatchRequests(puuid, newMatchIdList);
     }
 }

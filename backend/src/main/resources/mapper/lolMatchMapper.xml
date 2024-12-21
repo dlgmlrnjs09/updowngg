@@ -13,11 +13,23 @@
         LIMIT 1
     </select>
 
+    <select id="getLatestRequestMatchId" parameterType="String" resultType="String">
+        SELECT
+            match_id
+        FROM
+            lol_match_request
+        WHERE
+            puuid = #{puuid}
+        ORDER BY
+            match_id DESC
+        LIMIT 1
+    </select>
+
     <select id="countingMatchByMatchId" parameterType="String" resultType="int">
         SELECT
             count(*)
         FROM
-            lol_match
+            lol_match_participant
         WHERE
             match_id = #{matchId}
     </select>
@@ -125,8 +137,8 @@
             p.total_damage_taken,
             CONCAT('https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/', p.champ_name, '.png') as champ_profile_icon_url
         FROM target_matches tm
-                 INNER JOIN lol_match m ON m.match_id = tm.match_id
-                 INNER JOIN lol_match_participant p ON m.match_id = p.match_id
+                 LEFT OUTER JOIN lol_match m ON m.match_id = tm.match_id
+                 LEFT OUTER JOIN lol_match_participant p ON m.match_id = p.match_id
         ORDER BY game_start_dt DESC
 
     </select>
@@ -158,6 +170,23 @@
              #{queueId}
          )
     </insert>
+
+    <update id="updateMatch" parameterType="LolMatchEntity">
+        UPDATE lol_match
+        SET
+            game_create_dt = #{gameCreateDt},
+            game_duration = #{gameDuration},
+            game_id = #{gameId},
+            game_mode = #{gameMode},
+            game_name = #{gameName},
+            game_start_dt = #{gameStartDt},
+            game_type = #{gameType},
+            game_version = #{gameVersion},
+            map_id = #{mapId},
+            queue_id = #{queueId}
+        WHERE
+            match_id = #{matchId}
+    </update>
 
     <insert id="insertMatchParticipants" parameterType="java.util.List">
         INSERT INTO lol_match_participant (
@@ -203,4 +232,42 @@
         )
         </foreach>
     </insert>
+
+    <insert id="insertMatchIdList" parameterType="list">
+        INSERT INTO lol_match (
+            match_id
+        ) VALUES
+        <foreach collection="list" item="match" separator=",">
+        (
+            #{match}
+        )
+        </foreach>
+        ON CONFLICT (match_id) DO NOTHING;
+    </insert>
+
+    <insert id="insertMatchRequests" parameterType="map">
+        INSERT INTO lol_match_request (
+            match_id,
+            puuid
+        ) VALUES
+        <foreach collection="matchIdList" item="match" separator=",">
+        (
+            #{match},
+            #{puuid}
+        )
+        </foreach>
+    </insert>
+
+    <select id="selectMatchRequestList" parameterType="map" resultType="String">
+        SELECT
+            m.match_id
+        FROM
+            lol_match m
+            JOIN lol_match_request r ON m.match_id = r.match_id
+        WHERE
+            r.puuid = #{puuid}
+        ORDER BY
+            m.match_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
 </mapper>

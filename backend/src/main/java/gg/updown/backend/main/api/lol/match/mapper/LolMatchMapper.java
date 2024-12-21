@@ -9,6 +9,7 @@ import java.util.List;
 @Mapper
 public interface LolMatchMapper {
     String getLatestMatchId(String puuid);
+    String getLatestRequestMatchId(String puuid);
     int countingMatchByMatchId(String matchId);
     LolMatchEntity getMatchInfo(String matchId);
 
@@ -16,4 +17,8 @@ public interface LolMatchMapper {
     List<LolMatchInfoResDto> getMatchesByPuuid(@Param("puuid") String puuid, @Param("offset") int offset, @Param("limit") int limit);
     void insertMatch(LolMatchEntity match);
     void insertMatchParticipants(List<LolMatchParticipantEntity> participants);
+    void insertMatchIdList(List<String> matchIdList);
+    void insertMatchRequests(@Param("puuid")String puuid, @Param("matchIdList")List<String> matchIdList);
+    void updateMatch(LolMatchEntity match);
+    List<String> selectMatchRequestList(@Param("puuid") String puuid, @Param("offset") int offset, @Param("limit") int limit);
 }

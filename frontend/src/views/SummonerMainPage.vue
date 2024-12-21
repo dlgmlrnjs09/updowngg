@@ -152,8 +152,11 @@ const updateMatchList = async () => {
     isUpdatedMatchList.value = true
     currentStartIndex.value = 0
     noMoreMatches.value = false
-    const response = await matchApi.updateMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, 0, 5);
-    matches.value = response.data
+
+    await matchApi.updateMatchList(summonerInfo.value.riotAccountInfoEntity.puuid)
+    currentStartIndex.value = 0
+    await fetchMatchList(currentStartIndex.value)
+
   } catch (error) {
     console.error('Failed to fetch matches:', error)
   } finally {
