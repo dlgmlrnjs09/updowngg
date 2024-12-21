@@ -61,8 +61,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 허용할 origin 설정
-        configuration.addAllowedOrigin("http://localhost:5173");
-        configuration.addAllowedOrigin("http://13.124.117.180:5173");
+        configuration.addAllowedOrigin("http://localhost:4173");
+        configuration.addAllowedOrigin("http://13.124.117.180:4173");
         configuration.addAllowedOrigin("http://13.124.117.180");
         // 허용할 HTTP 메서드 설정
         configuration.addAllowedMethod("*");
