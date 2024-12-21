@@ -60,11 +60,19 @@ jobs:
       - name: Deploy to EC2
         if: github.ref == 'refs/heads/master'
         run: |
+          # ecosystem.config.js 파일도 함께 전송
+          scp ecosystem.config.js ec2:/home/${{ secrets.EC2_USER }}/app/frontend/
           # dist 폴더를 EC2로 전송
           scp -r dist/* ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
           
           # EC2에서 실행할 배포 스크립트
           ssh ec2 'bash -s' << 'EOF'
+          
+            cd /home/${{ secrets.EC2_USER }}/app/frontend
+      
+            # serve 패키지 설치 (정적 파일 서빙용)
+            npm install -g serve
+          
             # PM2가 설치되어 있지 않다면 설치
             if ! command -v pm2 &> /dev/null; then
               npm install -g pm2
