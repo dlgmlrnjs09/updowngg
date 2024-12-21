@@ -1,7 +1,7 @@
 <template>
   <div class="team">
     <div class="team-title" :class="teamType">
-      {{ teamType === 'blue' ? '아군 팀' : '상대 팀' }}
+      {{ teamType === 'blue' ? '블루팀' : '레드팀' }}
     </div>
     <div class="team-members">
       <div v-for="player in participants"

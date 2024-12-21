@@ -13,11 +13,11 @@ export interface ReviewRequestDto {
     skillRating: number;
     teamworkRating: number;
     mannerRating: number;
-    totalAvgRating: number;
+    totalAvgRating: number | null;
     comment?: string;
     tagCodeList: string[];  // 선택한 태그의 코드 배열
     reviewable: boolean | false;
-    regDt: string
+    regDt: string | null;
 }
 
 export interface ReviewStatsDto {

@@ -191,7 +191,7 @@ const handleSubmit = async () => {
     tagCodeList: selectedStyleTags.value
   }
 
-  if (!props.player.reviewDto) {
+  if (props.player.reviewDto.reviewable) {
     await reviewApi.submitReview(review)
   } else {
     await reviewApi.updateReview(review)
