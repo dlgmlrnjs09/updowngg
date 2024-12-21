@@ -11,13 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./frontend  # 모든 run 명령어의 기본 작업 디렉토리 설정
+        working-directory: ./frontend
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 디버깅을 위한 디렉토리 구조 확인
       - name: Check directory structure
         run: |
           pwd
@@ -27,9 +26,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22'
-          # cache: 'npm'
 
-      # package.json 위치 확인
       - name: Check package files
         run: |
           ls -la package*.json
@@ -42,7 +39,6 @@ jobs:
         env:
           NODE_ENV: production
 
-      # EC2 인스턴스에 SSH 키 설정
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh/
@@ -56,30 +52,29 @@ jobs:
             StrictHostKeyChecking no
           EOF
 
-          # 배포
-          - name: Deploy to EC2
-            if: github.ref == 'refs/heads/master'
-            run: |
-              # ecosystem.config.js 파일도 함께 전송
-              scp ecosystem.config.js ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
-              # dist 폴더를 EC2로 전송
-              scp -r dist/* ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
-              
-              # EC2에서 실행할 배포 스크립트
-              ssh ec2 'bash -s' << 'EOF'
-                cd /home/${{ secrets.EC2_USERNAME }}/app/frontend
-              
-                # serve 패키지 설치 (정적 파일 서빙용)
-                npm install -g serve
-              
-                # PM2가 설치되어 있지 않다면 설치
-                if ! command -v pm2 &> /dev/null; then
-                  npm install -g pm2
-                fi
-              
-                # PM2로 앱 시작/재시작 (frontend 디렉토리에서 실행)
-                pm2 restart ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
-              
-                # Nginx 설정이 있다면 재시작
-                sudo systemctl restart nginx
-              EOF
+      - name: Deploy to EC2
+        if: github.ref == 'refs/heads/master'
+        run: |
+          # ecosystem.config.js 파일도 함께 전송
+          scp ecosystem.config.js ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
+          # dist 폴더를 EC2로 전송
+          scp -r dist/* ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
+          
+          # EC2에서 실행할 배포 스크립트
+          ssh ec2 'bash -s' << 'EOF'
+            cd /home/${{ secrets.EC2_USERNAME }}/app/frontend
+          
+            # serve 패키지 설치 (정적 파일 서빙용)
+            npm install -g serve
+          
+            # PM2가 설치되어 있지 않다면 설치
+            if ! command -v pm2 &> /dev/null; then
+              npm install -g pm2
+            fi
+          
+            # PM2로 앱 시작/재시작 (frontend 디렉토리에서 실행)
+            pm2 restart ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
+          
+            # Nginx 설정이 있다면 재시작
+            sudo systemctl restart nginx
+          EOF
