@@ -9,6 +9,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend  # 모든 run 명령어의 기본 작업 디렉토리 설정
 
     steps:
       - name: Checkout repository
@@ -19,10 +22,6 @@ jobs:
         run: |
           pwd
           ls -la
-
-      # frontend 디렉토리로 이동
-      - name: Change to frontend directory
-        run: cd frontend
 
       - name: Use Node.js
         uses: actions/setup-node@v3
