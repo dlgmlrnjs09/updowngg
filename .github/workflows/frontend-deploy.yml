@@ -61,7 +61,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           # ecosystem.config.js 파일도 함께 전송
-          scp ecosystem.config.js ec2:/home/${{ secrets.EC2_USER }}/app/frontend/
+          scp ecosystem.config.js ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
           # dist 폴더를 EC2로 전송
           scp -r dist/* ec2:/home/${{ secrets.EC2_USERNAME }}/app/frontend/
           
