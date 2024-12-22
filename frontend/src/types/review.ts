@@ -32,6 +32,7 @@ export interface ReviewStatsDto {
 export interface ReviewRatingByChampDto {
     champId: string;
     champName: string;
+    champIconUrl: string;
     playCount: number;
     totalAvgRating: number;
 }

@@ -32,9 +32,11 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    // 토큰 유효 시간 설정
-    private final long accessTokenValidityInMilliseconds = 30 * 60 * 1000L; // 30분
-    private final long refreshTokenValidityInMilliseconds = 7 * 24 * 60 * 60 * 1000L; // 7일
+    @Value("${jwt.refresh.valid-milliseconds}")
+    private long refreshValidMilliseconds;
+
+    @Value("${jwt.access.valid-milliseconds}")
+    private long accessValidMilliseconds;
 
     private final RedisTemplate<String, String> redisTemplate;
     private final UserDetailsService userDetailsService;
@@ -63,7 +65,7 @@ public class JwtTokenProvider {
 //                .collect(Collectors.toList()));
 
         Date now = new Date();
-        Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
+        Date validity = new Date(now.getTime() + accessValidMilliseconds);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -81,7 +83,7 @@ public class JwtTokenProvider {
     public String createRefreshToken(Authentication authentication) {
         UserDetailImpl userDetails = (UserDetailImpl) authentication.getPrincipal();
         Date now = new Date();
-        Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
+        Date validity = new Date(now.getTime() + refreshValidMilliseconds);
 
         String refreshToken = Jwts.builder()
                 .setSubject(userDetails.getUsername())
@@ -94,7 +96,7 @@ public class JwtTokenProvider {
         redisTemplate.opsForValue().set(
                 "RT:" + userDetails.getUsername(),
                 refreshToken,
-                refreshTokenValidityInMilliseconds,
+                refreshValidMilliseconds,
                 TimeUnit.MILLISECONDS
         );
 

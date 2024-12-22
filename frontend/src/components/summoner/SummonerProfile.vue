@@ -67,7 +67,7 @@
           <div class="stats-column">
             <div class="champion-stats">
               <div class="champion-item" v-for="rating in ratingByChamp" :key="rating.champId">
-                <img :src="`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${rating.champName}.png`" class="position-icon" alt="Champion" />
+                <img :src="rating.champIconUrl" class="position-icon" alt="Champion" />
                 <div class="champion-rating" :style="{ color: getRatingColor(rating.totalAvgRating ?? 0) }">{{ rating.totalAvgRating }}</div>
               </div>
             </div>

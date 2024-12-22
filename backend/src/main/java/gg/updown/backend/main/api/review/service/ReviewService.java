@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.review.service;
 
+import gg.updown.backend.external.riot.RiotApiBasePath;
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
 import gg.updown.backend.main.api.review.model.*;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +48,11 @@ public class ReviewService {
     }
 
     public List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid) {
-        return reviewMapper.getAvgRatingByChamp(targetPuuid);
+        List<ReviewRatingByChampDto> dtoList = reviewMapper.getAvgRatingByChamp(targetPuuid);
+        for (ReviewRatingByChampDto dto : dtoList) {
+            dto.setChampIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.24.1/img/champion/" + dto.getChampId() + ".png");
+        }
+        return dtoList;
     }
 
     public List<ReviewRatingByPositionDto> getAvgRatingByPosition(String targetPuuid) {

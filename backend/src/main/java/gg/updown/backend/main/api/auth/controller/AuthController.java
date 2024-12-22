@@ -33,8 +33,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final PasswordEncoder passwordEncoder;
-    private final UserDetailsService userDetailsService;
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 

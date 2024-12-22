@@ -10,6 +10,7 @@ import lombok.*;
 public class ReviewRatingByChampDto {
     private String champId;
     private String champName;
+    private String champIconUrl;
     private int playCount;
     private double totalAvgRating;
 }

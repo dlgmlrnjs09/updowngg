@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.lol.summoner.service;
 
+import gg.updown.backend.external.riot.RiotApiBasePath;
 import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
 import gg.updown.backend.external.riot.api.lol.summoner.model.SummonerDto;
@@ -22,9 +23,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class LolSummonerService {
-
-    @Value("${riot.ddragon.basepath}")
-    private String ddragonBasepath;
 
     private final LolSummonerMapper lolSummonerMapper;
     private final AccountApiService accountApiService;
@@ -117,7 +115,7 @@ public class LolSummonerService {
 
         BeanUtils.copyProperties(paramSummonerEntity, returnDto);
         if (summonerEntity != null) {
-            returnDto.setProfileIconUrl(ddragonBasepath + "/cdn/14.4.1/img/profileicon/" + summonerEntity.getProfileIconId() + ".png");
+            returnDto.setProfileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.4.1/img/profileicon/" + summonerEntity.getProfileIconId() + ".png");
         }
 
         return returnDto;

@@ -30,7 +30,11 @@ mybatis:
     jdbc-type-for-null: null
 
 jwt:
-  secret: ENC(BwdPyxk7yLf0RLBAKFx0fBM4LTu/MxRDxmh0JSuby+FydPoSqmebSS0nE4pjnkm5zTYsWhLgJJBMDLKIeMSohFj003Kx4I3ilQZBMWW3Dbo=)
+  secret:
+    key: ENC(rxgHJDVWHgIcfL35yWiFJkCK4v38A/WYD1HTG8mPdhNGymp+0gBK3F3DKwMZik51BF94fpuo5kJJ476Tvod8w0Yt1eGjetcl27JPgSwsSic=)
+    valid-milliseconds: 604800000 # 7일
+  access:
+    valid-milliseconds: 900000 # 30분
 
 logging:
   level:
@@ -43,7 +47,3 @@ logging:
       connection: OFF    # 커넥션 연결/해제 정보
 #  pattern:
 #    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg"
-
-riot:
-  ddragon:
-    basepath: "https://ddragon.leagueoflegends.com"
