@@ -29,8 +29,12 @@ public class AccountApiService {
         return riotAsiaWebClient.get()
                 .uri(basePath + "/by-riot-id/{riotId}/{tag}", riotId, tag)
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, response -> {
-                    return Mono.error(new RiotApiException(HttpStatus.BAD_REQUEST, "존재하지 않는 라이엇 계정입니다."));
+                .onStatus(HttpStatusCode::isError, response -> {
+                    if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                        return Mono.error(new RiotApiException(response.statusCode(), "존재하지 않는 라이엇 계정입니다."));
+                    } else {
+                        return Mono.error(new RiotApiException(response.statusCode(), RiotApiException.defaultMessage));
+                    }
                 })
                 .bodyToMono(AccountInfoResDto.class)
                 .block();

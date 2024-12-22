@@ -42,8 +42,8 @@ public class MatchApiService {
                         .build(reqDto.getPuuid())
                 )
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, response -> {
-                    return Mono.error(new RiotApiException(HttpStatus.BAD_REQUEST, "존재하지 않는 라이엇 계정입니다."));
+                .onStatus(HttpStatusCode::isError, response -> {
+                    return Mono.error(new RiotApiException(response.statusCode(), RiotApiException.defaultMessage));
                 })
                 .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
                 .block();
@@ -58,7 +58,7 @@ public class MatchApiService {
         return riotAsiaWebClient.get()
                 .uri(basePath + "/{matchId}", matchId).retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> {
-                    return Mono.error(new RiotApiException(HttpStatus.BAD_REQUEST, "존재하지 않는 경기입니다."));
+                    return Mono.error(new RiotApiException(response.statusCode(), RiotApiException.defaultMessage));
                 })
                 .bodyToMono(MatchDto.class)
                 .block();

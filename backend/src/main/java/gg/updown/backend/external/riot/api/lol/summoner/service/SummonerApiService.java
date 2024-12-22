@@ -24,8 +24,8 @@ public class SummonerApiService {
         return riotKrWebClient.get()
                 .uri(basePath + "/by-puuid/{puuid}", puuid)
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, response -> {
-                    return Mono.error(new RiotApiException(HttpStatus.BAD_REQUEST, "존재하지 않는 계정입니다."));
+                .onStatus(HttpStatusCode::isError, response -> {
+                    return Mono.error(new RiotApiException(response.statusCode(), RiotApiException.defaultMessage));
                 })
                 .bodyToMono(SummonerDto.class)
                 .block();
