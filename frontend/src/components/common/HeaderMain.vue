@@ -1,21 +1,15 @@
 <template>
   <header class="header">
     <div class="header-content">
-      <div class="left-section">
-        <RouterLink to="/" class="logo">
-          <div class="logo-icon">up</div>
-          updownGG
-        </RouterLink>
-        <nav class="nav">
-          <RouterLink to="/">홈</RouterLink>
-          <RouterLink to="/ranking">랭킹</RouterLink>
-          <RouterLink to="/stats">통계</RouterLink>
-        </nav>
-      </div>
-
-      <div class="search-container">
-        <Search />
-      </div>
+      <RouterLink to="/" class="logo">
+        <div class="logo-icon">up</div>
+        updownGG
+      </RouterLink>
+      <nav class="nav">
+        <RouterLink to="/">홈</RouterLink>
+        <RouterLink to="/ranking">랭킹</RouterLink>
+        <RouterLink to="/stats">통계</RouterLink>
+      </nav>
 
       <div class="user-actions" v-if="authStore.isAuthenticated">
         <RouterLink to="/profile" class="profile-btn">
@@ -30,7 +24,9 @@
         <button class="logout-btn" @click="authStore.logout">로그아웃</button>
       </div>
       <div class="user-actions" v-else>
-        <router-link to="/login" class="login-btn">로그인</router-link>
+        <div class="login-wrapper">
+          <router-link to="/login" class="login-btn">로그인</router-link>
+        </div>
       </div>
     </div>
   </header>
@@ -38,8 +34,7 @@
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-import { useAuthStore } from "@/stores/auth.ts";
-import Search from "@/components/common/Search.vue";
+import {useAuthStore} from "@/stores/auth.ts";
 const authStore = useAuthStore();
 </script>
 
@@ -61,15 +56,9 @@ const authStore = useAuthStore();
   padding: 0 24px;
   height: 100%;
   display: grid;
-  grid-template-columns: minmax(300px, auto) minmax(400px, 600px) minmax(200px, auto);
+  grid-template-columns: 180px minmax(300px, auto) 200px;
   align-items: center;
-  gap: 64px;
-}
-
-.left-section {
-  display: flex;
-  align-items: center;
-  gap: 64px;
+  gap: 48px;
 }
 
 .logo {
@@ -80,7 +69,6 @@ const authStore = useAuthStore();
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  white-space: nowrap;
 }
 
 .logo-icon {
@@ -99,6 +87,7 @@ const authStore = useAuthStore();
 .nav {
   display: flex;
   gap: 32px;
+  justify-content: center;
 }
 
 .nav a {
@@ -107,7 +96,6 @@ const authStore = useAuthStore();
   font-size: 15px;
   font-weight: 500;
   transition: color 0.2s;
-  white-space: nowrap;
 }
 
 .nav a:hover,
@@ -115,17 +103,19 @@ const authStore = useAuthStore();
   color: white;
 }
 
-.search-container :deep(.search-input) {
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 8px;
-}
-
 .user-actions {
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-self: end;
+  min-width: 160px;
   justify-content: flex-end;
+}
+
+.login-wrapper {
+  min-width: 160px;
+  display: flex;
+  justify-content: center;
 }
 
 .logout-btn,
@@ -145,7 +135,6 @@ const authStore = useAuthStore();
   display: flex;
   align-items: center;
   justify-content: center;
-  white-space: nowrap;
 }
 
 .logout-btn:hover,
@@ -166,22 +155,9 @@ const authStore = useAuthStore();
   line-height: 0;
 }
 
-@media (max-width: 1024px) {
-  .header-content {
-    grid-template-columns: auto minmax(300px, 1fr) auto;
-    gap: 48px;
-  }
-
-  .left-section {
-    gap: 48px;
-  }
-}
-
 @media (max-width: 768px) {
   .header-content {
-    grid-template-columns: auto 1fr auto;
-    padding: 0 16px;
-    gap: 16px;
+    gap: 24px;
   }
 
   .nav {
@@ -190,6 +166,7 @@ const authStore = useAuthStore();
 
   .user-actions {
     gap: 8px;
+    min-width: auto;
   }
 
   .logout-btn,

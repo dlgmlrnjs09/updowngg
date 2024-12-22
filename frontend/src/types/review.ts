@@ -18,6 +18,7 @@ export interface ReviewRequestDto {
     tagCodeList: string[];  // 선택한 태그의 코드 배열
     reviewable: boolean | false;
     regDt: string | null;
+    matchId: string;
 }
 
 export interface ReviewStatsDto {

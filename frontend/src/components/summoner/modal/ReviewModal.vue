@@ -188,7 +188,8 @@ const handleSubmit = async () => {
     teamworkRating: teamworkRating.value,
     mannerRating: mannerRating.value,
     comment: comment.value,
-    tagCodeList: selectedStyleTags.value
+    tagCodeList: selectedStyleTags.value,
+    matchId: props.player.matchId
   }
 
   if (props.player.reviewDto.reviewable) {
