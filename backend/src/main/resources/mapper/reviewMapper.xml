@@ -90,7 +90,8 @@
             skill_rating,
             teamwork_rating,
             manner_rating,
-            comment
+            comment,
+            match_id
         ) VALUES (
              #{reviewerSiteCode},
              #{reviewerPuuid},
@@ -98,7 +99,8 @@
              #{skillRating},
              #{teamworkRating},
              #{mannerRating},
-             #{comment}
+             #{comment},
+             #{matchId}
          )
     </insert>
 
@@ -123,6 +125,7 @@
             , teamwork_rating = #{teamworkRating}
             , manner_rating = #{mannerRating}
             , comment = #{comment}
+            , match_id = #{matchId}
         WHERE
             summoner_review_seq = #{summonerReviewSeq}
     </update>

@@ -19,4 +19,5 @@ public class ReviewSubmitReqDto {
     private double mannerRating;
     private String comment;
     private List<String> tagCodeList;
+    private String matchId;
 }

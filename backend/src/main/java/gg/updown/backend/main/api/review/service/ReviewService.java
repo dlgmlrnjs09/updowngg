@@ -50,7 +50,7 @@ public class ReviewService {
     public List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid) {
         List<ReviewRatingByChampDto> dtoList = reviewMapper.getAvgRatingByChamp(targetPuuid);
         for (ReviewRatingByChampDto dto : dtoList) {
-            dto.setChampIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.24.1/img/champion/" + dto.getChampId() + ".png");
+            dto.setChampIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.24.1/img/champion/" + dto.getChampName() + ".png");
         }
         return dtoList;
     }

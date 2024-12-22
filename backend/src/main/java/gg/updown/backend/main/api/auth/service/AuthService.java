@@ -37,7 +37,7 @@ public class AuthService {
             resDto.setMessage("이미 존재하는 이메일입니다.");
         } else {
             // TODO : puuid 변수로 변경
-            String tempPuuid = "W8BbbIDV3ctMEWIklMFx0sFk6yXmTfBfuLYUdglXhwG9LPdrxc5ITkDCxaOo_vJKbWm3haDdPlDNBw";
+            String tempPuuid = "Cz4CWT2ssLZRo_d2TQZVxqK6nqPFN8RfAMhuJJeIWJPjViNYmdHuD0q1vHtWeroD33wcmOB0HjH82Q";
             authMapper.insertSiteAccount(tempPuuid, signupReqDto.getEmail(), passwordEncoder.encode(signupReqDto.getPassword()));
             resDto.setSuccess(true);
             resDto.setMessage("회원가입에 성공했습니다.");
