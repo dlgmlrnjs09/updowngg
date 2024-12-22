@@ -1,6 +1,6 @@
 <!-- src/components/modals/ReviewModal.vue -->
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-overlay">
     <div class="modal-content">
       <button class="modal-close" @click="$emit('close')">×</button>
 
