@@ -25,13 +25,12 @@ public class TestController {
     public void test() {
     }
 
-    @GetMapping("/jasyptEncoding")
+    @GetMapping("/encodeing")
     public void getJasyptEncoding(String value) {
         System.out.println(jasyptEncoding(value));
     }
 
     public String jasyptEncoding(String value) {
-
         String key = "gmlrnjs0";
         StandardPBEStringEncryptor pbeEnc = new StandardPBEStringEncryptor();
         pbeEnc.setAlgorithm("PBEWithMD5AndDES");
