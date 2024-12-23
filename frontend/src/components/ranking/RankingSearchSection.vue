@@ -32,6 +32,11 @@
 
 <script setup lang="ts">
 import type { Tab } from '@/types/ranking'
+import topIcon from '@/assets/icon/position/position_top.svg'
+import jungleIcon from '@/assets/icon/position/position_jungle.svg'
+import midIcon from '@/assets/icon/position/position_mid.svg'
+import adIcon from '@/assets/icon/position/position_ad.svg'
+import supportIcon from '@/assets/icon/position/position_support.svg'
 
 defineProps<{
   selectedPeriod: string
@@ -45,11 +50,11 @@ defineEmits<{
 
 const positionTabs: Tab[] = [
   { label: '전체', value: 'all', iconPath: '' },
-  { label: '탑', value: 'top', iconPath: '/src/assets/icon/position/position_top.svg' },
-  { label: '정글', value: 'jungle', iconPath: '/src/assets/icon/position/position_jungle.svg' },
-  { label: '미드', value: 'mid', iconPath: '/src/assets/icon/position/position_mid.svg' },
-  { label: '원딜', value: 'ad', iconPath: '/src/assets/icon/position/position_ad.svg' },
-  { label: '서폿', value: 'support', iconPath: '/src/assets/icon/position/position_support.svg' }
+  { label: '탑', value: 'top', iconPath: topIcon },
+  { label: '정글', value: 'jungle', iconPath: jungleIcon },
+  { label: '미드', value: 'mid', iconPath: midIcon },
+  { label: '원딜', value: 'ad', iconPath: adIcon },
+  { label: '서폿', value: 'support', iconPath: supportIcon }
 ]
 </script>
 
