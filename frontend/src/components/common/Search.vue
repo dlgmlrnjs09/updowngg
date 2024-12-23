@@ -40,10 +40,6 @@ const handleSearch = async () => {
 
   // '#' 기준으로 소환사 이름과 태그 분리
   const [summonerId, tagLine] = query.split('#')
-  // if (!summonerId || !tagLine) {
-  //   alert('소환사#태그 형식으로 입력해주세요')
-  //   return
-  // }
 
   try {
     isLoading.value = true
@@ -57,10 +53,6 @@ const handleSearch = async () => {
           name: summonerId,
           tag: tagLine
         },
-        // 소환사 정보를 state로 전달
-        // state: {
-        //   summonerInfo: response.data
-        // }
       })
     }
   } finally {

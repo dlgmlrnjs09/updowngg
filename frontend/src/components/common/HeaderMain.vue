@@ -19,7 +19,7 @@
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
-          프로필
+<!--          프로필-->
         </RouterLink>
         <button class="logout-btn" @click="authStore.logout">로그아웃</button>
       </div>

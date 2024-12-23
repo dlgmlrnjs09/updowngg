@@ -15,7 +15,7 @@ public class LolMatchInfoReqDto {
     @NotNull(message = "puuid는 필수값입니다.")
     String puuid;
 
-    @Min(value = 1, message = "startIndex는 1 이상이어야 합니다.")
+    @Min(value = 0, message = "startIndex는 0 이상이어야 합니다.")
     Integer startIndex;
     @Min(value = 1, message = "count는 1 이상이어야 합니다.")
     @Max(value = 5, message = "count는 5 이하여야 합니다.")

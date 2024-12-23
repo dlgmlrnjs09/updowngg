@@ -34,6 +34,7 @@ public class SiteCommonExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CommonErrorResponse> handleGenericException(Exception e, WebRequest request) {
+        log.error(e.getMessage(), e);
         // 일반적인 예외에 대해 공통적인 응답 생성
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(CommonErrorResponse.builder()
                         .devMessage(SiteErrorMessage.INTERNAL_SERVER_ERROR.getMessage())
@@ -43,6 +44,7 @@ public class SiteCommonExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<CommonErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        log.error(ex.getMessage(), ex);
         String errorMessage = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()

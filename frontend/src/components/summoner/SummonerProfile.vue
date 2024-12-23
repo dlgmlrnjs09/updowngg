@@ -6,7 +6,6 @@
       </div>
       <div class="profile-info">
         <div class="summoner-name">{{ profileData.riotAccountInfoEntity.gameName }}</div>
-        {{profileData.riotAccountInfoEntity.puuid}}
         <div class="profile-stats">평가 {{ reviewStats?.totalReviewCnt ?? 0 }}회 · 최근 30일 {{ reviewStats?.last30DayReviewCnt ?? 0 }}회</div>
         <div class="rating-stats" >
           <div class="rating-item">

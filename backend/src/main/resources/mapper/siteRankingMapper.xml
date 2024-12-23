@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.ranking.mapper.SiteRankingMapper">
+    <select id="selectTopRankerRatings" parameterType="map" resultType="reviewStatsDto">
+        select
+            puuid,
+            count(ssr.*) as totalReviewCnt,
+            round(avg(ssr.skill_rating), 1) as skillRatingAvg,
+            round(avg(ssr.teamwork_rating), 1) as teamworkRatingAvg,
+            round(avg(ssr.manner_rating), 1) as mannerRatingAvg,
+            COUNT(CASE WHEN reg_dt >= CURRENT_TIMESTAMP - INTERVAL '30 days' THEN 1 END) AS last30DayReviewCnt
+        from
+            lol_summoner ls
+            inner join site_summoner_review ssr on (ls.puuid = ssr.target_puuid)
+        group by
+            puuid
+        order by
+            count(ssr.*) desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectTopRankerBasicInfo" parameterType="String" resultType="map">
+        select
+            ls.puuid,
+            game_name,
+            tag_line,
+            ls.profile_icon_id
+        from
+            riot_account ra
+            inner join lol_summoner ls on (ra.puuid = ls.puuid)
+        where
+            ra.puuid = #{puuid}
+    </select>
+
+    <select id="selectTopRankerRecentTags" parameterType="String" resultType="reviewTagDto">
+        select
+            ssrt.tag_code,
+            srt.tag_value,
+            srt.tag_description,
+            count(ssrt.tag_code) as frequentCount
+        from
+            lol_summoner ls
+                inner join site_summoner_review ssr on (ls.puuid = ssr.target_puuid)
+                inner join site_summoner_review_tag ssrt on (ssr.summoner_review_seq = ssrt.summoner_review_seq)
+                inner join site_review_tag srt on (ssrt.tag_code = srt.tag_code)
+        where puuid = #{puuid}
+        group by ls.puuid, ssrt.tag_code, srt.tag_value, srt.tag_description
+        order by count(ssrt.tag_code) desc
+    </select>
+</mapper>
