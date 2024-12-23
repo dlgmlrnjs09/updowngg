@@ -30,8 +30,8 @@ mybatis:
     jdbc-type-for-null: null
 
 jwt:
-  secret:
-    key: ENC(rxgHJDVWHgIcfL35yWiFJkCK4v38A/WYD1HTG8mPdhNGymp+0gBK3F3DKwMZik51BF94fpuo5kJJ476Tvod8w0Yt1eGjetcl27JPgSwsSic=)
+  secret: ENC(rxgHJDVWHgIcfL35yWiFJkCK4v38A/WYD1HTG8mPdhNGymp+0gBK3F3DKwMZik51BF94fpuo5kJJ476Tvod8w0Yt1eGjetcl27JPgSwsSic=)
+  refresh:
     valid-milliseconds: 604800000 # 7일
   access:
     valid-milliseconds: 900000 # 30분
