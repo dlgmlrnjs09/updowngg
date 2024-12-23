@@ -1,4 +1,4 @@
-package gg.updown.backend.main.api.lol.match.model;
+package gg.updown.backend.main.api.lol.match.model.dto;
 
 import lombok.*;
 

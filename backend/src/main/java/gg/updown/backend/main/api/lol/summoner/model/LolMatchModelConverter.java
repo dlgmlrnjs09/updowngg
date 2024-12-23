@@ -4,8 +4,8 @@ import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.external.riot.api.lol.match.model.InfoDto;
 import gg.updown.backend.external.riot.api.lol.match.model.MatchDto;
 import gg.updown.backend.external.riot.api.lol.match.model.ParticipantDto;
-import gg.updown.backend.main.api.lol.match.model.LolMatchEntity;
-import gg.updown.backend.main.api.lol.match.model.LolMatchParticipantEntity;
+import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
+import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

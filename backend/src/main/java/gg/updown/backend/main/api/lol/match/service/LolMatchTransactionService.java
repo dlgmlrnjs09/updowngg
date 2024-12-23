@@ -1,8 +1,8 @@
 package gg.updown.backend.main.api.lol.match.service;
 
 import gg.updown.backend.main.api.lol.match.mapper.LolMatchMapper;
-import gg.updown.backend.main.api.lol.match.model.LolMatchEntity;
-import gg.updown.backend.main.api.lol.match.model.LolMatchParticipantEntity;
+import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
+import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

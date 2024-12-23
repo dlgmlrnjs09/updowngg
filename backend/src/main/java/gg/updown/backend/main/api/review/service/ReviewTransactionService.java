@@ -1,7 +1,8 @@
 package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
-import gg.updown.backend.main.api.review.model.ReviewSubmitReqDto;
+import gg.updown.backend.main.api.review.model.dto.ReviewSubmitReqDto;
+import gg.updown.backend.main.api.review.model.dto.ReviewUpdateReqDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,7 @@ public class ReviewTransactionService {
     }
 
     @Transactional
-    public void updateSummonerReview(ReviewSubmitReqDto reqDto) {
+    public void updateSummonerReview(ReviewUpdateReqDto reqDto) {
         reviewMapper.updateReview(reqDto);
         reviewMapper.deleteReviewTags(reqDto.getSummonerReviewSeq());
         reviewMapper.insertReviewTags(reqDto.getSummonerReviewSeq(), reqDto.getTagCodeList());

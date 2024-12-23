@@ -4,6 +4,8 @@ import gg.updown.backend.main.api.auth.model.*;
 import gg.updown.backend.main.api.auth.service.AuthService;
 import gg.updown.backend.main.api.auth.service.JwtTokenProvider;
 import gg.updown.backend.main.api.auth.service.UserDetailServiceImpl;
+import gg.updown.backend.main.exception.SiteCommonException;
+import gg.updown.backend.main.exception.SiteErrorMessage;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
@@ -84,17 +86,17 @@ public class AuthController {
             if (!jwtToken.getAccessToken().isEmpty()) {
                 return ResponseEntity.ok(jwtToken);
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorMessage.INVALID_TOKEN.getMessage());
             }
         } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorMessage.INVALID_TOKEN.getMessage());
         }
     }
 
     @GetMapping("/member-info")
     public ResponseEntity<SiteAccountResEntity> getMemberInfo(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails.getUsername() == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorMessage.NOT_FOUND_SITE_ACCOUNT.getMessage());
         } else {
             UserDetailImpl memberEntity = (UserDetailImpl) userDetails;
             SiteAccountResEntity resEntity = SiteAccountResEntity.builder()

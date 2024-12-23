@@ -119,7 +119,7 @@
         DELETE FROM site_summoner_review_tag WHERE summoner_review_seq = #{reviewSeq}
     </delete>
 
-    <update id="updateReview" parameterType="ReviewSubmitReqDto">
+    <update id="updateReview" parameterType="ReviewUpdateReqDto">
         UPDATE site_summoner_review
         SET skill_rating = #{skillRating}
             , teamwork_rating = #{teamworkRating}

@@ -1,7 +1,6 @@
-package gg.updown.backend.main.api.review.model;
+package gg.updown.backend.main.api.review.model.entity;
 
 import lombok.*;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDateTime;
 

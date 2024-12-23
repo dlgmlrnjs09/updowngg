@@ -1,6 +1,8 @@
 package gg.updown.backend.main.api.lol.match.mapper;
 
-import gg.updown.backend.main.api.lol.match.model.*;
+import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoResDto;
+import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
+import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

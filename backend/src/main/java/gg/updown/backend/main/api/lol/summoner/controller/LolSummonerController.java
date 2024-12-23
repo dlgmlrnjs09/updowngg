@@ -1,12 +1,11 @@
 package gg.updown.backend.main.api.lol.summoner.controller;
 
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
-import gg.updown.backend.main.api.lol.summoner.model.LolSummonerProfileDto;
-import gg.updown.backend.main.api.lol.summoner.model.LolSummonerProfileResDto;
+import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerProfileReqDto;
+import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerProfileResDto;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
-import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,8 +22,8 @@ public class LolSummonerController {
     private final AccountApiService accountApiService;
 
     @GetMapping("/info")
-    public ResponseEntity<LolSummonerProfileResDto> getInfo(@RequestParam String summonerId, @RequestParam String tagLine) {
-        LolSummonerProfileResDto resDto = summonerService.conflictSummonerInfo(summonerId, tagLine);
+    public ResponseEntity<LolSummonerProfileResDto> getInfo(@Valid LolSummonerProfileReqDto reqDto) {
+        LolSummonerProfileResDto resDto = summonerService.conflictSummonerInfo(reqDto.getSummonerId(), reqDto.getTagLine());
         return ResponseEntity.status(HttpStatus.OK).body(resDto);
     }
 }

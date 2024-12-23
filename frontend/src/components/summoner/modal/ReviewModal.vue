@@ -89,7 +89,7 @@
 
       <!-- 코멘트 작성 -->
       <div class="modal-section">
-        <h2 class="section-title">코멘트 작성</h2>
+<!--        <h2 class="section-title">코멘트 작성</h2>-->
         <textarea
             v-model="comment"
             class="comment-input"

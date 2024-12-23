@@ -1,6 +1,6 @@
 package gg.updown.backend.main.api.lol.summoner.mapper;
 
-import gg.updown.backend.main.api.lol.summoner.model.LolSummonerEntity;
+import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

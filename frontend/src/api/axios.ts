@@ -2,11 +2,15 @@
 import axios from 'axios'
 import router from "@/router";
 import {useAuthStore} from "@/stores/auth.ts";
+import Toast, {useToast} from "vue-toastification";
+import type {CommonErrorResponse} from "@/types/error.ts";
 
 const apiClient = axios.create({
     baseURL: (window as any).__API_URL__ || import.meta.env.VITE_API_URL,
     timeout: 100000
 })
+
+const toast = useToast();
 
 // JWT 디코딩 및 만료 체크 함수들
 function parseJwt(token: string) {
@@ -119,6 +123,22 @@ apiClient.interceptors.response.use(
                 router.push('/login')
                 return Promise.reject(refreshError);
             }
+        }
+
+        const errorResponse = error.response?.data as CommonErrorResponse;
+
+        if (errorResponse.userMessage) {
+            toast.error(errorResponse.userMessage);
+        }
+
+        // 개발 환경에서는 개발자 메시지도 콘솔에 출력
+        if (process.env.NODE_ENV === 'development') {
+            console.error('API Error:', {
+                status: error.response?.status,
+                devMessage: errorResponse?.devMessage,
+                userMessage: errorResponse?.userMessage,
+                timestamp: errorResponse?.timestamp
+            });
         }
 
         return Promise.reject(error);

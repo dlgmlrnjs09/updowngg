@@ -1,7 +1,7 @@
-package gg.updown.backend.main.api.lol.match.model;
+package gg.updown.backend.main.api.lol.match.model.dto;
 
-import gg.updown.backend.main.api.review.model.ReviewDto;
-import gg.updown.backend.main.api.review.model.ReviewStatsDto;
+import gg.updown.backend.main.api.review.model.dto.ReviewDto;
+import gg.updown.backend.main.api.review.model.dto.ReviewStatsDto;
 import lombok.*;
 
 @Getter

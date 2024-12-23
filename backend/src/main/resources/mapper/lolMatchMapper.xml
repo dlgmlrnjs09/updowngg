@@ -82,14 +82,14 @@
             match_id = #{matchId}
     </select>
 
-    <resultMap id="matchInfoResultMap" type="gg.updown.backend.main.api.lol.match.model.LolMatchInfoResDto">
+    <resultMap id="matchInfoResultMap" type="gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoResDto">
         <id property="matchInfo.matchId" column="match_id"/>
         <result property="matchInfo.gameDuration" column="game_duration"/>
         <result property="matchInfo.gameMode" column="game_mode"/>
         <result property="matchInfo.gameStartDt" column="game_start_dt"/>
         <result property="matchInfo.gameType" column="game_type"/>
         <result property="matchInfo.queueId" column="queue_id"/>
-        <collection property="participantList" ofType="gg.updown.backend.main.api.lol.match.model.LolMatchParticipantDto">
+        <collection property="participantList" ofType="gg.updown.backend.main.api.lol.match.model.dto.LolMatchParticipantDto">
             <id property="matchId" column="match_id"/>
             <id property="puuid" column="puuid"/>
             <result property="riotIdGameName" column="riot_id_game_name"/>

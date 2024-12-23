@@ -1,4 +1,4 @@
-package gg.updown.backend.main.api.lol.summoner.model;
+package gg.updown.backend.main.api.lol.summoner.model.dto;
 
 import lombok.*;
 
@@ -9,13 +9,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LolSummonerEntity {
+public class LolSummonerDto {
     private Integer lolAccountSeq;
-    private String puuid;
     private String summonerId;
     private String accountId;
     private Long summonerLevel;
     private LocalDateTime externalModDt;
     private String profileIconId;
-    private LocalDateTime lastUpdateRecordDt;
+    private String profileIconUrl;
 }

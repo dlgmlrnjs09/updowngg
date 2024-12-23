@@ -1,4 +1,4 @@
-package gg.updown.backend.main.api.lol.summoner.model;
+package gg.updown.backend.main.api.lol.summoner.model.dto;
 
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
 import lombok.AllArgsConstructor;

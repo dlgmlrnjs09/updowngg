@@ -2,7 +2,8 @@ package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.external.riot.RiotApiBasePath;
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
-import gg.updown.backend.main.api.review.model.*;
+import gg.updown.backend.main.api.review.model.dto.*;
+import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,12 @@ public class ReviewService {
         return reviewMapper.getWroteReviewList(reviewerPuuid);
     }
 
-    public void submitReview(ReviewSubmitReqDto reqDto, HttpMethod httpMethod) {
-        if (httpMethod == HttpMethod.POST) {
+    public void submitReview(ReviewSubmitReqDto reqDto) {
             transactionService.insertSummonerReview(reqDto);
-        } else {
-            transactionService.updateSummonerReview(reqDto);
-        }
+    }
+
+    public void updateReview(ReviewUpdateReqDto reqDto) {
+        transactionService.updateSummonerReview(reqDto);
     }
 
     public ReviewStatsDto getReviewStats(String targetPuuid) {

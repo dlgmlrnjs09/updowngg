@@ -1,4 +1,4 @@
-package gg.updown.backend.main.api.review.model;
+package gg.updown.backend.main.api.review.model.entity;
 
 import lombok.*;
 

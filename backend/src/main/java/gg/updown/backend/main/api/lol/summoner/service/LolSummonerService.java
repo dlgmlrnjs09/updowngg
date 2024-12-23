@@ -6,17 +6,15 @@ import gg.updown.backend.external.riot.api.account.service.AccountApiService;
 import gg.updown.backend.external.riot.api.lol.summoner.model.SummonerDto;
 import gg.updown.backend.external.riot.api.lol.summoner.service.SummonerApiService;
 import gg.updown.backend.main.api.lol.summoner.mapper.LolSummonerMapper;
-import gg.updown.backend.main.api.lol.summoner.model.LolSummonerDto;
-import gg.updown.backend.main.api.lol.summoner.model.LolSummonerEntity;
-import gg.updown.backend.main.api.lol.summoner.model.LolSummonerProfileDto;
-import gg.updown.backend.main.api.lol.summoner.model.LolSummonerProfileResDto;
+import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerDto;
+import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
+import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerProfileResDto;
 import gg.updown.backend.main.riot.account.mapper.RiotAccountMapper;
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
 import gg.updown.backend.common.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service

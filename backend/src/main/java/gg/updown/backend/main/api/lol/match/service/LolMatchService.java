@@ -6,17 +6,18 @@ import gg.updown.backend.external.riot.api.lol.match.model.*;
 import gg.updown.backend.external.riot.api.lol.match.service.MatchApiService;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.lol.match.mapper.LolMatchMapper;
-import gg.updown.backend.main.api.lol.match.model.*;
+import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoDto;
+import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoResDto;
+import gg.updown.backend.main.api.lol.match.model.dto.LolMatchParticipantDto;
+import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
+import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEntity;
 import gg.updown.backend.main.api.lol.summoner.model.LolMatchModelConverter;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
-import gg.updown.backend.main.api.review.model.ReviewDto;
-import gg.updown.backend.main.api.review.model.ReviewStatsDto;
+import gg.updown.backend.main.api.review.model.dto.ReviewDto;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -43,16 +44,9 @@ public class LolMatchService {
      * @return
      */
     public List<String> getAndInsertMatchIdList(String puuid, Long startTime, Long endTime) {
-        List<String> newMatchIdList = new ArrayList<>();
-
-        try {
-            String latestMatchId = matchMapper.getLatestRequestMatchId(puuid);
-            newMatchIdList = this.getNewMatchIdList(puuid, latestMatchId, startTime, endTime);
-            transactionService.saveMatchWithUpdateRequests(puuid, newMatchIdList);
-        } catch (Exception e) {
-            // TODO 예외처리
-            e.printStackTrace();
-        }
+        String latestMatchId = matchMapper.getLatestRequestMatchId(puuid);
+        List<String> newMatchIdList = this.getNewMatchIdList(puuid, latestMatchId, startTime, endTime);
+        transactionService.saveMatchWithUpdateRequests(puuid, newMatchIdList);
 
         return newMatchIdList;
     }
@@ -206,7 +200,7 @@ public class LolMatchService {
             try {
                 Thread.sleep(1300);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt(); // 스레드의 interrupt 상태를 복원
             }
 
             startIndex += count;

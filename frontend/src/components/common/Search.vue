@@ -40,10 +40,10 @@ const handleSearch = async () => {
 
   // '#' 기준으로 소환사 이름과 태그 분리
   const [summonerId, tagLine] = query.split('#')
-  if (!summonerId || !tagLine) {
-    alert('소환사#태그 형식으로 입력해주세요')
-    return
-  }
+  // if (!summonerId || !tagLine) {
+  //   alert('소환사#태그 형식으로 입력해주세요')
+  //   return
+  // }
 
   try {
     isLoading.value = true
@@ -63,9 +63,6 @@ const handleSearch = async () => {
         // }
       })
     }
-  } catch (error) {
-    console.error('Failed to fetch summoner:', error)
-    alert('소환사를 찾을 수 없습니다')
   } finally {
     isLoading.value = false
   }
