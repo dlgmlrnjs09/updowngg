@@ -3,7 +3,7 @@
     <div class="filter-controls">
       <select
           :value="selectedPeriod"
-          @input="$emit('update:period', ($event.target as HTMLSelectElement).value)"
+          @input="$emit('update:selectedPeriod', ($event.target as HTMLSelectElement).value)"
           class="period-select"
       >
         <option value="all">전체 기간</option>
@@ -19,7 +19,7 @@
           :key="tab.value"
           class="tab-button"
           :class="{ active: selectedPosition === tab.value }"
-          @click="$emit('update:position', tab.value)"
+          @click="$emit('update:selectedPosition', tab.value)"
       >
         <div class="tab-icon" v-if="tab.value !== 'all'">
           <img :src="tab.iconPath" :alt="tab.label">
@@ -44,8 +44,8 @@ defineProps<{
 }>()
 
 defineEmits<{
-  'update:period': [value: string]
-  'update:position': [value: string]
+  'update:selectedPeriod': [value: string]
+  'update:selectedPosition': [value: string]
 }>()
 
 const positionTabs: Tab[] = [

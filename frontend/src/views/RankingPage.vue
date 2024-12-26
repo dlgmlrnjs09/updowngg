@@ -1,8 +1,9 @@
 <template>
   <div class="ranking-page">
     <RankingSearchSection
-        :period="selectedPeriod"
-        :position="selectedPosition"
+        :selected-period="selectedPeriod"
+        :selected-position="selectedPosition"
+        @update:selected-position="selectedPosition = $event"
     />
 
     <RankingResultSection
@@ -29,20 +30,29 @@ const isLoading = ref(false)
 const isLastPage = ref(false)
 const router = useRouter();
 const rankerCards = ref<RankingCard[] | null>(null);
+const currentStartIndex = ref(0);
 
-const fetchRankerList = async () => {
-  const response = await rankingApi.getRankerCardList(0, 10)
+const fetchRankerList = async (startIndex: number = 0, limit: number = 2) => {
+  const response = await rankingApi.getRankerCardList(startIndex, limit)
   rankerCards.value = response.data;
+
+  if (startIndex === 0) {
+    rankerCards.value = response.data
+  } else {
+    rankerCards.value = [...rankerCards.value, ...response.data]
+  }
+
+  if (rankerCards.value.length < limit) {
+    isLastPage.value = true;
+  }
 }
 
 const loadMore = async () => {
-  if (isLoading.value) return
+  if (isLoading.value || isLastPage.value) return
 
   isLoading.value = true
   try {
-    // API 호출 로직
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    // rankings.value.push(...newData)
+    await fetchRankerList(currentStartIndex.value + 2)
   } finally {
     isLoading.value = false
   }
