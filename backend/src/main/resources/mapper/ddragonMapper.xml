@@ -15,4 +15,22 @@
         ORDER BY seq desc
         LIMIT 1
     </select>
+
+    <insert id="insertChampions" parameterType="champion">
+        INSERT INTO lol_champion (
+            name_us,
+            name_kr
+        ) VALUES (
+            #{nameUs},
+            #{nameKr}
+        )
+    </insert>
+
+    <select id="getAllChampions" resultType="champion">
+        SELECT
+            name_us,
+            name_kr
+        FROM
+            lol_champion
+    </select>
 </mapper>

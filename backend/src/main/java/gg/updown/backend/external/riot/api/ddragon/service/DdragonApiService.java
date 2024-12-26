@@ -6,7 +6,10 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -23,5 +26,15 @@ public class DdragonApiService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
                 .block();
+    }
+
+    public Map<String, Object> getChampionData() {
+        Map response = ddragonWebClient.get()
+                .uri("/cdn/14.24.1/data/ko_KR/champion.json")
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+        return (Map<String, Object>) response.get("data");
     }
 }
