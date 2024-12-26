@@ -17,9 +17,8 @@ public class SiteRankingCardResDto {
     private String profileIconUrl;
     private String gameName;
     private String tagLine;
-    private double skillRatingAvg;
-    private double teamworkRatingAvg;
-    private double mannerRatingAvg;
+    private int upCount;
+    private int downCount;
 
     private int totalReviewCount;
     private int last30DayReviewCnt;

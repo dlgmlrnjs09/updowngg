@@ -20,13 +20,9 @@ public class ReviewSubmitReqDto {
     private String reviewerPuuid;
     @NotNull(message = "targetPuuid는 필수값입니다.")
     private String targetPuuid;
-    @Max(value = 5, message = "skillRating은 5 이하여야합니다.")
-    private Double skillRating = 0.0;
-    @Max(value = 5, message = "teamworkRating은 5 이하여야합니다.")
-    private Double teamworkRating = 0.0;
-    @Max(value = 5, message = "mannerRating은 5 이하여야합니다.")
-    private Double mannerRating = 0.0;
     private String comment;
+    @NotNull(message = "ipUp은 필수값입니다.")
+    private Boolean isUp;
     private List<String> tagCodeList;
     @NotNull(message = "matchId는 필수값입니다.")
     private String matchId;

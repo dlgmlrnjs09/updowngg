@@ -1,4 +1,3 @@
-<!-- src/components/modals/ReviewModal.vue -->
 <template>
   <div class="modal-overlay">
     <div class="modal-content">
@@ -8,94 +7,63 @@
         <div class="modal-title">{{ player.riotIdGameName }} 평가하기</div>
       </div>
 
-      <!-- 실력/기술 평가 -->
-      <div class="modal-section">
-        <h2 class="section-title">실력/기술</h2>
-        <div class="rating-group">
-          <div class="stars">
-            <div class="star-rating">
-              <span
-                  v-for="i in 10"
-                  :key="i"
-                  class="star-half"
-                  :class="{ active: skillRating >= i/2 }"
-                  @click="skillRating = i/2"
-                  @mouseover="hoverRating.skill = i/2"
-                  @mouseleave="hoverRating.skill = 0"
-              ></span>
-            </div>
-            <span class="rating-value">{{ skillRating }}점</span>
-          </div>
+      <div class="review-section">
+        <div class="review-buttons">
+          <button
+              class="review-button like"
+              :class="{ selected: isUp === true }"
+              @click="setRating(true)"
+          >
+            <svg class="button-icon" viewBox="0 0 24 24">
+              <path d="M14.6 8H21a2 2 0 0 1 2 2v2.104a2 2 0 0 1-.15.762l-3.095 7.515a1 1 0 0 1-.925.619H2a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1h3.482a1 1 0 0 0 .817-.423L11.752.85a.5.5 0 0 1 .632-.159l1.814.907a2.5 2.5 0 0 1 1.305 2.853L14.6 8zM7 10.588V19h11.16L21 12.104V10h-6.4a2 2 0 0 1-1.938-2.493l.903-3.548a.5.5 0 0 0-.261-.571l-.661-.33-4.71 6.672c-.25.354-.57.644-.933.858zM5 11H3v8h2v-8z"/>
+            </svg>
+<!--            <span class="button-text">좋아요</span>-->
+          </button>
+          <button
+              class="review-button dislike"
+              :class="{ selected: isUp === false }"
+              @click="setRating(false)"
+          >
+            <svg class="button-icon" viewBox="0 0 24 24">
+              <path d="M9.4 16H3a2 2 0 0 1-2-2v-2.104a2 2 0 0 1 .15-.762L4.246 3.62A1 1 0 0 1 5.17 3H22a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-3.482a1 1 0 0 0-.817.423l-5.453 7.726a.5.5 0 0 1-.632.159L9.802 21.4A2.5 2.5 0 0 1 8.496 18.55L9.4 16zM17 14.586V6H5.84L3 12.896V14h6.4a2 2 0 0 1 1.938 2.493l-.903 3.548a.5.5 0 0 0 .261.571l.661.33 4.71-6.672c.25-.354.57-.644.933-.858zM19 13h2V5h-2v8z"/>
+            </svg>
+<!--            <span class="button-text">싫어요</span>-->
+          </button>
         </div>
       </div>
 
-      <!-- 팀워크 평가 -->
-      <div class="modal-section">
-        <h2 class="section-title">팀워크</h2>
-        <div class="rating-group">
-          <div class="stars">
-            <div class="star-rating">
-              <span
-                  v-for="i in 10"
-                  :key="i"
-                  class="star-half"
-                  :class="{ active: teamworkRating >= i/2 }"
-                  @click="teamworkRating = i/2"
-                  @mouseover="hoverRating.teamwork = i/2"
-                  @mouseleave="hoverRating.teamwork = 0"
-              ></span>
-            </div>
-            <span class="rating-value">{{ teamworkRating }}점</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 매너/태도 평가 -->
-      <div class="modal-section">
-        <h2 class="section-title">매너/태도</h2>
-        <div class="rating-group">
-          <div class="stars">
-            <div class="star-rating">
-              <span
-                  v-for="i in 10"
-                  :key="i"
-                  class="star-half"
-                  :class="{ active: mannerRating >= i/2 }"
-                  @click="mannerRating = i/2"
-                  @mouseover="hoverRating.manner = i/2"
-                  @mouseleave="hoverRating.manner = 0"
-              ></span>
-            </div>
-            <span class="rating-value">{{ mannerRating}}점</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 태그 선택 -->
-      <div class="modal-section">
-        <h2 class="section-title">플레이 스타일</h2>
+      <div class="tags-section">
+        <h2 class="section-title">플레이 스타일 (최대 5개)</h2>
         <div class="tags-container">
           <button
               v-for="tag in reviewTags"
               :key="tag.tagCode"
               class="tag"
-              :class="{ active: selectedStyleTags.includes(tag.tagCode) || player.reviewDto?.tagCodeList?.includes(tag.tagCode) }"
-              @click="toggleTag(tag.tagCode, 'style')"
+              :class="{
+                active: selectedStyleTags.includes(tag.tagCode),
+                up: tag.tagUpdown,
+                down: !tag.tagUpdown
+              }"
+              @click="toggleTag(tag.tagCode)"
           >
             {{ tag.tagValue }}
           </button>
         </div>
       </div>
 
-      <!-- 코멘트 작성 -->
-      <div class="modal-section">
-<!--        <h2 class="section-title">코멘트 작성</h2>-->
+      <div class="comment-section">
         <textarea
             v-model="comment"
             class="comment-input"
             placeholder="이 소환사와의 게임은 어땠나요? (선택사항)"
         ></textarea>
-        <button class="submit-btn" @click="handleSubmit">평가 제출하기</button>
+        <button
+            class="submit-btn"
+            :disabled="isUp === null"
+            @click="handleSubmit"
+        >
+          평가 제출하기
+        </button>
       </div>
     </div>
   </div>
@@ -103,11 +71,11 @@
 
 <script setup lang="ts">
 import {onMounted, ref} from 'vue'
-import type {ReviewTagDto} from "@/types/review.ts";
-import {reviewApi} from "@/api/review.ts";
-import {useAuthStore} from "@/stores/auth.ts";
-import type {LolMatchParticipant} from "@/types/match.ts";
-import {useToast} from "vue-toastification";
+import type { ReviewTagDto } from "@/types/review.ts"
+import { reviewApi } from "@/api/review.ts"
+import { useAuthStore } from "@/stores/auth.ts"
+import type { LolMatchParticipant } from "@/types/match.ts"
+import { useToast } from "vue-toastification"
 
 const props = defineProps<{
   player: LolMatchParticipant
@@ -119,16 +87,15 @@ const emit = defineEmits<{
   (e: 'submit'): void
 }>()
 
-const authStore = useAuthStore();
-const toast = useToast();
+const authStore = useAuthStore()
+const toast = useToast()
 
 // 평가 상태
-const reviewSeq = ref(0)
-const skillRating = ref(0)
-const teamworkRating = ref(0)
-const mannerRating = ref(0)
+const isUp = ref<boolean | null>(null)
 const selectedStyleTags = ref<string[]>([])
 const comment = ref('')
+const reviewSeq = ref(0)
+
 
 // Init
 onMounted(() => {
@@ -138,68 +105,62 @@ onMounted(() => {
 const init = () => {
   if (props.player.reviewDto) {
     reviewSeq.value = props.player.reviewDto.summonerReviewSeq
-    skillRating.value = props.player.reviewDto.skillRating
-    teamworkRating.value = props.player.reviewDto.teamworkRating
-    mannerRating.value = props.player.reviewDto.mannerRating
     selectedStyleTags.value = props.player.reviewDto.tagCodeList || []
     comment.value = props.player.reviewDto.comment || ''
+    isUp.value = props.player.reviewDto.isUp;
   } else {
     reviewSeq.value = 0
-    skillRating.value = 0
-    teamworkRating.value = 0
-    mannerRating.value = 0
     selectedStyleTags.value = []
     comment.value = ''
+    isUp.value = null;
   }
 }
 
-// 호버 상태 관리
-const hoverRating = ref({
-  skill: 0,
-  teamwork: 0,
-  manner: 0
-})
 
-// 태그 토글 함수
-const toggleTag = (tag: string, type: 'style') => {
-  const index = selectedStyleTags.value.indexOf(tag)
+const setRating = (isUpParam: boolean) => {
+  isUp.value = isUp.value === isUpParam ? null : isUpParam
+}
+
+const toggleTag = (tagCode: string) => {
+  const index = selectedStyleTags.value.indexOf(tagCode)
   if (index === -1) {
-    if (selectedStyleTags.value.length < 3) {
-      selectedStyleTags.value.push(tag)
+    if (selectedStyleTags.value.length < 5) {
+      selectedStyleTags.value.push(tagCode)
     }
   } else {
     selectedStyleTags.value.splice(index, 1)
   }
 }
 
-// 제출 함수
 const handleSubmit = async () => {
   if (!authStore.isAuthenticated) {
-    toast.error('로그인이 필요합니다');
-    return;
+    toast.error('로그인이 필요합니다')
+    return
+  }
+
+  if (isUp.value === null) {
+    toast.error('평가를 선택해주세요')
+    return
   }
 
   const review = {
-    summonerReviewSeq: reviewSeq.value,
     reviewerSiteCode: authStore.user?.memberSiteCode,
     reviewerPuuid: authStore.user?.puuid,
     targetPuuid: props.player.puuid,
-    skillRating: skillRating.value,
-    teamworkRating: teamworkRating.value,
-    mannerRating: mannerRating.value,
+    isUp: isUp.value,
     comment: comment.value,
     tagCodeList: selectedStyleTags.value,
     matchId: props.player.matchId
   }
 
-  if (props.player.reviewDto.reviewable) {
+  try {
     await reviewApi.submitReview(review)
-  } else {
-    await reviewApi.updateReview(review)
+    toast.success('평가가 성공적으로 제출되었습니다')
+    emit('submit')
+    emit('close')
+  } catch (error) {
+    toast.error('평가 제출 중 오류가 발생했습니다')
   }
-
-  emit('submit')
-  emit('close')
 }
 </script>
 
@@ -221,22 +182,8 @@ const handleSubmit = async () => {
   background: #141414;
   border-radius: 16px;
   width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-width: 480px;
   position: relative;
-}
-
-.modal-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  color: #888;
-  cursor: pointer;
-  padding: 8px;
-  font-size: 24px;
 }
 
 .modal-header {
@@ -250,61 +197,90 @@ const handleSubmit = async () => {
   color: #fff;
 }
 
-.modal-section {
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.review-section {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.review-buttons {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.review-button {
+  flex: 1;
   padding: 24px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.review-button.like {
+  color: #4CAF50;
+}
+
+.review-button.dislike {
+  color: #FF5252;
+}
+
+.review-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.review-button.selected.like {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: #4CAF50;
+}
+
+.review-button.selected.dislike {
+  background: rgba(255, 82, 82, 0.15);
+  border-color: #FF5252;
+}
+
+.button-icon {
+  width: 32px;
+  height: 32px;
+  fill: currentColor;
+}
+
+.button-text {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.tags-section {
+  padding: 0 24px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin-bottom: 16px;
   color: #fff;
-}
-
-.rating-group {
-  margin-bottom: 16px;
-}
-
-.star-rating {
-  display: inline-flex;
-  gap: 2px;
-}
-
-.star-half {
-  position: relative;
-  width: 12px;
-  height: 24px;
-  background: #333;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.star-half.active {
-  background: #FFD700;
-}
-
-.star-half:nth-child(odd) {
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
-}
-
-.star-half:nth-child(even) {
-  border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-
-.rating-value {
-  margin-left: 12px;
-  color: #CCC;
-  font-size: 14px;
-  min-width: 45px;
-}
-
-.stars {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
 }
 
 .tags-container {
@@ -314,27 +290,62 @@ const handleSubmit = async () => {
 }
 
 .tag {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #CCC;
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
-  user-select: none;
 }
 
-.tag:hover {
-  background: rgba(41, 121, 255, 0.1);
+.tag.up {
+  background: rgba(41, 121, 255, 0.05);
+  border: 1px solid rgba(41, 121, 255, 0.1);
+  color: #2979FF;
+}
+
+.tag.up:hover {
+  background: rgba(41, 121, 255, 0.15);
+  border-color: rgba(41, 121, 255, 0.3);
+}
+
+.tag.up.active {
+  background: rgba(41, 121, 255, 0.25);
   border-color: #2979FF;
   color: #2979FF;
 }
+
+/* down 태그 스타일 */
+.tag.down {
+  background: rgba(255, 82, 82, 0.05);
+  border: 1px solid rgba(255, 82, 82, 0.1);
+  color: #FF5252;
+}
+
+.tag.down:hover {
+  background: rgba(255, 82, 82, 0.15);
+  border-color: rgba(255, 82, 82, 0.3);
+}
+
+.tag.down.active {
+  background: rgba(255, 82, 82, 0.25);
+  border-color: #FF5252;
+  color: #FF5252;
+}
+
+/*.tag:hover {
+  background: rgba(41, 121, 255, 0.1);
+  border-color: #2979FF;
+  color: #2979FF;
+}*/
 
 .tag.active {
   background: #2979FF;
   border-color: #2979FF;
   color: white;
+}
+
+.comment-section {
+  padding: 24px;
 }
 
 .comment-input {
@@ -373,53 +384,31 @@ const handleSubmit = async () => {
   transition: background 0.2s;
 }
 
-.submit-btn:hover {
+.submit-btn:hover:not(:disabled) {
   background: #2262CC;
 }
 
-.submit-btn:active {
-  background: #1B4FA0;
-}
-
-.modal-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.modal-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-}
-
-.modal-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-.modal-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+.submit-btn:disabled {
+  background: #1e293b;
+  cursor: not-allowed;
 }
 
 @media (max-width: 480px) {
   .modal-content {
     width: 95%;
-    max-height: 85vh;
   }
 
-  .modal-section {
-    padding: 16px;
+  .review-button {
+    padding: 20px;
   }
 
-  .tag {
-    padding: 6px 12px;
-    font-size: 13px;
+  .button-icon {
+    width: 28px;
+    height: 28px;
   }
 
-  .modal-title {
-    font-size: 18px;
-  }
-
-  .section-title {
-    font-size: 16px;
+  .button-text {
+    font-size: 14px;
   }
 }
 </style>

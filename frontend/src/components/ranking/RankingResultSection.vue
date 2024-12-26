@@ -29,22 +29,17 @@
 
           <div class="ratings">
             <div class="rating-item">
-              <span class="rating-value" :style="{ color: getRatingColor(player.skillRatingAvg) }">
-                {{ player.skillRatingAvg }}
-              </span>
-              <span class="rating-label">실력</span>
-            </div>
-            <div class="rating-item">
-              <span class="rating-value" :style="{ color: getRatingColor(player.teamworkRatingAvg) }">
-                {{ player.teamworkRatingAvg }}
-              </span>
-              <span class="rating-label">팀워크</span>
-            </div>
-            <div class="rating-item">
-              <span class="rating-value" :style="{ color: getRatingColor(player.mannerRatingAvg) }">
-                {{ player.mannerRatingAvg }}
-              </span>
-              <span class="rating-label">매너</span>
+              <div class="rating-row">
+                <ThumbsUp class="thumb-icon up" />
+                <span class="rating-value up-count">{{ player.upCount }}</span>
+              </div>
+              <div class="rating-row">
+                <ThumbsDown class="thumb-icon down" />
+                <span class="rating-value down-count">{{ player.downCount }}</span>
+              </div>
+              <div class="rating-row" v-if="player.totalReviewCount > 0">
+                <span class="rating-value ratio-value">{{ calculateRatio(player.upCount, player.totalReviewCount) }}%</span>
+              </div>
             </div>
           </div>
 
@@ -81,6 +76,8 @@
 <script setup lang="ts">
 import { getRatingColor } from '@/utils/ratingUtil'
 import type { RankingCard } from '@/types/ranking'
+import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
+
 
 defineProps<{
   rankerCards: RankingCard[]
@@ -91,6 +88,11 @@ defineProps<{
 defineEmits<{
   'load-more': []
 }>()
+
+const calculateRatio = (upCount: number, total: number) => {
+  if (total === 0) return 0
+  return Math.round((upCount / total) * 100)
+}
 </script>
 
 <style scoped>
@@ -190,16 +192,28 @@ defineEmits<{
 
 .ratings {
   display: flex;
-  gap: 24px;
-  width: 200px;
+  justify-content: flex-end;
+  width: 120px;  /* 너비 감소 */
   align-self: center;
 }
 
 .rating-item {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+.rating-row {
+  display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+}
+
+
+.rating-item.ratio {
+  flex-direction: column;
+  align-items: center;
 }
 
 .rating-value {
@@ -219,6 +233,31 @@ defineEmits<{
   width: 120px;
   align-self: center;
   min-height: 88px;
+}
+
+.thumb-icon {
+  width: 16px;  /* 아이콘 크기 약간 감소 */
+  height: 16px;
+}
+
+.thumb-icon.up {
+  color: #4CAF50;
+}
+
+.thumb-icon.down {
+  color: #FF5252;
+}
+
+.up-count {
+  color: #4CAF50;
+}
+
+.down-count {
+  color: #FF5252;
+}
+
+.ratio-value {
+  color: #2979FF;
 }
 
 @media (min-width: 769px) {
@@ -340,7 +379,7 @@ defineEmits<{
 
 @media (max-width: 1024px) {
   .player-info {
-    grid-template-columns: 48px 1fr auto auto;
+    grid-template-columns: 48px 1fr auto 100px;  /* 마지막 컬럼 너비 감소 */
     gap: 16px;
   }
 
@@ -349,7 +388,7 @@ defineEmits<{
   }
 
   .ratings {
-    width: 180px;
+    width: 100px;  /* 모바일에서 ratings 영역 너비 감소 */
   }
 }
 
@@ -369,15 +408,13 @@ defineEmits<{
   }
 
   .ratings {
-    display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
     width: auto;
-    min-width: 120px;
+    min-width: 180px;
   }
 
   .rating-item {
-    text-align: center;
+    justify-content: center;
   }
 
   .player-tags {

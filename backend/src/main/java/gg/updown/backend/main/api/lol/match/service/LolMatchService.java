@@ -46,7 +46,9 @@ public class LolMatchService {
     public List<String> getAndInsertMatchIdList(String puuid, Long startTime, Long endTime) {
         String latestMatchId = matchMapper.getLatestRequestMatchId(puuid);
         List<String> newMatchIdList = this.getNewMatchIdList(puuid, latestMatchId, startTime, endTime);
-        transactionService.saveMatchWithUpdateRequests(puuid, newMatchIdList);
+        if (!newMatchIdList.isEmpty()) {
+            transactionService.saveMatchWithUpdateRequests(puuid, newMatchIdList);
+        }
 
         return newMatchIdList;
     }

@@ -10,5 +10,6 @@ import lombok.*;
 public class ReviewRatingByPositionDto {
     private String position;
     private int playCount;
-    private double totalAvgRating;
+    private int upCount;
+    private int downCount;
 }

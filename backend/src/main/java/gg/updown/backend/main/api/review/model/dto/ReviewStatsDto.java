@@ -9,9 +9,8 @@ import lombok.*;
 @Builder
 public class ReviewStatsDto {
     private String puuid;
-    private double skillRatingAvg;
-    private double teamworkRatingAvg;
-    private double mannerRatingAvg;
+    private int upCount;
+    private int downCount;
     private int totalReviewCnt;
     private int last30DayReviewCnt;
 }

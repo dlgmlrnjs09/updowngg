@@ -11,4 +11,5 @@ public class ReviewTagEntity {
     private String tagCode;
     private String tagValue;
     private String tagDescription;
+    private boolean tagUpdown;
 }

@@ -8,10 +8,8 @@
         <result property="reviewerSiteCode" column="reviewer_site_code"/>
         <result property="reviewerPuuid" column="reviewer_puuid"/>
         <result property="targetPuuid" column="target_puuid"/>
-        <result property="skillRating" column="skill_rating"/>
-        <result property="teamworkRating" column="teamwork_rating"/>
-        <result property="mannerRating" column="manner_rating"/>
         <result property="comment" column="comment"/>
+        <result property="isUp" column="is_up"/>
         <result property="regDt" column="reg_dt"/>
         <result property="updDt" column="upd_dt"/>
         <result property="delDt" column="del_dt"/>
@@ -28,10 +26,9 @@
             reviewer_site_code,
             reviewer_puuid,
             target_puuid,
-            skill_rating,
-            teamwork_rating,
-            manner_rating,
+            is_up,
             comment,
+            is_up,
             reg_dt,
             upd_dt,
             del_dt,
@@ -52,20 +49,9 @@
             r.target_puuid,
             r.comment,
             r.reg_dt,
-            ROUND(COALESCE(t.totalAvgRating, 0), 1) AS totalAvgRating
+            r.is_up
         FROM
             site_summoner_review r
-                LEFT JOIN (
-                SELECT
-                    target_puuid,
-                    (AVG(skill_rating) + AVG(teamwork_rating) + AVG(manner_rating)) / 3 AS totalAvgRating
-                FROM
-                    site_summoner_review
-                WHERE
-                    target_puuid = #{targetPuuid} AND del_dt IS NULL
-                GROUP BY
-                    target_puuid
-            ) t ON r.target_puuid = t.target_puuid
         WHERE
             r.target_puuid = #{targetPuuid} AND r.del_dt IS NULL
         LIMIT
@@ -76,7 +62,8 @@
         SELECT
             tag_code,
             tag_value,
-            tag_description
+            tag_description,
+            tag_updown
         FROM
             site_review_tag
     </select>
@@ -87,18 +74,14 @@
             reviewer_site_code,
             reviewer_puuid,
             target_puuid,
-            skill_rating,
-            teamwork_rating,
-            manner_rating,
+            is_up,
             comment,
             match_id
         ) VALUES (
              #{reviewerSiteCode},
              #{reviewerPuuid},
              #{targetPuuid},
-             #{skillRating},
-             #{teamworkRating},
-             #{mannerRating},
+             #{isUp},
              #{comment},
              #{matchId}
          )
@@ -121,9 +104,7 @@
 
     <update id="updateReview" parameterType="ReviewUpdateReqDto">
         UPDATE site_summoner_review
-        SET skill_rating = #{skillRating}
-            , teamwork_rating = #{teamworkRating}
-            , manner_rating = #{mannerRating}
+        SET is_up = #{isUp}
             , comment = #{comment}
             , match_id = #{matchId}
         WHERE
@@ -133,9 +114,8 @@
     <select id="getReviewStatus" parameterType="String" resultType="reviewStatsDto">
         SELECT
             target_puuid as puuid,
-            ROUND(AVG(skill_rating), 1) AS skillRatingAvg,
-            ROUND(AVG(teamwork_rating), 1) AS teamworkRatingAvg,
-            ROUND(AVG(manner_rating), 1) AS mannerRatingAvg,
+            COUNT(CASE WHEN is_up = true THEN 1 END) as upCount,
+            COUNT(CASE WHEN is_up = false THEN 1 END) as downCount,
             COUNT(*) AS totalReviewCnt,
             COUNT(CASE WHEN reg_dt >= CURRENT_TIMESTAMP - INTERVAL '30 days' THEN 1 END) AS last30DayReviewCnt
         FROM site_summoner_review
@@ -147,9 +127,8 @@
     <select id="getReviewAvgRating" parameterType="String" resultType="reviewStatsDto">
         SELECT
             target_puuid as puuid,
-            ROUND(AVG(skill_rating), 1) AS skillRatingAvg,
-            ROUND(AVG(teamwork_rating), 1) AS teamworkRatingAvg,
-            ROUND(AVG(manner_rating), 1) AS mannerRatingAvg
+            COUNT(CASE WHEN is_up = true THEN 1 END) as upCount,
+            COUNT(CASE WHEN is_up = false THEN 1 END) as downCount
         FROM site_summoner_review
         where target_puuid = #{targetPuuid}
           and del_dt is NULL
@@ -161,6 +140,7 @@
             ssrt.tag_code,
             srt.tag_value,
             srt.tag_description,
+            srt.tag_updown,
             count(*) as frequentCount
         from
             site_summoner_review ssr
@@ -170,7 +150,7 @@
             target_puuid = #{puuid}
             and ssr.del_dt IS NULL
         group by
-            ssrt.tag_code, srt.tag_value, srt.tag_description
+            ssrt.tag_code, srt.tag_value, srt.tag_description, srt.tag_updown
     </select>
 
     <select id="getAvgRatingByChamp" parameterType="String" resultType="reviewRatingByChampDto">
@@ -178,7 +158,8 @@
             champ_id ,
             champ_name,
             count(*) as playCount,
-            ROUND((AVG(skill_rating) + AVG(teamwork_rating) + AVG(manner_rating)) / 3,1) as totalAvgRating
+            COUNT(CASE WHEN is_up = true THEN 1 END) as upCount,
+            COUNT(CASE WHEN is_up = false THEN 1 END) as downCount
         from
             lol_match_participant lm
                 inner join site_summoner_review ssr on (lm.match_id = ssr.match_id and lm.puuid = ssr.target_puuid)
@@ -199,7 +180,8 @@
         SELECT
             p.position,
             COUNT(lm.puuid) as playCount,
-            COALESCE(ROUND((AVG(skill_rating) + AVG(teamwork_rating) + AVG(manner_rating)) / 3, 1),0) as totalAvgRating
+            COUNT(CASE WHEN is_up = true THEN 1 END) as upCount,
+            COUNT(CASE WHEN is_up = false THEN 1 END) as downCount
         FROM
             positions p
                 LEFT JOIN lol_match_participant lm ON

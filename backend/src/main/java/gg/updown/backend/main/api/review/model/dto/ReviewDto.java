@@ -16,10 +16,7 @@ public class ReviewDto {
     private String reviewerSiteCode;
     private String reviewerPuuid;
     private String targetPuuid;
-    private double skillRating;
-    private double teamworkRating;
-    private double mannerRating;
-    private double totalAvgRating;
+    private Boolean isUp;
     private String comment;
     private LocalDateTime regDt;
     private LocalDateTime updDt;

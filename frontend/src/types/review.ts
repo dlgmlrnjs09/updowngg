@@ -2,6 +2,7 @@ export interface ReviewTagDto {
     tagCode: string
     tagValue: string
     tagDescription: string
+    tagUpdown: boolean
     frequentCount: number
 }
 
@@ -10,22 +11,18 @@ export interface ReviewRequestDto {
     reviewerSiteCode: string;
     reviewerPuuid: string;
     targetPuuid: string;
-    skillRating: number;
-    teamworkRating: number;
-    mannerRating: number;
-    totalAvgRating: number | null;
     comment?: string;
+    isUp: boolean | null;
     tagCodeList: string[];  // 선택한 태그의 코드 배열
     reviewable: boolean | false;
-    regDt: string | null;
+    regDt: string;
     matchId: string;
 }
 
 export interface ReviewStatsDto {
     puuid: string;
-    skillRatingAvg: number;
-    teamworkRatingAvg: number;
-    mannerRatingAvg: number;
+    upCount: number;
+    downCount: number;
     totalReviewCnt: number;
     last30DayReviewCnt: number;
 }
@@ -35,11 +32,13 @@ export interface ReviewRatingByChampDto {
     champName: string;
     champIconUrl: string;
     playCount: number;
-    totalAvgRating: number;
+    upCount: number;
+    downCount: number;
 }
 
 export interface ReviewRatingByPositionDto {
     position: string;
     playCount: number;
-    totalAvgRating: number;
+    upCount: number;
+    downCount: number;
 }

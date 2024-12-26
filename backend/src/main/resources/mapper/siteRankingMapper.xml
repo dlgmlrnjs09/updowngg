@@ -5,9 +5,8 @@
         select
             puuid,
             count(ssr.*) as totalReviewCnt,
-            round(avg(ssr.skill_rating), 1) as skillRatingAvg,
-            round(avg(ssr.teamwork_rating), 1) as teamworkRatingAvg,
-            round(avg(ssr.manner_rating), 1) as mannerRatingAvg,
+            COUNT(CASE WHEN is_up = true THEN 1 END) as upCount,
+            COUNT(CASE WHEN is_up = false THEN 1 END) as downCount,
             COUNT(CASE WHEN reg_dt >= CURRENT_TIMESTAMP - INTERVAL '30 days' THEN 1 END) AS last30DayReviewCnt
         from
             lol_summoner ls
@@ -37,6 +36,7 @@
             ssrt.tag_code,
             srt.tag_value,
             srt.tag_description,
+            srt.tag_updown,
             count(ssrt.tag_code) as frequentCount
         from
             lol_summoner ls
@@ -44,7 +44,7 @@
                 inner join site_summoner_review_tag ssrt on (ssr.summoner_review_seq = ssrt.summoner_review_seq)
                 inner join site_review_tag srt on (ssrt.tag_code = srt.tag_code)
         where puuid = #{puuid}
-        group by ls.puuid, ssrt.tag_code, srt.tag_value, srt.tag_description
+        group by ls.puuid, ssrt.tag_code, srt.tag_value, srt.tag_description, srt.tag_updown
         order by count(ssrt.tag_code) desc
     </select>
 </mapper>

@@ -7,18 +7,19 @@
       <div class="profile-info">
         <div class="summoner-name">{{ profileData.riotAccountInfoEntity.gameName }}</div>
         <div class="profile-stats">평가 {{ reviewStats?.totalReviewCnt ?? 0 }}회 · 최근 30일 {{ reviewStats?.last30DayReviewCnt ?? 0 }}회</div>
-        <div class="rating-stats" >
+        <!-- 단순화된 좋아요/싫어요 통계 -->
+        <div class="rating-stats">
           <div class="rating-item">
-            <span class="rating-value" :style="{ color: getRatingColor(reviewStats?.skillRatingAvg ?? 0) }" >{{ reviewStats?.skillRatingAvg ?? '0' }}</span>
-            <span class="rating-label">실력</span>
-          </div>
-          <div class="rating-item">
-            <span class="rating-value" :style="{ color: getRatingColor(reviewStats?.skillRatingAvg ?? 0) }">{{ reviewStats?.teamworkRatingAvg ?? '0' }}</span>
-            <span class="rating-label">팀워크</span>
-          </div>
-          <div class="rating-item">
-            <span class="rating-value" :style="{ color: getRatingColor(reviewStats?.skillRatingAvg ?? 0) }">{{ reviewStats?.mannerRatingAvg ?? '0'}}</span>
-            <span class="rating-label">매너</span>
+            <div class="up-down-stats">
+              <div class="stat-group">
+                <ThumbsUp class="thumb-icon up" />
+                <span class="up-count">{{ reviewStats?.upCount ?? 0 }}</span>
+              </div>
+              <div class="stat-group">
+                <ThumbsDown class="thumb-icon down" />
+                <span class="down-count">{{ reviewStats?.downCount ?? 0 }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -48,8 +49,19 @@
                 v-for="tag in frequentTags"
                 :key="tag.tagCode"
                 class="tag"
+                :class="{
+                  'tag-up': tag.tagUpdown,
+                  'tag-down': !tag.tagUpdown
+                }"
             >
-              <span class="tag-text">{{ tag.tagValue }}</span>
+              <span
+                  class="tag-text"
+                  :class="{
+                  'tag-text-up': tag.tagUpdown,
+                  'tag-text-down': !tag.tagUpdown
+                }"
+              >
+                {{ tag.tagValue }}</span>
               <span class="tag-count">{{ tag.frequentCount }}</span>
             </div>
           </div>
@@ -64,20 +76,24 @@
         <div class="stats-title">평가 통계</div>
         <div class="stats-grid">
           <!-- 챔피언별 평가 -->
-          <div class="stats-column">
-            <div class="champion-stats">
-              <div class="champion-item" v-for="rating in ratingByChamp" :key="rating.champId">
-                <img :src="rating.champIconUrl" class="position-icon" alt="Champion" />
-                <div class="champion-rating" :style="{ color: getRatingColor(rating.totalAvgRating ?? 0) }">{{ rating.totalAvgRating }}</div>
+          <div class="champion-stats">
+            <div class="champion-item" v-for="rating in ratingByChamp" :key="rating.champId">
+              <img :src="rating.champIconUrl" class="position-icon" alt="Champion" />
+              <div class="champion-rating">
+                <span class="up-count">{{ rating.upCount || 0 }}</span>
+                <span class="stats-divider">/</span>
+                <span class="down-count">{{ rating.downCount || 0 }}</span>
               </div>
             </div>
           </div>
           <!-- 포지션별 평가 -->
-          <div class="stats-column">
-            <div class="position-stats">
-              <div class="position-item" v-for="(position, index) in ['top', 'jungle', 'mid', 'support', 'ad']" :key="position">
-                <img :src="`/src/assets/icon/position/position_${position}.svg`" class="position-icon" alt="Champion" />
-                <div class="position-rating" :style="{ color: getRatingColor(ratingByPosition?.[index]?.totalAvgRating ?? 0) }">{{ ratingByPosition?.[index]?.totalAvgRating ?? 0 }}</div>
+          <div class="position-stats">
+            <div class="position-item" v-for="(position, index) in ['top', 'jungle', 'mid', 'support', 'ad']" :key="position">
+              <img :src="`/src/assets/icon/position/position_${position}.svg`" class="position-icon" alt="Position" />
+              <div class="position-rating">
+                <span class="up-count">{{ ratingByPosition?.[index]?.upCount ?? 0 }}</span>
+                <span class="stats-divider">/</span>
+                <span class="down-count">{{ ratingByPosition?.[index]?.downCount ?? 0 }}</span>
               </div>
             </div>
           </div>
@@ -99,7 +115,13 @@
                 class="review-item"
             >
               <div class="review-header">
-                <div class="review-rating" :style="{ color: getRatingColor(review.totalAvgRating) }">{{ review.totalAvgRating }}</div>
+<!--                <div class="review-rating" :style="{ color: getRatingColor(review.totalAvgRating) }">{{ review.totalAvgRating }}</div>-->
+                <ThumbsUp class="thumb-icon"
+                  :class="{
+                    'up': review.isUp,
+                    'down': !review.isUp
+                  }"
+                />
                 <div class="review-date">{{ formatDate(review.regDt) }}</div>
               </div>
               <div class="review-content">
@@ -126,7 +148,7 @@ import type {
   ReviewStatsDto,
   ReviewTagDto
 } from "@/types/review.ts";
-import { getRatingColor } from '@/utils/ratingUtil.ts'
+import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto
@@ -228,26 +250,44 @@ const isExpanded = ref(true)
 }
 
 .rating-stats {
-  display: flex;
-  gap: 24px;
   margin-top: 4px;
 }
 
-.rating-item {
+.up-down-stats {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 24px;
 }
 
-.rating-value {
+.stat-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.thumb-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.thumb-icon.up {
+  color: #4CAF50;
+}
+
+.thumb-icon.down {
+  color: #FF5252;
+}
+
+.up-count {
+  color: #4CAF50;
   font-weight: 600;
-  color: #2979FF;
-  font-size: 15px;
+  font-size: 16px;
 }
 
-.rating-label {
-  color: #9e9e9e;
-  font-size: 13px;
+.down-count {
+  color: #FF5252;
+  font-weight: 600;
+  font-size: 16px;
 }
 
 .button-group {
@@ -340,12 +380,6 @@ const isExpanded = ref(true)
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.stats-subtitle {
-  font-size: 14px;
-  color: #9e9e9e;
-  margin-bottom: 12px;
-}
-
 .champion-stats {
   display: flex;
   gap: 16px;
@@ -375,8 +409,6 @@ const isExpanded = ref(true)
 .position-icon {
   width: 64px;
   height: 64px;
-  /*background: rgba(41, 121, 255, 0.1);*/
-  /*color: #2979FF;*/
   display: flex;
   align-items: center;
   justify-content: center;
@@ -386,9 +418,10 @@ const isExpanded = ref(true)
 }
 
 .champion-rating, .position-rating {
-  color: #fff;
-  font-size: 16px;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
   margin-top: 4px;
 }
 
@@ -411,7 +444,6 @@ const isExpanded = ref(true)
 }
 
 .tag {
-  background: rgba(41, 121, 255, 0.1);
   border-radius: 4px;
   padding: 6px 10px;
   display: flex;
@@ -420,9 +452,24 @@ const isExpanded = ref(true)
   white-space: nowrap;
 }
 
+.tag-up {
+  background: rgba(41, 121, 255, 0.1);
+}
+
+.tag-down {
+  background: rgba(235, 87, 87, 0.1);
+}
+
 .tag-text {
-  color: #2979FF;
   font-size: 13px;
+}
+
+.tag-text-up {
+  color: #2979FF;
+}
+
+.tag-text-down {
+  color: #EB5757;
 }
 
 .tag-count {
@@ -430,7 +477,6 @@ const isExpanded = ref(true)
   font-size: 12px;
 }
 
-/* 최근 평가 섹션 */
 .reviews-container {
   position: relative;
   margin-bottom: 2px;
@@ -453,16 +499,6 @@ const isExpanded = ref(true)
   display: flex;
   justify-content: space-between;
   margin-bottom: 8px;
-}
-
-.review-rating {
-  color: #2979FF;
-  font-weight: 500;
-}
-
-.review-date {
-  color: #9e9e9e;
-  font-size: 13px;
 }
 
 .review-content {

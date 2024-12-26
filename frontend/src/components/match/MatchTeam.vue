@@ -12,25 +12,27 @@
            auth.user?.puuid != profileData.riotAccountInfoEntity.puuid
            ? 'someone-else' // 다른사람의 프로필은 선택 불가능
              : {
-               'not-reviewable': !player.reviewDto?.reviewable && !(auth.isAuthenticated && auth.user?.puuid == player.puuid), // 이미 리뷰 작성내역 있음(수정)
-               'self-profile': auth.isAuthenticated && auth.user?.puuid == player.puuid, // 자기자신은 선택 불가능
+               'reviewed': !player.reviewDto?.reviewable,  // 리뷰 작성한 경우
+               'not-reviewed': player.reviewDto?.reviewable && player.puuid !== auth.user?.puuid,  // 리뷰 작성하지 않은 경우
+               'self-profile': player.puuid === auth.user?.puuid,  // 본인인 경우
              }
            ]"
            @click="handlePlayerClick(player)"
       >
         <div class="review-scores" v-if="player.reviewStatsDto">
-          <span class="score-item">
-            <span class="score-value" :style="{ color: getRatingColor(player.reviewStatsDto.skillRatingAvg)}">{{ player.reviewStatsDto.skillRatingAvg }}</span>
-            실력
-          </span>
-          <span class="score-item">
-            <span class="score-value" :style="{ color: getRatingColor(player.reviewStatsDto.teamworkRatingAvg)}">{{ player.reviewStatsDto.teamworkRatingAvg }}</span>
-            팀워크
-          </span>
-          <span class="score-item">
-            <span class="score-value" :style="{ color: getRatingColor(player.reviewStatsDto.mannerRatingAvg)}">{{ player.reviewStatsDto.mannerRatingAvg }}</span>
-            매너
-          </span>
+          <div class="review-counts">
+            <div class="review-up">
+              <ThumbsUp class="thumb-icon up" />
+              <span class="count">{{ player.reviewStatsDto.upCount }}</span>
+            </div>
+            <div class="review-down">
+              <ThumbsDown class="thumb-icon down" />
+              <span class="count">{{ player.reviewStatsDto.downCount }}</span>
+            </div>
+          </div>
+          <div class="review-ratio" v-if="player.reviewStatsDto.totalReviewCnt > 0">
+            {{ calculateRatio(player.reviewStatsDto.upCount, player.reviewStatsDto.totalReviewCnt) }}%
+          </div>
         </div>
         <div class="champion-wrapper">
           <div class="champion-icon">
@@ -83,6 +85,7 @@ import {useAuthStore} from "@/stores/auth.ts";
 import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 import {useRouter} from "vue-router";
 import {getRatingColor} from "@/utils/ratingUtil.ts";
+import {ThumbsDown, ThumbsUp} from "lucide-vue-next";
 
 
 const props = defineProps<{
@@ -142,6 +145,11 @@ const goSelectedSummonerProfile = (player:any) => {
   })
 }
 
+const calculateRatio = (upCount: number, total: number) => {
+  if (total === 0) return 0
+  return Math.round((upCount / total) * 100)
+}
+
 </script>
 
 <style scoped>
@@ -178,40 +186,46 @@ const goSelectedSummonerProfile = (player:any) => {
   gap: 12px;
   padding: 12px;
   border-radius: 8px;
-  cursor: cell;
   transition: all 0.2s ease;
   background: rgba(255, 255, 255, 0.04);
   border: 2px solid transparent;
 }
 
-.player.self-profile, .someone-else {
+/* 다른 사람의 프로필 조회 시 */
+.player.someone-else {
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.8;
   cursor: default;
 }
 
-/* 리뷰 가능한 카드 스타일 (reviewable true) */
-.player:not(.not-reviewable):not(.self-profile):not(.someone-else) {
+/* 리뷰 가능한 경우 (리뷰 작성하지 않은 소환사) */
+.player.not-reviewed {
   background: rgba(41, 121, 255, 0.08);
   border: 2px solid rgba(41, 121, 255, 0.2);
   box-shadow: 0 0 8px rgba(41, 121, 255, 0.1);
+  cursor: pointer;
 }
 
-/* 리뷰 불가능한 카드 스타일 (reviewable false) */
-.player.not-reviewable, .self-profile, .someone-else {
-  background: rgba(255, 255, 255, 0.02);
-  opacity: 0.8;
-}
-
-/* hover 효과 */
-.player:not(.not-reviewable):not(.self-profile):not(.someone-else):hover {
+.player.not-reviewed:hover, .player.reviewed:hover:not(.self-profile):hover {
   transform: translateX(4px);
   border-color: rgba(41, 121, 255, 0.4);
   background: rgba(41, 121, 255, 0.12);
 }
 
-.player.not-reviewable:hover{
-  transform: translateX(4px);
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.1);
+/* 리뷰 작성한 경우 */
+.player.reviewed:not(.self-profile):hover {
+  background: rgba(76, 175, 80, 0.05);
+  border: 2px solid rgba(76, 175, 80, 0.1);
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+/* 본인인 경우 */
+.player.self-profile {
+  background: rgba(255, 255, 255, 0.02);
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  opacity: 0.8;
+  cursor: default;
 }
 
 .champion-wrapper {
@@ -270,8 +284,8 @@ const goSelectedSummonerProfile = (player:any) => {
 }
 
 .player-name:hover {
-  color: #2979FF; /* 파란색으로 변경 */
-  text-decoration: underline; /* 밑줄 추가 */
+  color: #2979FF;
+  text-decoration: underline;
 }
 
 .player-tag {
@@ -323,7 +337,52 @@ const goSelectedSummonerProfile = (player:any) => {
   top: 12px;
   right: 12px;
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.review-counts {
+  display: flex;
+  gap: 12px;
+}
+
+.review-up, .review-down {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.thumb-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.thumb-icon.up {
+  color: #4CAF50;
+}
+
+.thumb-icon.down {
+  color: #FF5252;
+}
+
+.count {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.review-up .count {
+  color: #4CAF50;
+}
+
+.review-down .count {
+  color: #FF5252;
+}
+
+.review-ratio {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2979FF;
 }
 
 .score-item {
@@ -356,9 +415,21 @@ const goSelectedSummonerProfile = (player:any) => {
   }
 
   .review-scores {
-    gap: 8px;
     top: 8px;
     right: 8px;
+  }
+
+  .thumb-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .count {
+    font-size: 12px;
+  }
+
+  .review-ratio {
+    font-size: 11px;
   }
 
   .score-item {

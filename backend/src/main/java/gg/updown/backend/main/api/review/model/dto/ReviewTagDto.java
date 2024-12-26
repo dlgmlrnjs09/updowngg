@@ -11,6 +11,7 @@ public class ReviewTagDto {
     private String tagCode;
     private String tagValue;
     private String tagDescription;
+    private boolean tagUpdown;
 
     // 받은 태그 수
     private int frequentCount;

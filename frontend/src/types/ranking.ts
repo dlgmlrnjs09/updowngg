@@ -13,9 +13,8 @@ export interface Player {
     iconUrl: string
     totalReviews: number
     recentReviews: number
-    skillRating: number
-    teamworkRating: number
-    mannerRating: number
+    upCount: number
+    downCount: number
     tags: string[]
 }
 
@@ -25,9 +24,8 @@ export interface RankingCard {
     profileIconUrl: string
     gameName: string
     tagLine: string
-    skillRatingAvg: number
-    teamworkRatingAvg: number
-    mannerRatingAvg: number
+    upCount: number
+    downCount: number
     totalReviewCount: number
     last30DayReviewCnt: number
     recentTags: ReviewTagDto[]

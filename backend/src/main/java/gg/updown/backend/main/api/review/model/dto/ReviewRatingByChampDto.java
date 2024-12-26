@@ -12,5 +12,6 @@ public class ReviewRatingByChampDto {
     private String champName;
     private String champIconUrl;
     private int playCount;
-    private double totalAvgRating;
+    private int upCount;
+    private int downCount;
 }
