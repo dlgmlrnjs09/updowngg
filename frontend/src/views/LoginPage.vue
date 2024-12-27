@@ -109,7 +109,7 @@ const handleLogin = async () => {
     }
   } catch (error) {
     console.log(import.meta.env.VITE_API_URL)
-    console.log('로그인 실패:', error);
+    console.log('로그인 실패:,', error);
     toast.error('로그인에 실패했습니다.');
     return false;
   }
