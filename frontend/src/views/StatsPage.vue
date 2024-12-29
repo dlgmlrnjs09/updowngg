@@ -10,7 +10,7 @@
           <div class="filter-label">큐 타입</div>
           <div class="filter-content">
             <button
-                v-for="queue in ['전체', '솔로랭크', '자유랭크', '무작위 총력전', '우르프']"
+                v-for="queue in ['솔로랭크', '자유랭크', '무작위 총력전', '우르프']"
                 :key="queue"
                 :class="['filter-chip', { active: selectedQueue === queue }]"
                 @click="selectedQueue = queue"
@@ -76,7 +76,7 @@
             <th class="py-2 px-4 text-gray-300">#</th>
             <th class="py-2 px-4 text-gray-300">챔피언</th>
             <th class="py-2 px-4 text-gray-300">플레이 수</th>
-            <th class="py-2 px-4 text-gray-300">평가받은 수</th>
+            <th class="py-2 px-4 text-gray-300">평가 수</th>
             <th class="py-2 px-4 text-gray-300"><ThumbsUp class="thumb-icon up" :size="20" /></th>
             <th class="py-2 px-4 text-gray-300"><ThumbsDown class="thumb-icon down" :size="20"/></th>
             <th class="py-2 px-4 text-gray-300">자주 받은 태그</th>
@@ -84,17 +84,17 @@
           </thead>
           <tbody>
           <tr v-for="(champion, index) in championStats"
-              :key="champion.name"
+              :key="champion.nameKr"
               class="border-b border-[#ffffff1a] hover:bg-[#ffffff0a]">
             <td class="py-3 px-4 text-gray-300 text-sm">{{ index + 1 }}</td>
             <td class="py-3 px-4 text-gray-400">
               <div class="flex items-center gap-3">
-                <img :src="champion.iconUrl" :alt="champion.name" class="w-8 h-8 rounded">
-                <span class="text-sm">{{ champion.name }}</span>
+                <img :src="champion.iconUrl" :alt="champion.nameKr" class="w-8 h-8 rounded">
+                <span class="text-sm">{{ champion.nameKr }}</span>
               </div>
             </td>
-            <td class="py-3 px-4 text-sm text-gray-400">{{ champion.playCount.toLocaleString() }}</td>
-            <td class="py-3 px-4 text-sm text-gray-400">{{ champion.reviewCount.toLocaleString() }}</td>
+            <td class="py-3 px-4 text-sm text-gray-400">{{ champion.playCount }}</td>
+            <td class="py-3 px-4 text-sm text-gray-400">{{ champion.reviewCount }}</td>
             <td class="py-3 px-4 text-gray-400">
               <div class="flex items-center gap-2">
                 <div class="w-24 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
@@ -135,38 +135,78 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import {onMounted, ref, computed, watch} from 'vue'
 import {statsApi} from "@/api/stats.ts";
 import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
+import type {ChampionResDto} from "@/types/stats.ts";
+import type {RankingCard} from "@/types/ranking.ts";
+import {MatchGameMode, MatchPosition} from "@/types/match.ts";
+import type {SearchFilter} from "@/types/stats.ts";
+import {Tier} from "@/types/league.ts";
 
 // 필터 상태
-const selectedQueue = ref('전체')
+const selectedQueue = ref('솔로랭크')
 const selectedTier = ref('전체')
 const selectedPeriod = ref('전체')
 const selectedPosition = ref('전체')
+const championStats = ref<ChampionResDto[] | null>(null);
 
-// 예시 데이터
-const championStats = ref([
-  {
-    name: '케이틀린',
-    iconUrl: '/champions/caitlyn.png',
-    playCount: 1301379,
-    reviewCount: 28822,
-    likeRatio: 50.4,
-    dislikeRatio: 49.6,
-    topTags: ['CS압도', '라인전', '캐리']
-  },
-  {
-    name: '럭스',
-    iconUrl: '/champions/lux.png',
-    playCount: 1145046,
-    reviewCount: 25360,
-    likeRatio: 51.48,
-    dislikeRatio: 48.52,
-    topTags: ['포킹', '딜량', '유틸']
-  },
-  // ... 더미 데이터 생략
-])
+// API 요청용 필터 값 계산
+const apiFilter = computed(() => {
+  const filter: SearchFilter = {};
+
+  if (selectedQueue.value !== '전체') {
+    filter.queueType = queueMapping[selectedQueue.value.toUpperCase()];
+  }
+
+  if (selectedTier.value !== '전체') {
+    filter.tier = selectedTier.value.toUpperCase() as Tier;
+  }
+
+  if (selectedPosition.value !== '전체') {
+    filter.position = positionMapping[selectedPosition.value];
+  }
+
+  if (selectedPeriod.value !== '전체') {
+    filter.period = selectedPeriod.value;
+  }
+
+  return filter;
+});
+
+const fetchChampionStats = async () => {
+  const response = await statsApi.getChampionList(apiFilter.value);
+  console.log('response === ' + response)
+  championStats.value = response.data;
+}
+
+onMounted(() => {
+  fetchChampionStats();
+});
+
+// 필터 변경시마다 API 호출
+watch([selectedQueue, selectedTier, selectedPosition, selectedPeriod], () => {
+  fetchChampionStats();
+});
+
+// 큐 타입 매핑
+const queueMapping: Record<string, MatchGameMode> = {
+  '솔로랭크': MatchGameMode.SOLO_RANK,
+  '자유랭크': MatchGameMode.FLEX_RANK,
+  '무작위 총력전': MatchGameMode.ARAM,
+  '일반게임': MatchGameMode.NORMAL,
+};
+
+// 포지션 매핑
+const positionMapping: Record<string, MatchPosition> = {
+  '탑': MatchPosition.TOP,
+  '정글': MatchPosition.JUNGLE,
+  '미드': MatchPosition.MIDDLE,
+  '바텀': MatchPosition.BOTTOM,
+  '서포터': MatchPosition.UTILITY,
+};
+
+
 </script>
 
 <style scoped>

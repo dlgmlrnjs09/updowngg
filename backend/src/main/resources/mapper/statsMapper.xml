@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.stats.mapper.StatsMapper">
+
+	<select id="getPlayCountByChampions" parameterType="sortTypeReqDto" resultType="championResDto">
+		SELECT
+			lc.name_us,
+			lc.name_kr,
+			COALESCE(
+			COUNT(DISTINCT
+				CASE
+				WHEN
+					lm.queue_id = #{matchGameMode.queueId}
+					<if test="matchPosition != null">
+						AND lmp.position = #{matchPosition}
+					</if>
+					<if test="tier != null">
+						AND lsl.tier = #{tier}
+					</if>
+				THEN lmp.match_id
+				END
+			), 0
+			) as playCount
+		FROM
+			lol_champion lc
+			LEFT OUTER JOIN lol_match_participant lmp ON (
+			lc.name_us = lmp.champ_name
+			<if test="matchPosition != null">
+				AND lmp.position = #{matchPosition}
+			</if>
+			)
+			LEFT OUTER JOIN lol_match lm ON (
+				lmp.match_id = lm.match_id
+				AND lm.queue_id = #{matchGameMode.queueId}
+			)
+			LEFT OUTER JOIN lol_summoner_league lsl ON (
+			lmp.summoner_id = lsl.summoner_id
+			<if test="tier != null">
+				AND lsl.tier = #{tier}
+			</if>
+			)
+		GROUP BY
+			lc.name_us, lc.name_kr
+		ORDER BY
+			playCount DESC
+	</select>
+</mapper>

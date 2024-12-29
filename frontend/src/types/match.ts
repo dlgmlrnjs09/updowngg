@@ -36,3 +36,48 @@ export interface LolMatchInfoRes {
     matchInfo: LolMatchInfo;
     participantList: LolMatchParticipant[];
 }
+
+
+export enum MatchGameMode {
+    ARAM = 'ARAM',
+    NORMAL = 'NORMAL',
+    SOLO_RANK = 'SOLO_RANK',
+    FLEX_RANK = 'FLEX_RANK'
+}
+
+export interface GameModeInfo {
+    queueId: number;
+    queueName: string;
+}
+
+export const MatchGameModeDetails: Record<MatchGameMode, GameModeInfo> = {
+    [MatchGameMode.ARAM]: { queueId: 450, queueName: '칼바람나락' },
+    [MatchGameMode.NORMAL]: { queueId: 430, queueName: '일반게임' },
+    [MatchGameMode.SOLO_RANK]: { queueId: 420, queueName: '개인랭크' },
+    [MatchGameMode.FLEX_RANK]: { queueId: 440, queueName: '자유랭크' }
+};
+
+export const MatchGameModeUtils = {
+    getQueueName(queueId: number): string | null {
+        const mode = Object.values(MatchGameModeDetails).find(
+            mode => mode.queueId === queueId
+        );
+        return mode?.queueName ?? null;
+    }
+};
+
+export enum MatchPosition {
+    TOP = 'TOP',
+    JUNGLE = 'JUNGLE',
+    MIDDLE = 'MIDDLE',
+    BOTTOM = 'BOTTOM',
+    UTILITY = 'UTILITY'
+}
+
+export const MatchPositionDetails: Record<MatchPosition, { nameKr: string }> = {
+    [MatchPosition.TOP]: { nameKr: '탑' },
+    [MatchPosition.JUNGLE]: { nameKr: '정글' },
+    [MatchPosition.MIDDLE]: { nameKr: '미드' },
+    [MatchPosition.BOTTOM]: { nameKr: '원딜' },
+    [MatchPosition.UTILITY]: { nameKr: '서폿' }
+};

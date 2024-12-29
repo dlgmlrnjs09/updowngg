@@ -1,7 +1,7 @@
 package gg.updown.backend.main.api.lol.match.service;
 
 import gg.updown.backend.external.riot.RiotApiBasePath;
-import gg.updown.backend.external.riot.api.lol.match.enums.MatchQueueId;
+import gg.updown.backend.external.riot.api.lol.match.enums.MatchGameMode;
 import gg.updown.backend.external.riot.api.lol.match.model.*;
 import gg.updown.backend.external.riot.api.lol.match.service.MatchApiService;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
@@ -143,10 +143,16 @@ public class LolMatchService {
 //            lolSummonerService.conflictSummonerInfo(participantEntity.getPuuid(), participantEntity.getRiotIdGameName(), participantEntity.getRiotIdTagline());
 //        }
 
+        // 게임 참여자 10명 랭크정보 Insert
+        // API 호출횟수 많아서 제거함
+//        for (LolMatchParticipantEntity participantEntity : participantList) {
+//            lolSummonerService.getAndConflictSummonerLeagueInfo(participantEntity.getSummonerId());
+//        }
+
         LolMatchInfoDto infoDto = new LolMatchInfoDto();
         BeanUtils.copyProperties(matchInfoEntity, infoDto);
         // gameMode명 세팅
-        infoDto.setGameModeName(MatchQueueId.getQueueName(infoDto.getQueueId()));
+        infoDto.setGameModeName(MatchGameMode.getQueueName(infoDto.getQueueId()));
         List<LolMatchParticipantDto> participantDtoList = participantList.stream()
                 .map(participant -> {
                     LolMatchParticipantDto entity = new LolMatchParticipantDto();
@@ -199,11 +205,11 @@ public class LolMatchService {
                 break;
             }
 
-            try {
-                Thread.sleep(1300);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt(); // 스레드의 interrupt 상태를 복원
-            }
+//            try {
+//                Thread.sleep(1300);
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt(); // 스레드의 interrupt 상태를 복원
+//            }
 
             startIndex += count;
         }

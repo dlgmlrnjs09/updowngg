@@ -2,7 +2,9 @@ package gg.updown.backend.main.api.stats.service;
 
 import gg.updown.backend.external.riot.RiotApiBasePath;
 import gg.updown.backend.external.riot.api.ddragon.model.Champion;
+import gg.updown.backend.main.api.stats.mapper.StatsMapper;
 import gg.updown.backend.main.api.stats.model.dto.ChampionResDto;
+import gg.updown.backend.main.api.stats.model.dto.SortTypeReqDto;
 import gg.updown.backend.main.riot.ddragon.mapper.DdragonMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,17 +17,13 @@ import java.util.List;
 public class StatsService {
 
     private final DdragonMapper ddragonMapper;
+    private final StatsMapper statsMapper;
 
-    public List<ChampionResDto> getChampions() {
-        List<ChampionResDto> resultList = new ArrayList<>();
+    public List<ChampionResDto> getChampions(SortTypeReqDto reqDto) {
+        List<ChampionResDto> resultList = statsMapper.getPlayCountByChampions(reqDto);
 
-        List<Champion> championList = ddragonMapper.getAllChampions();
-        for (Champion champion : championList) {
-            resultList.add(ChampionResDto.builder()
-                            .nameUs(champion.getNameUs())
-                            .nameKr(champion.getNameKr())
-                            .iconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.24.1/img/champion/" + champion.getNameUs() + ".png")
-                    .build());
+        for (ChampionResDto champion : resultList) {
+            champion.setIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.24.1/img/champion/" + champion.getNameUs() + ".png");
         }
 
         return resultList;
