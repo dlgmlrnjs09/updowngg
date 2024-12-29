@@ -45,4 +45,121 @@
         WHERE
             puuid = #{puuid}
     </update>
+
+    <select id="getSummonerLeagueInfo" parameterType="map" resultType="LolSummonerLeagueEntity">
+        SELECT
+            seq,
+            league_id,
+            summoner_id,
+            queue_type,
+            tier,
+            rank,
+            league_points,
+            wins,
+            losses,
+            hot_streak,
+            veteran,
+            fresh_blood,
+            inactive,
+            reg_dt,
+            updated_at
+        FROM
+            lol_summoner_league
+        WHERE
+            summoner_id = #{summonerId}
+            AND queue_type = #{queueType};
+    </select>
+
+    <insert id="insertSummonerLeagueInfo" parameterType="LolSummonerLeagueEntity">
+        INSERT INTO public.lol_summoner_league (
+            league_id,
+            summoner_id,
+            queue_type,
+            tier,
+            rank,
+            league_points,
+            wins,
+            losses,
+            hot_streak,
+            veteran,
+            fresh_blood,
+            inactive
+        ) VALUES (
+             #{leagueId}, -- league_id
+             #{summonerId}, -- summoner_id
+             #{queueType}, -- queue_type
+             #{tier}, -- tier
+             #{rank}, -- rank
+             #{leaguePoints}, -- league_points
+             #{wins}, -- wins
+             #{losses}, -- losses
+             #{hotStreak}, -- hot_streak
+             #{veteran}, -- veteran
+             #{freshBlood}, -- fresh_blood
+             #{inactive}  -- inactive
+         );
+    </insert>
+
+    <update id="updateSummonerLeagueInfo" parameterType="LolSummonerLeagueEntity">
+        UPDATE public.lol_summoner_league
+        SET
+            league_id = #{leagueId},
+            tier = #{tier},
+            rank = #{rank},
+            league_points = #{leaguePoints},
+            wins = #{wins},
+            losses = #{losses},
+            hot_streak = #{hotStreak},
+            veteran = #{veteran},
+            fresh_blood = #{freshBlood},
+            inactive = #{inactive},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE
+            summoner_id = #{summonerId}
+          AND queue_type = #{queueType};
+    </update>
+
+    <insert id="conflictSummonerLeagueInfo" parameterType="LolSummonerLeagueEntity">
+        INSERT INTO public.lol_summoner_league (
+            league_id,
+            summoner_id,
+            queue_type,
+            tier,
+            rank,
+            league_points,
+            wins,
+            losses,
+            hot_streak,
+            veteran,
+            fresh_blood,
+            inactive
+        ) VALUES (
+             #{leagueId}, -- league_id
+             #{summonerId}, -- summoner_id
+             #{queueType}, -- queue_type
+             #{tier}, -- tier
+             #{rank}, -- rank
+             #{leaguePoints}, -- league_points
+             #{wins}, -- wins
+             #{losses}, -- losses
+             #{hotStreak}, -- hot_streak
+             #{veteran}, -- veteran
+             #{freshBlood}, -- fresh_blood
+             #{inactive}  -- inactive
+        )
+        ON CONFLICT (summoner_id, queue_type)
+        DO UPDATE
+            SET
+                league_id = #{leagueId},
+                tier = #{tier},
+                rank = #{rank},
+                league_points = #{leaguePoints},
+                wins = #{wins},
+                losses = #{losses},
+                hot_streak = #{hotStreak},
+                veteran = #{veteran},
+                fresh_blood = #{freshBlood},
+                inactive = #{inactive},
+                updated_at = CURRENT_TIMESTAMP
+    </insert>
 </mapper>

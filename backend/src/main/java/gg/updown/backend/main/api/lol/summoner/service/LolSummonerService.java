@@ -3,12 +3,15 @@ package gg.updown.backend.main.api.lol.summoner.service;
 import gg.updown.backend.external.riot.RiotApiBasePath;
 import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
+import gg.updown.backend.external.riot.api.lol.league.model.LeagueInfoBySummonerDto;
+import gg.updown.backend.external.riot.api.lol.league.service.LeagueApiService;
 import gg.updown.backend.external.riot.api.lol.summoner.model.SummonerDto;
 import gg.updown.backend.external.riot.api.lol.summoner.service.SummonerApiService;
 import gg.updown.backend.main.api.lol.summoner.mapper.LolSummonerMapper;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerDto;
 import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerProfileResDto;
+import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerLeagueEntity;
 import gg.updown.backend.main.riot.account.mapper.RiotAccountMapper;
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
 import gg.updown.backend.common.util.DateUtil;
@@ -16,6 +19,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -26,6 +32,7 @@ public class LolSummonerService {
     private final AccountApiService accountApiService;
     private final SummonerApiService summonerApiService;
     private final RiotAccountMapper riotAccountMapper;
+    private final LeagueApiService leagueApiService;
 
     public LolSummonerProfileResDto conflictSummonerInfo(String gameName, String tagLine) {
         LolSummonerProfileResDto resultDto = new LolSummonerProfileResDto();
@@ -34,9 +41,12 @@ public class LolSummonerService {
         RiotAccountInfoEntity accountEntity = this.getAndConflictAccountInfo(gameName, tagLine);
         // 롤 소환사 정보 저장 및 조회
         LolSummonerDto summonerEntity = this.getAndConflictSummonerInfo(accountEntity.getPuuid());
+        // 롤 소환사 랭크정보 저장 및 조회
+        List<LolSummonerLeagueEntity> summonerLeagueInfoEntity = this.getAndConflictSummonerLeagueInfo(summonerEntity.getSummonerId());
 
         resultDto.setRiotAccountInfoEntity(accountEntity);
         resultDto.setLolSummonerDto(summonerEntity);
+        resultDto.setLeagueEntityList(summonerLeagueInfoEntity);
 
         return resultDto;
     }
@@ -94,7 +104,7 @@ public class LolSummonerService {
         SummonerDto summonerDto = summonerApiService.getSummonerInfoByPuuid(puuid);
         LolSummonerEntity paramSummonerEntity = LolSummonerEntity.builder()
                 .puuid(summonerDto.getPuuid())
-                .summonerId(summonerDto.getPuuid())
+                .summonerId(summonerDto.getId())
                 .accountId(summonerDto.getAccountId())
                 .summonerLevel(summonerDto.getSummonerLevel())
                 .externalModDt(DateUtil.msToLocalDateTime(summonerDto.getRevisionDate()))
@@ -117,5 +127,27 @@ public class LolSummonerService {
         }
 
         return returnDto;
+    }
+
+    /**
+     * 롤 소환사 랭크정보 DB저장 및 리턴
+     */
+    public List<LolSummonerLeagueEntity> getAndConflictSummonerLeagueInfo(String summonerId) {
+        List<LolSummonerLeagueEntity> resultList = new ArrayList<>();
+        List<LolSummonerLeagueEntity> entityList = new ArrayList<>();
+        List<LeagueInfoBySummonerDto> leagueInfoList = leagueApiService.getSummonerLeagueInfoBySummonerId(summonerId);
+        if (leagueInfoList.isEmpty()) {
+            return entityList;
+        }
+
+        for (LeagueInfoBySummonerDto dto : leagueInfoList) {
+            LolSummonerLeagueEntity paramEntity = new LolSummonerLeagueEntity();
+            BeanUtils.copyProperties(dto, paramEntity);
+
+            lolSummonerMapper.conflictSummonerLeagueInfo(paramEntity);
+            resultList.add(paramEntity);
+        }
+
+        return resultList;
     }
 }
