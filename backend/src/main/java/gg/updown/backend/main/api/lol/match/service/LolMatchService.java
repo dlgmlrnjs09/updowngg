@@ -18,6 +18,7 @@ import gg.updown.backend.main.api.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,6 +28,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class LolMatchService {
+
+    @Value("${riot-api.latest-version}")
+    private String latestVersion;
+
     private final MatchApiService matchApiService;
     private final LolMatchMapper matchMapper;
     private final LolMatchTransactionService transactionService;
@@ -158,7 +163,7 @@ public class LolMatchService {
                     LolMatchParticipantDto entity = new LolMatchParticipantDto();
                     BeanUtils.copyProperties(participant, entity);
                     // 챔피언 초상화 URL Set
-                    entity.setChampProfileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.24.1/img/champion/" + participant.getChampName() + ".png");
+                    entity.setChampProfileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion +"/img/champion/" + participant.getChampName() + ".png");
                     return entity;
                 })
                 .toList();

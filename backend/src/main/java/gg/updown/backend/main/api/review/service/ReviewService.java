@@ -5,6 +5,7 @@ import gg.updown.backend.main.api.review.mapper.ReviewMapper;
 import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+    @Value("${riot-api.latest-version}")
+    private String latestVersion;
+
     private final ReviewMapper reviewMapper;
     private final ReviewTransactionService transactionService;
 
@@ -51,7 +55,7 @@ public class ReviewService {
     public List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid) {
         List<ReviewRatingByChampDto> dtoList = reviewMapper.getAvgRatingByChamp(targetPuuid);
         for (ReviewRatingByChampDto dto : dtoList) {
-            dto.setChampIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.24.1/img/champion/" + dto.getChampName() + ".png");
+            dto.setChampIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion + "/img/champion/" + dto.getChampName() + ".png");
         }
         return dtoList;
     }

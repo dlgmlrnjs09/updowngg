@@ -8,6 +8,7 @@ import gg.updown.backend.main.api.review.model.dto.ReviewTagDto;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,6 +19,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class SiteRankingService {
+    @Value("${riot-api.latest-version}")
+    private String latestVersion;
+
     private final SiteRankingMapper siteRankingMapper;
 
     public List<SiteRankingCardResDto> selectTopRankers(int offset, int limit) {
@@ -36,7 +40,7 @@ public class SiteRankingService {
                             .downCount(ratingDto.getDownCount())
                             .totalReviewCount(ratingDto.getTotalReviewCnt())
                             .last30DayReviewCnt(ratingDto.getLast30DayReviewCnt())
-                            .profileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.4.1/img/profileicon/" + basicInfoMap.get("profile_icon_id") + ".png")
+                            .profileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion + "/img/profileicon/" + basicInfoMap.get("profile_icon_id") + ".png")
                             .recentTags(recentTagList)
                     .build());
         }

@@ -18,6 +18,7 @@ import gg.updown.backend.common.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,6 +28,9 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class LolSummonerService {
+
+    @Value("${riot-api.latest-version}")
+    private String latestVersion;
 
     private final LolSummonerMapper lolSummonerMapper;
     private final AccountApiService accountApiService;
@@ -123,7 +127,7 @@ public class LolSummonerService {
 
         BeanUtils.copyProperties(paramSummonerEntity, returnDto);
         if (summonerEntity != null) {
-            returnDto.setProfileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.4.1/img/profileicon/" + summonerEntity.getProfileIconId() + ".png");
+            returnDto.setProfileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion +"/img/profileicon/" + summonerEntity.getProfileIconId() + ".png");
         }
 
         return returnDto;

@@ -2,6 +2,7 @@ package gg.updown.backend.external.riot.api.ddragon.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -16,7 +17,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class DdragonApiService {
 
-    private final String latestVersion = "14.24.1";
+    @Value("${riot-api.latest-version}")
+    private String latestVersion;
 
     private final WebClient ddragonWebClient;
 
@@ -30,7 +32,7 @@ public class DdragonApiService {
 
     public Map<String, Object> getChampionData() {
         Map response = ddragonWebClient.get()
-                .uri("/cdn/14.24.1/data/ko_KR/champion.json")
+                .uri("/cdn/" + latestVersion + "/data/ko_KR/champion.json")
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block();
