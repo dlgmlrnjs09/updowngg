@@ -23,6 +23,7 @@ public class TestController {
 
     @GetMapping("/test")
     public void test() {
+        ddragonService.insertChampionNameList();
     }
 
     @GetMapping("/encodeing")

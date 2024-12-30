@@ -1,6 +1,6 @@
 package gg.updown.backend.main.api.stats.controller;
 
-import gg.updown.backend.main.api.stats.model.dto.ChampionResDto;
+import gg.updown.backend.main.api.stats.model.dto.ChampionStatsDto;
 import gg.updown.backend.main.api.stats.model.dto.SortTypeReqDto;
 import gg.updown.backend.main.api.stats.service.StatsService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class StatsController {
     private final StatsService statsService;
 
     @GetMapping("champions")
-    public ResponseEntity<List<ChampionResDto>> getChampionList(SortTypeReqDto reqDto) {
+    public ResponseEntity<List<ChampionStatsDto>> getChampionList(SortTypeReqDto reqDto) {
         return ResponseEntity.ok(statsService.getChampions(reqDto));
     }
 }

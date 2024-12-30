@@ -100,10 +100,10 @@
                 <div class="w-24 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
                   <div
                       class="h-full bg-[#4CAF50]"
-                      :style="{ width: `${champion.likeRatio}%` }"
+                      :style="{ width: `${champion.upRatio}%` }"
                   ></div>
                 </div>
-                <span class="text-sm">{{ champion.likeRatio }}%</span>
+                <span class="text-sm">{{ champion.upRatio }}%</span>
               </div>
             </td>
             <td class="py-3 px-4 text-gray-400">
@@ -111,15 +111,15 @@
                 <div class="w-24 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
                   <div
                       class="h-full bg-[#FF5252]"
-                      :style="{ width: `${champion.dislikeRatio}%` }"
+                      :style="{ width: `${champion.downRatio}%` }"
                   ></div>
                 </div>
-                <span class="text-sm">{{ champion.dislikeRatio }}%</span>
+                <span class="text-sm">{{ champion.downRatio }}%</span>
               </div>
             </td>
             <td class="py-4 px-4">
               <div class="flex gap-2">
-                  <span v-for="tag in champion.topTags"
+                  <span v-for="tag in champion.topTagList"
                         :key="tag"
                         class="tag">
                     {{ tag }}

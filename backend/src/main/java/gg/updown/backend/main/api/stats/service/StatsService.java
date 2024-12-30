@@ -1,31 +1,42 @@
 package gg.updown.backend.main.api.stats.service;
 
 import gg.updown.backend.external.riot.RiotApiBasePath;
-import gg.updown.backend.external.riot.api.ddragon.model.Champion;
 import gg.updown.backend.main.api.stats.mapper.StatsMapper;
-import gg.updown.backend.main.api.stats.model.dto.ChampionResDto;
+import gg.updown.backend.main.api.stats.model.dto.ChampionStatsDto;
 import gg.updown.backend.main.api.stats.model.dto.SortTypeReqDto;
-import gg.updown.backend.main.riot.ddragon.mapper.DdragonMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StatsService {
 
-    private final DdragonMapper ddragonMapper;
     private final StatsMapper statsMapper;
 
-    public List<ChampionResDto> getChampions(SortTypeReqDto reqDto) {
-        List<ChampionResDto> resultList = statsMapper.getPlayCountByChampions(reqDto);
+    public List<ChampionStatsDto> getChampions(SortTypeReqDto reqDto) {
+        // 기본 통계
+        List<ChampionStatsDto> statsList = statsMapper.getStatsByChampions(reqDto);
+        // 많이받은 태그 top 3
+        Map<String, String> topTags = statsMapper.getTopTagsByChampion(reqDto)
+                .stream()
+                .collect(Collectors.toMap(
+                        map -> map.get("name_us"),
+                        map -> map.get("top_tags"),
+                        (existing, replacement) -> existing
+                ));
 
-        for (ChampionResDto champion : resultList) {
+        for (ChampionStatsDto champion : statsList) {
             champion.setIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/14.24.1/img/champion/" + champion.getNameUs() + ".png");
+            champion.setUpRatio();
+            champion.setDownRatio();
+            champion.setTopTags(topTags.get(champion.getNameUs()));
+            champion.setTopTagList();
         }
 
-        return resultList;
+        return statsList;
     }
 }

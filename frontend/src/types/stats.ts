@@ -7,6 +7,10 @@ export interface ChampionResDto {
     nameKr: string;
     iconUrl: string;
     playCount: number;
+    reviewCount: number;
+    upRatio: number;
+    downRatio: number;
+    topTagList: string[];
 }
 
 export interface SearchFilter {

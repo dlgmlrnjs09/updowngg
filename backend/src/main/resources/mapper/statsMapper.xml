@@ -2,46 +2,166 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="gg.updown.backend.main.api.stats.mapper.StatsMapper">
 
-	<select id="getPlayCountByChampions" parameterType="sortTypeReqDto" resultType="championResDto">
+	<sql id="statsFilterCondition">
+		lm.queue_id = #{matchGameMode.queueId}
+		<if test="matchPosition != null">
+			AND lmp.position = #{matchPosition}
+		</if>
+		<if test="tier != null">
+			AND lsl.tier = #{tier}
+		</if>
+	</sql>
+
+	<!-- 챔피언별 기본 통계 -->
+	<select id="getStatsByChampions" parameterType="sortTypeReqDto" resultType="championStatsDto">
+		SELECT
+		lc.name_us,
+		lc.name_kr,
+		COALESCE(
+		COUNT(
+		DISTINCT CASE WHEN
+		<include refid="statsFilterCondition"/>
+		THEN lmp.match_id END
+		), 0
+		) as playCount,
+		COALESCE(
+		COUNT(
+		DISTINCT CASE WHEN
+		<include refid="statsFilterCondition"/>
+		THEN ssr.summoner_review_seq END
+		), 0
+		) as reviewCount,
+		COALESCE(
+		COUNT(
+		DISTINCT CASE WHEN
+		<include refid="statsFilterCondition"/>
+		AND ssr.is_up = true
+		THEN ssr.summoner_review_seq END
+		), 0
+		) as upCount
+		FROM
+		lol_champion lc
+		LEFT OUTER JOIN lol_match_participant lmp ON (
+		lc.name_us = lmp.champ_name
+		<if test="matchPosition != null">
+			AND lmp.position = #{matchPosition}
+		</if>
+		)
+		LEFT OUTER JOIN lol_match lm ON (
+		lmp.match_id = lm.match_id
+		AND lm.queue_id = #{matchGameMode.queueId}
+		)
+		LEFT OUTER JOIN lol_summoner_league lsl ON (
+		lmp.summoner_id = lsl.summoner_id
+		<if test="tier != null">
+			AND lsl.tier = #{tier}
+		</if>
+		)
+		LEFT OUTER JOIN site_summoner_review ssr ON (
+		lmp.puuid = ssr.target_puuid
+		AND ssr.del_dt IS NULL
+		)
+		GROUP BY
+		lc.name_us,
+		lc.name_kr
+		ORDER BY
+		playCount DESC
+	</select>
+
+	<!-- 챔피언별 상위 3개 태그 조회 -->
+	<select id="getTopTagsByChampion" parameterType="sortTypeReqDto" resultType="map">
+		WITH ChampionTags AS (
+		SELECT
+		lc.name_us,
+		rt.tag_value,
+		COUNT(*) as tag_count,
+		ROW_NUMBER() OVER (PARTITION BY lc.name_us ORDER BY COUNT(*) DESC) as rn
+		FROM lol_champion lc
+		LEFT OUTER JOIN lol_match_participant lmp ON (
+		lc.name_us = lmp.champ_name
+		<if test="matchPosition != null">
+			AND lmp.position = #{matchPosition}
+		</if>
+		)
+		LEFT OUTER JOIN lol_match lm ON (
+		lmp.match_id = lm.match_id
+		AND lm.queue_id = #{matchGameMode.queueId}
+		)
+		LEFT OUTER JOIN lol_summoner_league lsl ON (
+		lmp.summoner_id = lsl.summoner_id
+		<if test="tier != null">
+			AND lsl.tier = #{tier}
+		</if>
+		)
+		LEFT OUTER JOIN site_summoner_review ssr ON (
+		lmp.puuid = ssr.target_puuid
+		AND ssr.del_dt IS NULL
+		)
+		LEFT OUTER JOIN site_summoner_review_tag srt ON
+		ssr.summoner_review_seq = srt.summoner_review_seq
+		LEFT OUTER JOIN site_review_tag rt ON
+		srt.tag_code = rt.tag_code
+		WHERE rt.tag_value IS NOT NULL
+		AND <include refid="statsFilterCondition" />
+		GROUP BY lc.name_us, rt.tag_value
+		)
+		SELECT
+		name_us,
+		STRING_AGG(tag_value, ',') as top_tags
+		FROM ChampionTags
+		WHERE rn <![CDATA[ <= 3 ]]>
+		GROUP BY name_us
+	</select>
+
+	<select id="getReviewByChampions" parameterType="sortTypeReqDto" resultType="championStatsDto">
 		SELECT
 			lc.name_us,
 			lc.name_kr,
+			STRING_AGG(DISTINCT rt.tag_value,',') as top_tags
 			COALESCE(
-			COUNT(DISTINCT
-				CASE
-				WHEN
-					lm.queue_id = #{matchGameMode.queueId}
-					<if test="matchPosition != null">
-						AND lmp.position = #{matchPosition}
-					</if>
-					<if test="tier != null">
-						AND lsl.tier = #{tier}
-					</if>
-				THEN lmp.match_id
-				END
-			), 0
-			) as playCount
+				COUNT(DISTINCT
+					CASE
+						WHEN lm.queue_id = #{matchGameMode.queueId}
+						<if test="matchPosition != null">
+							AND lmp.position = #{matchPosition}
+						</if>
+						<if test="tier != null">
+							AND lsl.tier = #{tier}
+						</if>
+						THEN ssr.summoner_review_seq
+					END
+				), 0
+			) as review_count,
 		FROM
 			lol_champion lc
 			LEFT OUTER JOIN lol_match_participant lmp ON (
-			lc.name_us = lmp.champ_name
-			<if test="matchPosition != null">
-				AND lmp.position = #{matchPosition}
-			</if>
+				lc.name_us = lmp.champ_name
+				<if test="matchPosition != null">
+					AND lmp.position = #{matchPosition}
+				</if>
 			)
 			LEFT OUTER JOIN lol_match lm ON (
 				lmp.match_id = lm.match_id
 				AND lm.queue_id = #{matchGameMode.queueId}
 			)
 			LEFT OUTER JOIN lol_summoner_league lsl ON (
-			lmp.summoner_id = lsl.summoner_id
-			<if test="tier != null">
-				AND lsl.tier = #{tier}
-			</if>
+				lmp.summoner_id = lsl.summoner_id
+				<if test="tier != null">
+					AND lsl.tier = #{tier}
+				</if>
 			)
+			LEFT OUTER JOIN site_summoner_review ssr ON (
+				lmp.puuid = ssr.target_puuid
+				AND ssr.del_dt IS NULL
+			)
+			LEFT OUTER JOIN site_summoner_review_tag srt ON
+				ssr.summoner_review_seq = srt.summoner_review_seq
+			LEFT OUTER JOIN site_review_tag rt ON
+				srt.tag_code = rt.tag_code
 		GROUP BY
-			lc.name_us, lc.name_kr
+			lc.name_us,
+			lc.name_kr
 		ORDER BY
-			playCount DESC
+			review_count DESC
 	</select>
 </mapper>
