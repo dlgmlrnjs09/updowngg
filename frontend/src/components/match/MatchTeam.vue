@@ -42,7 +42,7 @@
         </div>
         <div class="player-info">
           <div class="player-name-wrapper">
-            <div class="player-name" @click.stop="goSelectedSummonerProfile(player)">{{ player.riotIdGameName }}</div>
+            <div class="player-name" @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">{{ player.riotIdGameName }}</div>
             <div class="player-tag">#{{ player.riotIdTagline }}</div>
           </div>
           <div class="player-stats">
@@ -86,6 +86,7 @@ import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 import {useRouter} from "vue-router";
 import {getRatingColor} from "@/utils/ratingUtil.ts";
 import {ThumbsDown, ThumbsUp} from "lucide-vue-next";
+import {goSelectedSummonerProfile} from "@/common.ts";
 
 
 const props = defineProps<{
@@ -130,20 +131,15 @@ const handlePlayerClick = (player:any) => {
   emit('reviewPlayer', player)
 }
 
-const goSelectedSummonerProfile = (player:any) => {
-  console.log('click')
-  router.push({
-    name: 'summoner',
-    params: {
-      name: player.riotIdGameName,
-      tag: player.riotIdTagline,
-    },
-    // 소환사 정보를 state로 전달
-    // state: {
-    //   summonerInfo: response.data
-    // }
-  })
-}
+// const goSelectedSummonerProfile = (player:any) => {
+//   router.push({
+//     name: 'summoner',
+//     params: {
+//       name: player.riotIdGameName,
+//       tag: player.riotIdTagline,
+//     }
+//   })
+// }
 
 const calculateRatio = (upCount: number, total: number) => {
   if (total === 0) return 0

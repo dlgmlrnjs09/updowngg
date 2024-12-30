@@ -108,41 +108,6 @@
         </collection>
     </resultMap>
 
-    <select id="getMatchesByPuuid" resultMap="matchInfoResultMap">
-        WITH target_matches AS (
-            SELECT DISTINCT mp.match_id
-            FROM lol_match_participant mp
-            WHERE mp.puuid = #{puuid}
-            LIMIT #{limit} OFFSET #{offset}
-        )
-        SELECT
-            m.match_id,
-            m.game_duration,
-            m.game_mode,
-            m.game_start_dt,
-            m.game_type,
-            m.queue_id,
-            p.puuid,
-            p.riot_id_game_name,
-            p.riot_id_tagline,
-            p.position,
-            p.team_id,
-            p.kills,
-            p.assists,
-            p.deaths,
-            p.champ_level,
-            p.champ_id,
-            p.champ_name,
-            p.total_damage_to_champion,
-            p.total_damage_taken,
-            CONCAT('https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/', p.champ_name, '.png') as champ_profile_icon_url
-        FROM target_matches tm
-                 LEFT OUTER JOIN lol_match m ON m.match_id = tm.match_id
-                 LEFT OUTER JOIN lol_match_participant p ON m.match_id = p.match_id
-        ORDER BY game_start_dt DESC
-
-    </select>
-
     <insert id="insertMatch" parameterType="LolMatchEntity">
         INSERT INTO lol_match (
             match_id,

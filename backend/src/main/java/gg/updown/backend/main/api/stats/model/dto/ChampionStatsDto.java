@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.stats.model.dto;
 
+import gg.updown.backend.main.api.review.model.dto.ReviewTagDto;
 import io.micrometer.common.util.StringUtils;
 import lombok.*;
 
@@ -21,8 +22,7 @@ public class ChampionStatsDto {
     private Long upCount;
     private double upRatio;
     private double downRatio;
-    private String topTags;
-    private List<String> topTagList;
+    private List<ReviewTagDto> topTagList;
 
     // 좋아요 비율 계산 (백분율)
     public double getUpRatio() {
@@ -53,17 +53,5 @@ public class ChampionStatsDto {
             this.downRatio = 0.0;
         }
         this.downRatio = Math.round((double) getDownCount() / reviewCount * 100 * 10) / 10.0;
-    }
-
-    public List<String> getTopTagList() {
-        return StringUtils.isBlank(topTags)
-                ? Collections.emptyList()
-                : Arrays.asList(topTags.split(","));
-    }
-
-    public void setTopTagList() {
-        this.topTagList = StringUtils.isBlank(topTags)
-                ? Collections.emptyList()
-                : Arrays.asList(topTags.split(","));
     }
 }

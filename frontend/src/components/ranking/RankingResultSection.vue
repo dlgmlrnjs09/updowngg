@@ -17,7 +17,7 @@
 
           <div class="player-basic-info">
             <div class="player-name">
-              <span class="name">{{ player.gameName }}</span>
+              <span class="name" @click.stop="goSelectedSummonerProfile(player.gameName, player.tagLine)">{{ player.gameName }}</span>
               <span class="tag">#{{ player.tagLine }}</span>
             </div>
             <div class="review-counts">
@@ -77,6 +77,7 @@
 import { getRatingColor } from '@/utils/ratingUtil'
 import type { RankingCard } from '@/types/ranking'
 import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
+import {goSelectedSummonerProfile} from "@/common.ts";
 
 
 defineProps<{
@@ -369,6 +370,21 @@ const calculateRatio = (upCount: number, total: number) => {
   border-top-color: transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+.name {
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.name:hover {
+  color: #2979FF;
+  text-decoration: underline;
 }
 
 @keyframes spin {

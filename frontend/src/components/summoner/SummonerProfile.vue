@@ -44,27 +44,7 @@
       <div class="tags-section">
         <div class="stats-title">자주 받은 태그</div>
         <div v-if="frequentTags && frequentTags.length > 0" class="tags-slider">
-          <div class="tags-wrapper">
-            <div
-                v-for="tag in frequentTags"
-                :key="tag.tagCode"
-                class="tag"
-                :class="{
-                  'tag-up': tag.tagUpdown,
-                  'tag-down': !tag.tagUpdown
-                }"
-            >
-              <span
-                  class="tag-text"
-                  :class="{
-                  'tag-text-up': tag.tagUpdown,
-                  'tag-text-down': !tag.tagUpdown
-                }"
-              >
-                {{ tag.tagValue }}</span>
-              <span class="tag-count">{{ tag.frequentCount }}</span>
-            </div>
-          </div>
+          <TagList :tags="frequentTags" size="medium"/>
         </div>
         <div v-else class="no-review-message">
           받은 태그가 없습니다.
@@ -149,6 +129,7 @@ import type {
   ReviewTagDto
 } from "@/types/review.ts";
 import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
+import TagList from "@/components/common/TagList.vue";
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto

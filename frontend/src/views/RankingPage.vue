@@ -32,7 +32,7 @@ const router = useRouter();
 const rankerCards = ref<RankingCard[] | null>(null);
 const currentStartIndex = ref(0);
 
-const fetchRankerList = async (startIndex: number = 0, limit: number = 2) => {
+const fetchRankerList = async (startIndex: number = 0, limit: number = 10) => {
   const response = await rankingApi.getRankerCardList(startIndex, limit)
   rankerCards.value = response.data;
 
@@ -52,7 +52,7 @@ const loadMore = async () => {
 
   isLoading.value = true
   try {
-    await fetchRankerList(currentStartIndex.value + 2)
+    await fetchRankerList(currentStartIndex.value + 10)
   } finally {
     isLoading.value = false
   }

@@ -144,11 +144,7 @@
             </td>
             <td class="py-4 px-4">
               <div class="flex gap-2">
-                  <span v-for="tag in champion.topTagList"
-                        :key="tag"
-                        class="tag">
-                    {{ tag }}
-                  </span>
+                <TagList :tags="champion.topTagList" size="small"/>
               </div>
             </td>
           </tr>
@@ -168,6 +164,7 @@ import type {RankingCard} from "@/types/ranking.ts";
 import {MatchGameMode, MatchPosition} from "@/types/match.ts";
 import type {SearchFilter} from "@/types/stats.ts";
 import {Tier} from "@/types/league.ts";
+import TagList from "@/components/common/TagList.vue";
 
 // 필터 상태
 const selectedQueue = ref('솔로랭크')

@@ -16,7 +16,6 @@ public interface LolMatchMapper {
     LolMatchEntity getMatchInfo(String matchId);
 
     List<LolMatchParticipantEntity> getMatchParticipantList(String matchId);
-    List<LolMatchInfoResDto> getMatchesByPuuid(@Param("puuid") String puuid, @Param("offset") int offset, @Param("limit") int limit);
     void insertMatch(LolMatchEntity match);
     void insertMatchParticipants(List<LolMatchParticipantEntity> participants);
     void insertMatchIdList(List<String> matchIdList);

@@ -1,6 +1,7 @@
 import type {MatchGameMode} from "@/types/match.ts";
 import type {Tier} from "@/types/league.ts";
 import {MatchPosition} from "@/types/match.ts";
+import type {ReviewTagDto} from "@/types/review.ts";
 
 export interface ChampionResDto {
     nameUs: string;
@@ -10,7 +11,7 @@ export interface ChampionResDto {
     reviewCount: number;
     upRatio: number;
     downRatio: number;
-    topTagList: string[];
+    topTagList: ReviewTagDto[];
 }
 
 export interface SearchFilter {
