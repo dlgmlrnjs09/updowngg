@@ -50,8 +50,8 @@
           </div>
         </div>
 
-        <!-- 포지션 필터 -->
-        <div class="filter-row">
+        <!-- 포지션 필터 (무작위 총력전이 아닐 때만 표시) -->
+        <div class="filter-row" v-if="selectedQueue !== '무작위 총력전'">
           <div class="filter-label">포지션</div>
           <div class="filter-content">
             <button
@@ -73,17 +73,42 @@
         <table class="w-full">
           <thead>
           <tr class="text-left border-b border-[#ffffff1a]">
-            <th class="py-2 px-4 text-gray-300">#</th>
-            <th class="py-2 px-4 text-gray-300">챔피언</th>
-            <th class="py-2 px-4 text-gray-300">플레이 수</th>
-            <th class="py-2 px-4 text-gray-300">평가 수</th>
-            <th class="py-2 px-4 text-gray-300"><ThumbsUp class="thumb-icon up" :size="20" /></th>
-            <th class="py-2 px-4 text-gray-300"><ThumbsDown class="thumb-icon down" :size="20"/></th>
+            <th class="py-2 px-4 text-gray-300 w-12">#</th>
+            <th class="py-2 px-4 text-gray-300 w-48 cursor-pointer" @click="toggleSort('nameKr')">
+              <div class="flex items-center gap-1">
+                챔피언
+                <ArrowUpDown class="w-3.5 h-3.5" :class="{ 'text-[#2979FF]': sortColumn === 'nameKr' }" />
+              </div>
+            </th>
+            <th class="py-2 px-4 text-gray-300 w-28 cursor-pointer" @click="toggleSort('playCount')">
+              <div class="flex items-center gap-1">
+                플레이수
+                <ArrowUpDown class="w-3.5 h-3.5" :class="{ 'text-[#2979FF]': sortColumn === 'playCount' }" />
+              </div>
+            </th>
+            <th class="py-2 px-4 text-gray-300 w-28 cursor-pointer" @click="toggleSort('reviewCount')">
+              <div class="flex items-center gap-1">
+                평가수
+                <ArrowUpDown class="w-3.5 h-3.5" :class="{ 'text-[#2979FF]': sortColumn === 'reviewCount' }" />
+              </div>
+            </th>
+            <th class="py-2 px-4 text-gray-300 w-40 cursor-pointer" @click="toggleSort('upRatio')">
+              <div class="flex items-center gap-1">
+                <ThumbsUp class="thumb-icon up" :size="20" />
+                <ArrowUpDown class="w-3.5 h-3.5" :class="{ 'text-[#2979FF]': sortColumn === 'upRatio' }" />
+              </div>
+            </th>
+            <th class="py-2 px-4 text-gray-300 w-40 cursor-pointer" @click="toggleSort('downRatio')">
+              <div class="flex items-center gap-1">
+                <ThumbsDown class="thumb-icon down" :size="20"/>
+                <ArrowUpDown class="w-3.5 h-3.5" :class="{ 'text-[#2979FF]': sortColumn === 'downRatio' }" />
+              </div>
+            </th>
             <th class="py-2 px-4 text-gray-300">자주 받은 태그</th>
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(champion, index) in championStats"
+          <tr v-for="(champion, index) in sortedChampionStats"
               :key="champion.nameKr"
               class="border-b border-[#ffffff1a] hover:bg-[#ffffff0a]">
             <td class="py-3 px-4 text-gray-300 text-sm">{{ index + 1 }}</td>
@@ -137,7 +162,7 @@
 <script setup lang="ts">
 import {onMounted, ref, computed, watch} from 'vue'
 import {statsApi} from "@/api/stats.ts";
-import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
+import { ThumbsUp, ThumbsDown, ArrowUpDown } from 'lucide-vue-next'
 import type {ChampionResDto} from "@/types/stats.ts";
 import type {RankingCard} from "@/types/ranking.ts";
 import {MatchGameMode, MatchPosition} from "@/types/match.ts";
@@ -151,6 +176,45 @@ const selectedPeriod = ref('전체')
 const selectedPosition = ref('전체')
 const championStats = ref<ChampionResDto[] | null>(null);
 
+// 정렬 상태
+const sortColumn = ref<string>('');
+const sortDirection = ref<'asc' | 'desc' | null>(null);
+
+// 정렬 토글 함수
+const toggleSort = (column: string) => {
+  if (sortColumn.value === column) {
+    if (sortDirection.value === 'asc') {
+      sortDirection.value = 'desc';
+    } else if (sortDirection.value === 'desc') {
+      sortDirection.value = null;
+      sortColumn.value = '';
+    } else {
+      sortDirection.value = 'asc';
+    }
+  } else {
+    sortColumn.value = column;
+    sortDirection.value = 'asc';
+  }
+};
+
+// 정렬된 챔피언 통계
+const sortedChampionStats = computed(() => {
+  if (!championStats.value || !sortColumn.value || !sortDirection.value) {
+    return championStats.value;
+  }
+
+  return [...championStats.value].sort((a, b) => {
+    const aValue = a[sortColumn.value];
+    const bValue = b[sortColumn.value];
+
+    if (sortDirection.value === 'asc') {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+});
+
 // API 요청용 필터 값 계산
 const apiFilter = computed(() => {
   const filter: SearchFilter = {};
@@ -163,7 +227,7 @@ const apiFilter = computed(() => {
     filter.tier = selectedTier.value.toUpperCase() as Tier;
   }
 
-  if (selectedPosition.value !== '전체') {
+  if (selectedPosition.value !== '전체' && selectedQueue.value !== '무작위 총력전') {
     filter.position = positionMapping[selectedPosition.value];
   }
 
@@ -205,7 +269,6 @@ const positionMapping: Record<string, MatchPosition> = {
   '바텀': MatchPosition.BOTTOM,
   '서포터': MatchPosition.UTILITY,
 };
-
 
 </script>
 
@@ -267,4 +330,9 @@ const positionMapping: Record<string, MatchPosition> = {
   color: #FF5252;
 }
 
+/* 테이블 레이아웃 고정 */
+table {
+  table-layout: fixed;
+  min-width: 1000px;
+}
 </style>
