@@ -29,7 +29,7 @@ const router = createRouter({
         {
             path: '/ranking',
             name: 'ranking',
-            component: () => import('@/views/RankingPage.vue')
+            component: () => import('@/views/SummonerRakingPage.vue')
         },
         {
             path: '/stats',

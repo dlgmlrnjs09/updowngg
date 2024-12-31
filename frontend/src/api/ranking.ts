@@ -1,12 +1,17 @@
 import apiClient from "@/api/axios.ts";
 import type {LolMatchInfoRes} from "@/types/match.ts";
-import type {RankingCard} from "@/types/ranking.ts";
+import type {RankerPlayer, RankingSearchFilter} from "@/types/ranking.ts";
 
 export const rankingApi = {
-    getRankerCardList: (offset: number, limit: number) =>
-        apiClient.get<RankingCard[]>('/rank/list', {
+    getRankerCardList: (filter: RankingSearchFilter) =>
+        apiClient.get<RankerPlayer[]>('/rank/list', {
             params: {
-                offset, limit
+                matchGameMode: filter?.sortTypeReqDto?.queueType,
+                matchPosition: filter?.sortTypeReqDto?.position,
+                tier: filter?.sortTypeReqDto?.tier,
+                period: filter?.sortTypeReqDto?.period,
+                limit: filter?.limit,
+                offset: filter?.offset,
             }
         }),
 }

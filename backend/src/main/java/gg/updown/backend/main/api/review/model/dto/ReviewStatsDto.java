@@ -1,6 +1,9 @@
 package gg.updown.backend.main.api.review.model.dto;
 
+import gg.updown.backend.main.api.stats.model.dto.ChampionStatsDto;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -9,8 +12,10 @@ import lombok.*;
 @Builder
 public class ReviewStatsDto {
     private String puuid;
-    private int upCount;
-    private int downCount;
-    private int totalReviewCnt;
-    private int last30DayReviewCnt;
+    private Long upCount;
+    private Long downCount;
+    private double upRatio;
+    private double downRatio;
+    private Long totalReviewCnt;
+    private Long playCount;
 }

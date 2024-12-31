@@ -1,71 +1,6 @@
-# StatsPage.vue
 <template>
   <div class="stats-page max-w-[1200px] mx-auto px-6 mt-[100px]">
-    <!-- 필터 섹션 -->
-    <div class="stats-card">
-      <!-- 필터 옵션들 -->
-      <div class="filter-options">
-        <!-- 큐 타입 필터 -->
-        <div class="filter-row">
-          <div class="filter-label">큐 타입</div>
-          <div class="filter-content">
-            <button
-                v-for="queue in ['솔로랭크', '자유랭크', '무작위 총력전', '우르프']"
-                :key="queue"
-                :class="['filter-chip', { active: selectedQueue === queue }]"
-                @click="selectedQueue = queue"
-            >
-              {{ queue }}
-            </button>
-          </div>
-        </div>
-
-        <!-- 티어 필터 -->
-        <div class="filter-row">
-          <div class="filter-label">티어</div>
-          <div class="filter-content">
-            <button
-                v-for="tier in ['전체', 'Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Emerald', 'Diamond', 'Master', 'Grandmaster', 'Challenger']"
-                :key="tier"
-                :class="['filter-chip', { active: selectedTier === tier }]"
-                @click="selectedTier = tier"
-            >
-              {{ tier }}
-            </button>
-          </div>
-        </div>
-
-        <!-- 기간 필터 -->
-        <div class="filter-row">
-          <div class="filter-label">기간</div>
-          <div class="filter-content">
-            <button
-                v-for="period in ['전체', '최근 1달', '최근 7일', '오늘']"
-                :key="period"
-                :class="['filter-chip', { active: selectedPeriod === period }]"
-                @click="selectedPeriod = period"
-            >
-              {{ period }}
-            </button>
-          </div>
-        </div>
-
-        <!-- 포지션 필터 (무작위 총력전이 아닐 때만 표시) -->
-        <div class="filter-row" v-if="selectedQueue !== '무작위 총력전'">
-          <div class="filter-label">포지션</div>
-          <div class="filter-content">
-            <button
-                v-for="position in ['전체', '탑', '정글', '미드', '바텀', '서포터']"
-                :key="position"
-                :class="['filter-chip', { active: selectedPosition === position }]"
-                @click="selectedPosition = position"
-            >
-              {{ position }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <FilterSection @update:filter="onFilterUpdate" />
 
     <!-- 챔피언 통계 테이블 -->
     <div class="stats-card">
@@ -156,117 +91,65 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, computed, watch} from 'vue'
-import {statsApi} from "@/api/stats.ts";
+import { onMounted, ref, computed } from 'vue'
+import { statsApi } from "@/api/stats.ts"
 import { ThumbsUp, ThumbsDown, ArrowUpDown } from 'lucide-vue-next'
-import type {ChampionResDto} from "@/types/stats.ts";
-import type {RankingCard} from "@/types/ranking.ts";
-import {MatchGameMode, MatchPosition} from "@/types/match.ts";
-import type {SearchFilter} from "@/types/stats.ts";
-import {Tier} from "@/types/league.ts";
-import TagList from "@/components/common/TagList.vue";
+import type { ChampionResDto, SearchFilter } from "@/types/stats.ts"
+import FilterSection from '@/components/common/SearchFilter.vue'
+import TagList from "@/components/common/TagList.vue"
 
-// 필터 상태
-const selectedQueue = ref('솔로랭크')
-const selectedTier = ref('전체')
-const selectedPeriod = ref('전체')
-const selectedPosition = ref('전체')
-const championStats = ref<ChampionResDto[] | null>(null);
-
-// 정렬 상태
-const sortColumn = ref<string>('');
-const sortDirection = ref<'asc' | 'desc' | null>(null);
+const championStats = ref<ChampionResDto[] | null>(null)
+const sortColumn = ref<string>('')
+const sortDirection = ref<'asc' | 'desc' | null>(null)
 
 // 정렬 토글 함수
 const toggleSort = (column: string) => {
   if (sortColumn.value === column) {
     if (sortDirection.value === 'asc') {
-      sortDirection.value = 'desc';
+      sortDirection.value = 'desc'
     } else if (sortDirection.value === 'desc') {
-      sortDirection.value = null;
-      sortColumn.value = '';
+      sortDirection.value = null
+      sortColumn.value = ''
     } else {
-      sortDirection.value = 'asc';
+      sortDirection.value = 'asc'
     }
   } else {
-    sortColumn.value = column;
-    sortDirection.value = 'asc';
+    sortColumn.value = column
+    sortDirection.value = 'asc'
   }
-};
+}
 
 // 정렬된 챔피언 통계
 const sortedChampionStats = computed(() => {
   if (!championStats.value || !sortColumn.value || !sortDirection.value) {
-    return championStats.value;
+    return championStats.value
   }
 
   return [...championStats.value].sort((a, b) => {
-    const aValue = a[sortColumn.value];
-    const bValue = b[sortColumn.value];
+    const aValue = a[sortColumn.value]
+    const bValue = b[sortColumn.value]
 
     if (sortDirection.value === 'asc') {
-      return aValue > bValue ? 1 : -1;
+      return aValue > bValue ? 1 : -1
     } else {
-      return aValue < bValue ? 1 : -1;
+      return aValue < bValue ? 1 : -1
     }
-  });
-});
+  })
+})
 
-// API 요청용 필터 값 계산
-const apiFilter = computed(() => {
-  const filter: SearchFilter = {};
+const fetchChampionStats = async (filter: SearchFilter) => {
+  console.log('필터 == ' + JSON.stringify(filter))
+  const response = await statsApi.getChampionList(filter)
+  championStats.value = response.data
+}
 
-  if (selectedQueue.value !== '전체') {
-    filter.queueType = queueMapping[selectedQueue.value.toUpperCase()];
-  }
-
-  if (selectedTier.value !== '전체') {
-    filter.tier = selectedTier.value.toUpperCase() as Tier;
-  }
-
-  if (selectedPosition.value !== '전체' && selectedQueue.value !== '무작위 총력전') {
-    filter.position = positionMapping[selectedPosition.value];
-  }
-
-  if (selectedPeriod.value !== '전체') {
-    filter.period = selectedPeriod.value;
-  }
-
-  return filter;
-});
-
-const fetchChampionStats = async () => {
-  const response = await statsApi.getChampionList(apiFilter.value);
-  console.log('response === ' + response)
-  championStats.value = response.data;
+const onFilterUpdate = (filter: SearchFilter) => {
+  fetchChampionStats(filter)
 }
 
 onMounted(() => {
-  fetchChampionStats();
-});
-
-// 필터 변경시마다 API 호출
-watch([selectedQueue, selectedTier, selectedPosition, selectedPeriod], () => {
-  fetchChampionStats();
-});
-
-// 큐 타입 매핑
-const queueMapping: Record<string, MatchGameMode> = {
-  '솔로랭크': MatchGameMode.SOLO_RANK,
-  '자유랭크': MatchGameMode.FLEX_RANK,
-  '무작위 총력전': MatchGameMode.ARAM,
-  '일반게임': MatchGameMode.NORMAL,
-};
-
-// 포지션 매핑
-const positionMapping: Record<string, MatchPosition> = {
-  '탑': MatchPosition.TOP,
-  '정글': MatchPosition.JUNGLE,
-  '미드': MatchPosition.MIDDLE,
-  '바텀': MatchPosition.BOTTOM,
-  '서포터': MatchPosition.UTILITY,
-};
-
+  fetchChampionStats({})
+})
 </script>
 
 <style scoped>
@@ -274,35 +157,6 @@ const positionMapping: Record<string, MatchPosition> = {
   @apply bg-[#141414] rounded-xl border border-[#ffffff1a] mb-6;
 }
 
-.filter-row {
-  @apply flex items-center gap-4 h-14 border-b border-[#ffffff1a] px-4 m-0;
-}
-
-.filter-row:last-child {
-  @apply border-b-0;
-}
-
-.filter-label {
-  @apply text-sm text-gray-400 w-20 flex items-center;
-}
-
-.filter-content {
-  @apply flex items-center flex-wrap gap-2;
-}
-
-.filter-chip {
-  @apply h-8 px-3 rounded text-sm text-gray-400 transition-all hover:text-white border border-[#ffffff1a] flex items-center justify-center;
-}
-
-.filter-chip.active {
-  @apply bg-[#2979FF] text-white border-[#2979FF];
-}
-
-.tag {
-  @apply bg-[#2979FF1A] text-[#2979FF] px-2 py-1 rounded text-xs;
-}
-
-/* 스크롤바 스타일 */
 .champion-table {
   @apply overflow-x-auto;
 }
@@ -327,7 +181,6 @@ const positionMapping: Record<string, MatchPosition> = {
   color: #FF5252;
 }
 
-/* 테이블 레이아웃 고정 */
 table {
   table-layout: fixed;
   min-width: 1000px;

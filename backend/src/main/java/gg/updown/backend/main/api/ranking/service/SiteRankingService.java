@@ -1,11 +1,14 @@
 package gg.updown.backend.main.api.ranking.service;
 
+import gg.updown.backend.common.util.CalculateUtil;
 import gg.updown.backend.external.riot.RiotApiBasePath;
 import gg.updown.backend.main.api.ranking.mapper.SiteRankingMapper;
-import gg.updown.backend.main.api.ranking.model.SiteRankingCardResDto;
+import gg.updown.backend.main.api.ranking.model.*;
 import gg.updown.backend.main.api.review.model.dto.ReviewStatsDto;
 import gg.updown.backend.main.api.review.model.dto.ReviewTagDto;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
+import gg.updown.backend.main.api.stats.model.dto.ChampionStatsDto;
+import gg.updown.backend.main.api.stats.model.dto.SortTypeReqDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,24 +27,36 @@ public class SiteRankingService {
 
     private final SiteRankingMapper siteRankingMapper;
 
-    public List<SiteRankingCardResDto> selectTopRankers(int offset, int limit) {
-        List<SiteRankingCardResDto> resultDtoList = new ArrayList<>();
+    public List<SiteRankingResDto> selectTopRankers(SiteRankingReqDto reqDto) {
+        List<SiteRankingResDto> resultDtoList = new ArrayList<>();
 
-        List<ReviewStatsDto> rankerRatingList = siteRankingMapper.selectTopRankerRatings(offset, limit);
+        // 1. 랭커 목록 Get
+        List<ReviewStatsDto> rankerRatingList = siteRankingMapper.selectTopRankerRatings(reqDto);
         for (ReviewStatsDto ratingDto : rankerRatingList) {
-            Map<String, Object> basicInfoMap = siteRankingMapper.selectTopRankerBasicInfo(ratingDto.getPuuid());
-            List<ReviewTagDto> recentTagList = siteRankingMapper.selectTopRankerRecentTags(ratingDto.getPuuid());
-            resultDtoList.add(SiteRankingCardResDto.builder()
-                            .puuid(basicInfoMap.get("puuid").toString())
-                            .profileIconId(basicInfoMap.get("profile_icon_id").toString())
-                            .gameName(basicInfoMap.get("game_name").toString())
-                            .tagLine(basicInfoMap.get("tag_line").toString())
-                            .upCount(ratingDto.getUpCount())
-                            .downCount(ratingDto.getDownCount())
-                            .totalReviewCount(ratingDto.getTotalReviewCnt())
-                            .last30DayReviewCnt(ratingDto.getLast30DayReviewCnt())
-                            .profileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion + "/img/profileicon/" + basicInfoMap.get("profile_icon_id") + ".png")
-                            .recentTags(recentTagList)
+            ratingDto.setUpRatio(CalculateUtil.getRatio(ratingDto.getTotalReviewCnt(), ratingDto.getUpCount()));
+            ratingDto.setDownRatio(CalculateUtil.getRatio(ratingDto.getTotalReviewCnt(), ratingDto.getDownCount()));
+            // 2. 모스트3 챔피언정보 Get
+            List<ChampionStatsDto> mostChampionList = siteRankingMapper.selectMostChampionUpdownCount(ratingDto.getPuuid());
+            for (ChampionStatsDto champion : mostChampionList) {
+                champion.setReviewCount(ratingDto.getTotalReviewCnt());
+                champion.setIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion +"/img/champion/" + champion.getNameUs() + ".png");
+            }
+
+            // 3. Top3 태그 Get
+            SummonerTagDto topTagDto = siteRankingMapper.selectTopTagsBySummoner(ratingDto.getPuuid());
+            if (topTagDto == null) {
+                topTagDto = new SummonerTagDto();
+            }
+            // 4. 소환사 기본 정보 Get
+            SummonerBasicInfoDto basicInfoDto = siteRankingMapper.selectTopRankerBasicInfo(ratingDto.getPuuid());
+            basicInfoDto.setProfileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion +"/img/profileicon/" + basicInfoDto.getProfileIconId() + ".png");
+
+
+            resultDtoList.add(SiteRankingResDto.builder()
+                    .reviewStatsDto(ratingDto)
+                            .championStatsDtoList(mostChampionList)
+                            .reviewTagDtoList(topTagDto.getTagDtoList())
+                            .summonerBasicInfoDto(basicInfoDto)
                     .build());
         }
 

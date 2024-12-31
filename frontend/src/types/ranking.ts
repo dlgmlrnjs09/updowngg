@@ -1,4 +1,7 @@
-import type {ReviewTagDto} from "@/types/review.ts";
+import type {
+    ReviewStatsDto, ReviewTagDto
+} from '@/types/review'
+import type {ChampionResDto, SearchFilter} from "@/types/stats.ts";
 
 export interface Tab {
     label: string
@@ -6,27 +9,24 @@ export interface Tab {
     iconPath: string
 }
 
-export interface Player {
-    id: string
-    name: string
-    tag: string
-    iconUrl: string
-    totalReviews: number
-    recentReviews: number
-    upCount: number
-    downCount: number
-    tags: string[]
-}
 
-export interface RankingCard {
+export interface summonerBasicInfoDto {
     puuid: string
-    profileIconId: string
-    profileIconUrl: string
     gameName: string
     tagLine: string
-    upCount: number
-    downCount: number
-    totalReviewCount: number
-    last30DayReviewCnt: number
-    recentTags: ReviewTagDto[]
+    profileIconId: string
+    profileIconUrl: string
+}
+
+export interface RankerPlayer {
+    summonerBasicInfoDto: summonerBasicInfoDto
+    reviewStatsDto: ReviewStatsDto
+    championStatsDtoList: ChampionResDto[]
+    reviewTagDtoList: ReviewTagDto[]
+}
+
+export interface RankingSearchFilter {
+    sortTypeReqDto: SearchFilter
+    limit: number
+    offset: number
 }

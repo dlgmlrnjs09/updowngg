@@ -2,6 +2,8 @@ package gg.updown.backend.main.api.ranking.controller;
 
 import gg.updown.backend.main.api.ranking.model.SiteRankingCardReqDto;
 import gg.updown.backend.main.api.ranking.model.SiteRankingCardResDto;
+import gg.updown.backend.main.api.ranking.model.SiteRankingReqDto;
+import gg.updown.backend.main.api.ranking.model.SiteRankingResDto;
 import gg.updown.backend.main.api.ranking.service.SiteRankingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +21,8 @@ public class SiteRankingController {
     private final SiteRankingService service;
 
     @GetMapping("/list")
-    public ResponseEntity<List<SiteRankingCardResDto>> getSiteRanking(@Valid SiteRankingCardReqDto reqDto) {
-        List<SiteRankingCardResDto> resultList = service.selectTopRankers(reqDto.getOffset(), reqDto.getLimit());
+    public ResponseEntity<List<SiteRankingResDto>> getSiteRanking(@Valid SiteRankingReqDto reqDto) {
+        List<SiteRankingResDto> resultList = service.selectTopRankers(reqDto);
         return ResponseEntity.ok(resultList);
     }
 }

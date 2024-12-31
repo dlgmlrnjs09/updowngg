@@ -1,24 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="gg.updown.backend.main.api.ranking.mapper.SiteRankingMapper">
-    <select id="selectTopRankerRatings" parameterType="map" resultType="reviewStatsDto">
-        select
-            puuid,
-            count(ssr.*) as totalReviewCnt,
-            COUNT(CASE WHEN is_up = true THEN 1 END) as upCount,
-            COUNT(CASE WHEN is_up = false THEN 1 END) as downCount,
-            COUNT(CASE WHEN reg_dt >= CURRENT_TIMESTAMP - INTERVAL '30 days' THEN 1 END) AS last30DayReviewCnt
-        from
-            lol_summoner ls
-            inner join site_summoner_review ssr on (ls.puuid = ssr.target_puuid)
-        group by
-            puuid
-        order by
-            count(ssr.*) desc
-        limit #{limit} offset #{offset}
+
+    <sql id="rankingFilterCondition">
+        lm.queue_id = #{matchGameMode.queueId}
+        <if test="matchPosition != null">
+            AND lmp.position = #{matchPosition}
+        </if>
+        <if test="tier != null">
+            AND lsl.tier = #{tier}
+        </if>
+    </sql>
+
+    <resultMap id="getTopTagsBySummonerResultMap" type="summonerTagDto">
+        <!-- 챔피언 이름 -->
+        <result property="puuid" column="puuid" />
+        <!-- 상위 태그 JSON 데이터 -->
+        <result property="tagDtoList" column="tag_dto_list" typeHandler="gg.updown.backend.common.util.JsonTypeHandler"/>
+    </resultMap>
+
+    <select id="selectTopRankerRatings" parameterType="siteRankingReqDto" resultType="reviewStatsDto">
+        SELECT
+        ls.puuid,
+        COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> THEN ssr.summoner_review_seq END), 0) as totalReviewCnt,
+        COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> AND ssr.is_up = true THEN ssr.summoner_review_seq END), 0) as upCount,
+        COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> AND ssr.is_up = false THEN ssr.summoner_review_seq END), 0) as downCount,
+        COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> THEN lmp.match_id END), 0) as playCount
+        FROM
+        lol_summoner ls
+        LEFT OUTER JOIN lol_match_participant lmp ON (
+        ls.puuid = lmp.puuid
+        <if test="matchPosition != null">
+            AND lmp.position = #{matchPosition}
+        </if>
+        )
+        LEFT OUTER JOIN lol_match lm ON (
+        lmp.match_id = lm.match_id
+        <if test="matchGameMode != null">
+            AND lm.queue_id = #{matchGameMode.queueId}
+        </if>
+        )
+        LEFT OUTER JOIN lol_summoner_league lsl ON (
+        lmp.summoner_id = lsl.summoner_id
+        <if test="tier != null">
+            AND lsl.tier = #{tier}
+        </if>
+        )
+        LEFT OUTER JOIN site_summoner_review ssr ON (
+        ls.puuid = ssr.target_puuid
+        AND ssr.del_dt IS NULL
+        )
+        GROUP BY
+        ls.puuid
+        ORDER BY
+        totalReviewCnt DESC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <select id="selectTopRankerBasicInfo" parameterType="String" resultType="map">
+    <select id="selectTopRankerBasicInfo" parameterType="String" resultType="summonerBasicInfoDto">
         select
             ls.puuid,
             game_name,
@@ -46,5 +85,63 @@
         where puuid = #{puuid}
         group by ls.puuid, ssrt.tag_code, srt.tag_value, srt.tag_description, srt.tag_updown
         order by count(ssrt.tag_code) desc
+    </select>
+
+    <select id="selectMostChampionUpdownCount" parameterType="map" resultType="championStatsDto">
+        WITH MostPlayedChamp AS (
+        SELECT
+        lmp.puuid,
+        lmp.champ_name,
+        COUNT(*) as play_count,
+        ROW_NUMBER() OVER (PARTITION BY lmp.puuid ORDER BY COUNT(*) DESC) as rn
+        FROM lol_match_participant lmp
+        WHERE lmp.puuid = #{puuid}
+        GROUP BY lmp.puuid, lmp.champ_name
+        HAVING COUNT(*) > 0
+        )
+        SELECT
+        mpc.puuid,
+        mpc.champ_name as name_us,
+        mpc.play_count,
+        COUNT(CASE WHEN ssr.is_up = true THEN 1 END) as up_count,
+        COUNT(CASE WHEN ssr.is_up = false THEN 1 END) as down_count
+        FROM MostPlayedChamp mpc
+        LEFT JOIN lol_match_participant lmp ON (mpc.puuid = lmp.puuid AND mpc.champ_name = lmp.champ_name)
+        LEFT JOIN site_summoner_review ssr ON (lmp.match_id = ssr.match_id AND lmp.puuid = ssr.target_puuid)
+        WHERE mpc.rn <![CDATA[ <= ]]> 3
+        GROUP BY mpc.puuid, mpc.champ_name, mpc.play_count, mpc.rn
+        ORDER BY mpc.puuid, mpc.play_count DESC
+    </select>
+
+    <select id="selectTopTagsBySummoner" parameterType="map" resultMap="getTopTagsBySummonerResultMap" >
+        WITH RankedTags AS (
+        SELECT
+        ssr.target_puuid as puuid,
+        srt.tag_code,
+        srt.tag_value,
+        srt.tag_description,
+        srt.tag_updown,
+        COUNT(*) as tag_count,
+        ROW_NUMBER() OVER (PARTITION BY ssr.target_puuid ORDER BY COUNT(*) DESC) as rn
+        FROM site_summoner_review ssr
+        JOIN site_summoner_review_tag ssrt ON ssr.summoner_review_seq = ssrt.summoner_review_seq
+        JOIN site_review_tag srt ON ssrt.tag_code = srt.tag_code
+        WHERE ssr.target_puuid = #{puuid}
+        GROUP BY ssr.target_puuid, srt.tag_code, srt.tag_value, srt.tag_description, srt.tag_updown
+        )
+        SELECT
+            puuid,
+            json_agg(
+                    json_build_object(
+                            'tagCode', tag_code,
+                            'tagValue', tag_value,
+                            'tagDescription', tag_description,
+                            'tagUpdown', tag_updown,
+                            'frequentCount', tag_count
+                    )
+            )::text as tag_dto_list
+        FROM RankedTags
+        WHERE rn <![CDATA[ <= ]]> 3
+        GROUP BY puuid;
     </select>
 </mapper>

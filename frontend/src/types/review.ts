@@ -23,8 +23,11 @@ export interface ReviewStatsDto {
     puuid: string;
     upCount: number;
     downCount: number;
+    upRatio: number;
+    downRatio: number;
     totalReviewCnt: number;
     last30DayReviewCnt: number;
+    playCount: number
 }
 
 export interface ReviewRatingByChampDto {
