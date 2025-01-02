@@ -43,7 +43,7 @@ const handleSearch = async () => {
 
   try {
     isLoading.value = true
-    const response = await summonerApi.getInfo(summonerId, tagLine)
+    const response = await summonerApi.getInfoBySummonerId(summonerId, tagLine)
 
     // 검색 결과가 있으면 소환사 페이지로 이동
     if (response.data) {

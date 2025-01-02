@@ -106,7 +106,7 @@ const fetchSummonerInfo = async () => {
   try {
     const summonerId = route.params.name as string
     const tagLine = route.params.tag as string
-    const response = await summonerApi.getInfo(summonerId, tagLine)
+    const response = await summonerApi.getInfoBySummonerId(summonerId, tagLine)
     summonerInfo.value = response.data
   } catch (error) {
     console.error('Failed to fetch summoner info:', error)
@@ -214,9 +214,6 @@ const openReviewModal = (player: any) => {
   reviewedMatch.value = matches.value.find(match =>
       match.matchInfo.matchId == selectedPlayer.value.matchId
   )!;
-
-  console.log('타겟매치 === ' + JSON.stringify(reviewedMatch))
-  console.log(selectedPlayer.value.reviewDto.matchId)
 
   if (authStore.isAuthenticated) {
     if (!player.reviewDto.reviewable) {

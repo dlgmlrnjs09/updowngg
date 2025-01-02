@@ -94,8 +94,6 @@ const fetchSummonerStats = async (filter: SearchFilter) => {
     offset: 0
   };
 
-  console.log('필터 == ' + JSON.stringify(filter))
-  console.log('reqDto === ' + JSON.stringify(reqDto));
   const response = await rankingApi.getRankerCardList(reqDto);
   rankerPlayers.value = response.data;
 }

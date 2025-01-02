@@ -17,16 +17,16 @@
         <Search />
       </div>
 
-      <div class="user-actions" v-if="authStore.isAuthenticated">
-        <RouterLink to="/profile" class="profile-btn">
+      <!-- 프로필-->
+      <div class="user-actions" v-if="authStore.isAuthenticated" @click="handleProfile">
+        <div class="profile-btn">
           <div class="profile-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
-<!--          프로필-->
-        </RouterLink>
+        </div>
         <button class="logout-btn" @click="authStore.logout">로그아웃</button>
       </div>
       <div class="user-actions" v-else>
@@ -37,10 +37,21 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router';
+import {RouterLink, useRouter} from 'vue-router';
 import { useAuthStore } from "@/stores/auth.ts";
 import Search from "@/components/common/Search.vue";
 const authStore = useAuthStore();
+const router = useRouter();
+
+const handleProfile = async () => {
+  await router.push({
+    name: 'summoner',
+    params: {
+      name: authStore.riotUser?.riotAccountInfoEntity.gameName,
+      tag: authStore.riotUser?.riotAccountInfoEntity.tagLine
+    },
+  })
+}
 </script>
 
 <style scoped>

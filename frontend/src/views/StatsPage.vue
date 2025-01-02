@@ -138,7 +138,6 @@ const sortedChampionStats = computed(() => {
 })
 
 const fetchChampionStats = async (filter: SearchFilter) => {
-  console.log('필터 == ' + JSON.stringify(filter))
   const response = await statsApi.getChampionList(filter)
   championStats.value = response.data
 }

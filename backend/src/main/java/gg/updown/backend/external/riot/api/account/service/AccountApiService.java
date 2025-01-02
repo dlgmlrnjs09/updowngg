@@ -39,4 +39,19 @@ public class AccountApiService {
                 .bodyToMono(AccountInfoResDto.class)
                 .block();
     }
+
+    public AccountInfoResDto getAccountInfoByPuuid(String puuid) {
+        return riotAsiaWebClient.get()
+                .uri(basePath + "/by-puuid/{puuid}", puuid)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response -> {
+                    if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                        return Mono.error(new RiotApiException(response.statusCode(), "존재하지 않는 라이엇 계정입니다."));
+                    } else {
+                        return Mono.error(new RiotApiException(response.statusCode(), RiotApiException.defaultMessage));
+                    }
+                })
+                .bodyToMono(AccountInfoResDto.class)
+                .block();
+    }
 }

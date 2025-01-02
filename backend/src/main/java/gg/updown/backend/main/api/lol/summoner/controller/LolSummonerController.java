@@ -21,9 +21,15 @@ public class LolSummonerController {
     private final LolSummonerService summonerService;
     private final AccountApiService accountApiService;
 
-    @GetMapping("/info")
+    @GetMapping("/info/by-summoner")
     public ResponseEntity<LolSummonerProfileResDto> getInfo(@Valid LolSummonerProfileReqDto reqDto) {
         LolSummonerProfileResDto resDto = summonerService.conflictSummonerInfo(reqDto.getSummonerId(), reqDto.getTagLine());
+        return ResponseEntity.status(HttpStatus.OK).body(resDto);
+    }
+
+    @GetMapping("/info/by-puuid")
+    public ResponseEntity<LolSummonerProfileResDto> getInfo(String puuid) {
+        LolSummonerProfileResDto resDto = summonerService.conflictSummonerInfo(puuid);
         return ResponseEntity.status(HttpStatus.OK).body(resDto);
     }
 }
