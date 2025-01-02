@@ -13,10 +13,10 @@ export const reviewApi = {
         apiClient.get<ReviewTagDto[]>('/review/tag', {}),
 
     submitReview: (reviewData: ReviewRequestDto) =>
-        apiClient.post('/review/submit', reviewData),
+        apiClient.post<number>('/review/submit', reviewData),
 
     updateReview: (reviewData: ReviewRequestDto) =>
-        apiClient.put('/review/update', reviewData),
+        apiClient.put<number>('/review/update', reviewData),
 
     getReviewStats: (puuid: string) =>
         apiClient.get<ReviewStatsDto>('/review/stats', {

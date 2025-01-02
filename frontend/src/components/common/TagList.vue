@@ -17,7 +17,7 @@
      >
        {{ tag.tagValue }}
      </span>
-      <span class="tag-count">{{ tag.frequentCount }}</span>
+      <span class="tag-count" v-if="isShowCount">{{ tag.frequentCount }}</span>
 
       <div
           v-if="tag === hoveredTag"
@@ -38,6 +38,7 @@ import type { ReviewTagDto } from "@/types/review"
 defineProps<{
   tags: ReviewTagDto[] | null
   size: 'small' | 'medium' | 'large'
+  isShowCount: boolean
 }>()
 
 const hoveredTag = ref<ReviewTagDto | null>(null)

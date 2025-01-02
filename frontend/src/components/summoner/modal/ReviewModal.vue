@@ -71,7 +71,7 @@
 
 <script setup lang="ts">
 import {onMounted, ref} from 'vue'
-import type { ReviewTagDto } from "@/types/review.ts"
+import type {ReviewRequestDto, ReviewTagDto} from "@/types/review.ts"
 import { reviewApi } from "@/api/review.ts"
 import { useAuthStore } from "@/stores/auth.ts"
 import type { LolMatchParticipant } from "@/types/match.ts"
@@ -84,7 +84,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit'): void
+  (e: 'submit', reviewData: ReviewRequestDto): void
 }>()
 
 const authStore = useAuthStore()
@@ -133,7 +133,7 @@ const toggleTag = (tagCode: string) => {
 }
 
 const handleSubmit = async () => {
-  if (!authStore.isAuthenticated) {
+  if (!authStore.isAuthenticated || !authStore.user) {
     toast.error('로그인이 필요합니다')
     return
   }
@@ -143,25 +143,36 @@ const handleSubmit = async () => {
     return
   }
 
-  const review = {
+  const selectedTagDtoList = props.reviewTags
+      .filter(tagDto => selectedStyleTags.value.includes(tagDto.tagCode))
+      .map(tagDto => ({
+        ...tagDto,
+        // frequentCount: tagDto.frequentCount == null ? 1 : tagDto.frequentCount + 1 // 받은 태그 수 1 증가
+      }));
+
+  const review: ReviewRequestDto = {
     summonerReviewSeq: props.player?.reviewDto?.summonerReviewSeq,
-    reviewerSiteCode: authStore.user?.memberSiteCode,
-    reviewerPuuid: authStore.user?.puuid,
+    reviewerSiteCode: authStore.user.memberSiteCode.toString(),
+    reviewerPuuid: authStore.user.puuid,
     targetPuuid: props.player.puuid,
     isUp: isUp.value,
     comment: comment.value,
     tagCodeList: selectedStyleTags.value,
-    matchId: props.player.matchId
+    matchId: props.player.matchId,
+    tagDtoList: selectedTagDtoList,
+    reviewable: false,
+    regDt: null
   }
 
   try {
-    if (props.player.reviewDto) {
+    if (props.player.reviewDto.summonerReviewSeq) {
       await reviewApi.updateReview(review)
     } else {
-      await reviewApi.submitReview(review)
+      const reviewSeq = await reviewApi.submitReview(review)
+      review.summonerReviewSeq = reviewSeq.data
     }
     toast.success('평가가 성공적으로 제출되었습니다')
-    emit('submit')
+    emit('submit', review)
     emit('close')
   } catch (error) {
     toast.error('평가 제출 중 오류가 발생했습니다')

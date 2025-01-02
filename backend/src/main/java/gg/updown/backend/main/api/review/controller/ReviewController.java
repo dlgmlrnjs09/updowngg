@@ -25,13 +25,15 @@ public class ReviewController {
     }
 
     @PostMapping("/submit")
-    public void submitReview(@RequestBody @Valid ReviewSubmitReqDto reviewSubmitReqDto) {
+    public ResponseEntity<Long> submitReview(@RequestBody @Valid ReviewSubmitReqDto reviewSubmitReqDto) {
         reviewService.submitReview(reviewSubmitReqDto);
+        return ResponseEntity.ok(reviewSubmitReqDto.getSummonerReviewSeq());
     }
 
     @PutMapping("/update")
-    public void updateReview(@RequestBody @Valid ReviewUpdateReqDto reviewUpdateReqDto) {
+    public ResponseEntity<Long> updateReview(@RequestBody @Valid ReviewUpdateReqDto reviewUpdateReqDto) {
         reviewService.updateReview(reviewUpdateReqDto);
+        return ResponseEntity.ok(reviewUpdateReqDto.getSummonerReviewSeq());
     }
 
     @GetMapping("/stats")

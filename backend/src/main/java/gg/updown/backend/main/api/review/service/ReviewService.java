@@ -29,7 +29,7 @@ public class ReviewService {
     }
 
     public void submitReview(ReviewSubmitReqDto reqDto) {
-            transactionService.insertSummonerReview(reqDto);
+        transactionService.insertSummonerReview(reqDto);
     }
 
     public void updateReview(ReviewUpdateReqDto reqDto) {

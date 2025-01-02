@@ -40,7 +40,7 @@
           :player="selectedPlayer"
           @close="showReviewModal = false"
           :review-tags="reviewTags"
-          @submit="fetchMatchList"
+          @submit="handleReviewSubmit"
       />
 
       <PreviousReviewModal
@@ -146,6 +146,39 @@ const fetchMatchList = async (startIndex: number = 0) => {
   }
 }
 
+const handleReviewSubmit = async (reviewData: ReviewRequestDto) => {
+  showReviewModal.value = false;
+  try {
+    // 모든 매치에서 동일한 소환사의 reviewDto 업데이트
+    matches.value.forEach((match, matchIndex) => {
+      // 각 매치에서 같은 소환사 찾기
+      const playerIndex = match.participantList.findIndex(
+          p => p.puuid === reviewData.targetPuuid
+      );
+
+      if (playerIndex !== -1) {
+        // 해당 소환사의 reviewDto 업데이트
+        matches.value[matchIndex].participantList[playerIndex].reviewDto = {
+          ...reviewData,
+          // matchId: review  // 각 매치의 ID로 업데이트
+        };
+      }
+    });
+
+    // 나머지 데이터들 업데이트
+    await Promise.all([
+      fetchSummonerReviewStats(),
+      fetchFrequentTags(),
+      fetchRecentReviews(),
+      fetchRatingByChamp(),
+      fetchRatingByPosition()
+    ]);
+
+  } catch (error) {
+    toast.error('데이터 업데이트 중 오류가 발생했습니다.');
+  }
+}
+
 const loadMoreMatches = async () => {
   if (isLoadingMore.value || noMoreMatches.value) return
 
@@ -178,9 +211,8 @@ const updateMatchList = async () => {
 const openReviewModal = (player: any) => {
   selectedPlayer.value = player
 
-
   reviewedMatch.value = matches.value.find(match =>
-      match.matchInfo.matchId == selectedPlayer.value.reviewDto.matchId
+      match.matchInfo.matchId == selectedPlayer.value.matchId
   )!;
 
   console.log('타겟매치 === ' + JSON.stringify(reviewedMatch))

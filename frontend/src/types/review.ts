@@ -14,9 +14,9 @@ export interface ReviewRequestDto {
     comment?: string;
     isUp: boolean | null;
     tagCodeList: string[];  // 선택한 태그의 코드 배열
-    tagDtoList: ReviewTagDto[];
+    tagDtoList: ReviewTagDto[] | null
     reviewable: boolean | false;
-    regDt: string;
+    regDt: string | null;
     matchId: string;
 }
 
