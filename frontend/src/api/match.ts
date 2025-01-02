@@ -3,7 +3,7 @@ import type { LolMatchInfoRes } from '@/types/match'
 
 export const matchApi = {
     getMatchList: (puuid: string, startIndex: number, count: number) =>
-        apiClient.get<LolMatchInfoRes[]>('/match/list', {
+        apiClient.get<LolMatchInfoRes[]>('/api/v1/match/list', {
             params: {
                 puuid,
                 startIndex,
@@ -11,7 +11,7 @@ export const matchApi = {
             }
         }),
     updateMatchList: (puuid: string) =>
-        apiClient.get<string[]>('/match/update', {
+        apiClient.get<string[]>('/api/v1/match/update', {
             params: {
                 puuid,
             }

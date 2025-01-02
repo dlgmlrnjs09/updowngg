@@ -4,7 +4,7 @@ import type {SearchFilter} from "@/types/stats.ts";
 
 export const statsApi = {
     getChampionList: (filter?: SearchFilter) =>
-        apiClient.get<ChampionResDto[]>('/stats/champions', {
+        apiClient.get<ChampionResDto[]>('/api/v1/stats/champions', {
             params: {
                 matchGameMode: filter?.queueType,
                 matchPosition: filter?.position,

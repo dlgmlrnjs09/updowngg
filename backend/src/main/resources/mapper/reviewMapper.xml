@@ -38,7 +38,7 @@
             is_up,
             comment,
             is_up,
-            reg_dt,
+            r.reg_dt,
             upd_dt,
             del_dt,
             t.tag_code,
@@ -80,6 +80,8 @@
             tag_updown
         FROM
             site_review_tag
+        ORDER BY
+            tag_updown desc, reg_dt desc
     </select>
 
     <!-- 리뷰 등록 -->

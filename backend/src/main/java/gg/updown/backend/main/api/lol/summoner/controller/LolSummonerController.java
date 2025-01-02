@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/summoner")
+@RequestMapping("/api/v1/summoner")
 public class LolSummonerController {
 
     private final LolSummonerService summonerService;

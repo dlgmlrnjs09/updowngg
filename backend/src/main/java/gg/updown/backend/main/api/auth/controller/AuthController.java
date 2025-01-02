@@ -31,7 +31,7 @@ import java.util.Map;
  * 로그인 및 토큰 갱신 처리
  */
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 

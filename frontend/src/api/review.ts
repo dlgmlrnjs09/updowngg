@@ -10,44 +10,44 @@ import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 
 export const reviewApi = {
     getTagList: () =>
-        apiClient.get<ReviewTagDto[]>('/review/tag', {}),
+        apiClient.get<ReviewTagDto[]>('/api/v1/review/tag', {}),
 
     submitReview: (reviewData: ReviewRequestDto) =>
-        apiClient.post<number>('/review/submit', reviewData),
+        apiClient.post<number>('/api/v1/review/submit', reviewData),
 
     updateReview: (reviewData: ReviewRequestDto) =>
-        apiClient.put<number>('/review/update', reviewData),
+        apiClient.put<number>('/api/v1/review/update', reviewData),
 
     getReviewStats: (puuid: string) =>
-        apiClient.get<ReviewStatsDto>('/review/stats', {
+        apiClient.get<ReviewStatsDto>('/api/v1/review/stats', {
             params: {
                 puuid
             }
         }),
 
     getReviewTagFrequent: (puuid: string) =>
-        apiClient.get<ReviewTagDto>('/review/tag-frequent', {
+        apiClient.get<ReviewTagDto>('/api/v1/review/tag-frequent', {
             params: {
                 puuid
             }
         }),
 
     getRecentReviews: (puuid: string) =>
-        apiClient.get<ReviewRequestDto>('/review/recent', {
+        apiClient.get<ReviewRequestDto>('/api/v1/review/recent', {
             params: {
                 puuid
             }
         }),
 
     getRatingByChamp: (puuid: string) =>
-        apiClient.get<ReviewRatingByChampDto>('/review/rating-avg/champ', {
+        apiClient.get<ReviewRatingByChampDto>('/api/v1/review/rating-avg/champ', {
             params: {
                 puuid
             }
         }),
 
     getRatingByPosition: (puuid: string) =>
-        apiClient.get<ReviewRatingByPositionDto>('/review/rating-avg/position', {
+        apiClient.get<ReviewRatingByPositionDto>('/api/v1/review/rating-avg/position', {
             params: {
                 puuid
             }

@@ -25,7 +25,7 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/match")
+@RequestMapping("/api/v1/match")
 public class LolMatchController {
     private final LolMatchService lolMatchService;
 

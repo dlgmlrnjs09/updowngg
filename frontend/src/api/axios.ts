@@ -36,7 +36,7 @@ function isTokenExpired(token: string): boolean {
 }
 
 // 인증 불필요
-const publicPaths = ['/auth/login', '/auth/signup', '/auth/refresh'];
+const publicPaths = ['/api/v1/auth/login', '/api/v1/auth/signup', '/api/v1/auth/refresh'];
 apiClient.interceptors.request.use(
     async (config) => {
         const isPublicPath = publicPaths.some(path => config.url?.includes(path));
@@ -50,7 +50,7 @@ apiClient.interceptors.request.use(
                     const refreshToken = localStorage.getItem('refreshToken');
                     if (!refreshToken) throw new Error('No refresh token available');
 
-                    const response = await apiClient.post('/auth/refresh', {
+                    const response = await apiClient.post('/api/v1/auth/refresh', {
                         refreshToken: refreshToken
                     });
 
@@ -105,7 +105,7 @@ apiClient.interceptors.response.use(
                 }
 
                 // 리프레시 토큰으로 새로운 액세스 토큰 요청
-                const response = await apiClient.post('/auth/refresh', {
+                const response = await apiClient.post('/api/v1/auth/refresh', {
                     refreshToken: refreshToken
                 });
 

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/test")
+@RequestMapping("/api/v1/test")
 public class TestController {
     private final AccountApiService accountApiService;
     private final RiotAccountService riotAccountService;

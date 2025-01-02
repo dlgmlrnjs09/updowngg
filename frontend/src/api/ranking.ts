@@ -4,7 +4,7 @@ import type {RankerPlayer, RankingSearchFilter} from "@/types/ranking.ts";
 
 export const rankingApi = {
     getRankerCardList: (filter: RankingSearchFilter) =>
-        apiClient.get<RankerPlayer[]>('/rank/list', {
+        apiClient.get<RankerPlayer[]>('/api/v1/rank/list', {
             params: {
                 matchGameMode: filter?.sortTypeReqDto?.queueType,
                 matchPosition: filter?.sortTypeReqDto?.position,
