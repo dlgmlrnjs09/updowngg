@@ -18,4 +18,5 @@ public class ReviewStatsDto {
     private double downRatio;
     private Long totalReviewCnt;
     private Long playCount;
+    private double score;
 }

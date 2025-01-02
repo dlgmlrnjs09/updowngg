@@ -28,6 +28,7 @@ export interface ReviewStatsDto {
     totalReviewCnt: number;
     last30DayReviewCnt: number;
     playCount: number
+    score: number
 }
 
 export interface ReviewRatingByChampDto {

@@ -4,15 +4,15 @@
     <FilterSection @update:filter="onFilterUpdate" />
 
     <div class="stats-card">
-      <div class="champion-table" style="min-width: 0px;">
+      <div class="champion-table" style="min-width: 0;">
         <table class="w-full">
           <thead>
           <tr class="text-left border-b border-[#ffffff1a]">
             <th class="py-2 px-4 text-gray-300 w-12">#</th>
             <th class="py-2 px-4 text-gray-300 w-52">소환사</th>
             <th class="py-2 px-4 text-gray-300 w-24">플레이수</th>
-            <th class="py-2 px-4 text-gray-300 w-24">평가수</th>
-            <th class="py-2 px-4 text-gray-300 w-48">전체 평가</th>
+            <th class="py-2 px-4 text-gray-300 w-24">평가점수</th>
+            <th class="py-2 px-4 text-gray-300 w-48">평가비율</th>
             <th class="py-2 px-4 text-gray-300 w-52">모스트 챔피언별 평가</th>
             <th class="py-2 px-4 text-gray-300">자주 받은 태그</th>
           </tr>
@@ -30,19 +30,19 @@
               </div>
             </td>
             <td class="py-2 px-4 text-sm text-gray-400">{{player.reviewStatsDto.playCount}} </td>
-            <td class="py-2 px-4 text-sm text-gray-400">{{ player.reviewStatsDto.totalReviewCnt }}</td>
+            <td class="py-2 px-4 text-sm text-gray-400">{{ player.reviewStatsDto.score }}</td>
             <td class="py-2 px-4 text-gray-400">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-sm text-[#4CAF50]">{{ player.reviewStatsDto.upRatio }}%</span>
-                <div class="w-56 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden relative">
-                  <div class="absolute top-0 left-0 h-full bg-[#4CAF50]"
+              <div class="flex items-center justify-between">
+                <div class="w-56 h-4 bg-[#1a1a1a] rounded-full overflow-hidden relative">
+                  <div class="absolute top-0 left-0 h-full bg-[#4CAF50] flex items-center"
                        :style="{ width: `${player.reviewStatsDto.upRatio}%` }">
+                    <span class="text-[10px] text-white pl-1">{{ player.reviewStatsDto.upRatio }}%</span>
                   </div>
-                  <div class="absolute top-0 right-0 h-full bg-[#FF5252]"
+                  <div class="absolute top-0 right-0 h-full bg-[#FF5252] flex items-center justify-end"
                        :style="{ width: `${player.reviewStatsDto.downRatio}%` }">
+                    <span class="text-[10px] text-white pr-1">{{ player.reviewStatsDto.downRatio }}%</span>
                   </div>
                 </div>
-                <span class="text-sm text-[#FF5252]">{{ player.reviewStatsDto.downRatio }}%</span>
               </div>
             </td>
             <td class="py-2 px-4 text-gray-400">
