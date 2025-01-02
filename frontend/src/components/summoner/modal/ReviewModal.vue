@@ -144,6 +144,7 @@ const handleSubmit = async () => {
   }
 
   const review = {
+    summonerReviewSeq: props.player?.reviewDto?.summonerReviewSeq,
     reviewerSiteCode: authStore.user?.memberSiteCode,
     reviewerPuuid: authStore.user?.puuid,
     targetPuuid: props.player.puuid,
@@ -154,7 +155,11 @@ const handleSubmit = async () => {
   }
 
   try {
-    await reviewApi.submitReview(review)
+    if (props.player.reviewDto) {
+      await reviewApi.updateReview(review)
+    } else {
+      await reviewApi.submitReview(review)
+    }
     toast.success('평가가 성공적으로 제출되었습니다')
     emit('submit')
     emit('close')

@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 public class ReviewDto {
     private int summonerReviewSeq;
+    private String matchId;
     private String reviewerSiteCode;
     private String reviewerPuuid;
     private String targetPuuid;
@@ -22,6 +23,7 @@ public class ReviewDto {
     private LocalDateTime updDt;
     private LocalDateTime delDt;
     private List<String> tagCodeList;
+    private List<ReviewTagDto> tagDtoList;
 
     private boolean reviewable;
 }

@@ -42,24 +42,32 @@
           :review-tags="reviewTags"
           @submit="fetchMatchList"
       />
+
+      <PreviousReviewModal
+        v-if="showPreviousReviewModal"
+        :reviewed-match="reviewedMatch"
+        :player="selectedPlayer"
+        @close="showPreviousReviewModal = false"
+        @rewrite="handleReviewModify"
+      />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watchEffect } from 'vue'
-import { useRoute } from 'vue-router'
+import {onMounted, ref, watchEffect} from 'vue'
+import {useRoute} from 'vue-router'
 import Profile from '@/components/summoner/SummonerProfile.vue'
 import MatchList from '@/components/match/MatchList.vue'
 import DetailModal from '@/components/summoner/modal/DetailModal.vue'
 import ReviewModal from '@/components/summoner/modal/ReviewModal.vue'
 import ProfileSkeleton from '@/components/summoner/SummonerProfileSkeleton.vue'
 import MatchListSkeleton from '@/components/match/MatchListSkeleton.vue'
-import { summonerApi } from '@/api/summoner'
-import { matchApi } from '@/api/match'
-import { reviewApi } from '@/api/review'
-import type { LolSummonerProfileResDto } from '@/types/summoner'
-import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match'
+import {summonerApi} from '@/api/summoner'
+import {matchApi} from '@/api/match'
+import {reviewApi} from '@/api/review'
+import type {LolSummonerProfileResDto} from '@/types/summoner'
+import type {LolMatchInfoRes, LolMatchParticipant} from '@/types/match'
 import type {
   ReviewRatingByChampDto,
   ReviewRatingByPositionDto,
@@ -67,8 +75,9 @@ import type {
   ReviewStatsDto,
   ReviewTagDto
 } from "@/types/review.ts";
-import { useToast } from "vue-toastification";
-import { useAuthStore } from "@/stores/auth.ts";
+import PreviousReviewModal from "@/components/summoner/modal/PreviousReviewModal.vue";
+import {useToast} from "vue-toastification";
+import {useAuthStore} from "@/stores/auth.ts";
 
 const toast = useToast();
 const authStore = useAuthStore();
@@ -82,6 +91,7 @@ const noMoreMatches = ref(false);
 const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
 const reviewStatsInfo = ref<ReviewStatsDto | null>(null)
 const matches = ref<LolMatchInfoRes[]>([])
+const reviewedMatch = ref<LolMatchInfoRes>({} as LolMatchInfoRes)
 const reviewTags = ref<ReviewTagDto[]>([])
 const frequentTags = ref<ReviewTagDto | null>(null)
 const recentReviews = ref<ReviewRequestDto | null>(null)
@@ -89,6 +99,7 @@ const ratingByChamp = ref<ReviewRatingByChampDto | null>(null)
 const ratingByPosition = ref<ReviewRatingByPositionDto | null>(null)
 const showDetailModal = ref(false)
 const showReviewModal = ref(false)
+const showPreviousReviewModal = ref(false)
 const selectedPlayer = ref(<LolMatchParticipant>({}));
 
 const fetchSummonerInfo = async () => {
@@ -166,11 +177,29 @@ const updateMatchList = async () => {
 
 const openReviewModal = (player: any) => {
   selectedPlayer.value = player
+
+
+  reviewedMatch.value = matches.value.find(match =>
+      match.matchInfo.matchId == selectedPlayer.value.reviewDto.matchId
+  )!;
+
+  console.log('타겟매치 === ' + JSON.stringify(reviewedMatch))
+  console.log(selectedPlayer.value.reviewDto.matchId)
+
   if (authStore.isAuthenticated) {
-    showReviewModal.value = true
+    if (!player.reviewDto.reviewable) {
+      showPreviousReviewModal.value = true
+    } else {
+      showReviewModal.value = true
+    }
   } else {
     toast.error('리뷰작성은 로그인 후에 가능합니다.')
   }
+}
+
+const handleReviewModify = () => {
+  showPreviousReviewModal.value = false;
+  showReviewModal.value = true;
 }
 
 const fetchReviewTags = async () => {

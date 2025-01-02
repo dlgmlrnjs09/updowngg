@@ -5,6 +5,7 @@
     <resultMap id="reviewWithTagsMap" type="reviewDto">
         <!-- review 테이블의 컬럼들 매핑 -->
         <id property="summonerReviewSeq" column="summoner_review_seq"/>
+        <result property="matchId" column="match_id"/>
         <result property="reviewerSiteCode" column="reviewer_site_code"/>
         <result property="reviewerPuuid" column="reviewer_puuid"/>
         <result property="targetPuuid" column="target_puuid"/>
@@ -18,11 +19,19 @@
         <collection property="tagCodeList" ofType="string" javaType="list">
             <result column="tag_code"/>
         </collection>
+        <collection property="tagDtoList" ofType="gg.updown.backend.main.api.review.model.dto.ReviewTagDto">
+            <result property="tagCode" column="tag_code"/>
+            <result property="tagValue" column="tag_value"/>
+            <result property="tagDescription" column="tag_description"/>
+            <result property="tagUpdown" column="tag_updown"/>
+            <result property="frequentCount" column="frequent_count"/>
+        </collection>
     </resultMap>
 
     <select id="getWroteReviewList" parameterType="String" resultMap="reviewWithTagsMap">
         SELECT
             r.summoner_review_seq,
+            r.match_id,
             reviewer_site_code,
             reviewer_puuid,
             target_puuid,
@@ -32,10 +41,15 @@
             reg_dt,
             upd_dt,
             del_dt,
-            t.tag_code
+            t.tag_code,
+            rt.tag_value,
+            rt.tag_description,
+            rt.tag_updown,
+            COUNT(rt.*) OVER (PARTITION BY r.summoner_review_seq) as frequent_count
         FROM
             site_summoner_review r
             LEFT JOIN site_summoner_review_tag t ON r.summoner_review_seq = t.summoner_review_seq
+            INNER JOIN site_review_tag rt ON t.tag_code = rt.tag_code
         WHERE
             reviewer_puuid = #{reviewerPuuid}
           and del_dt IS NULL
