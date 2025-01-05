@@ -57,7 +57,7 @@
         <!-- Action Buttons -->
         <div class="action-buttons">
 <!--          <button class="btn-cancel" @click="$emit('close')">취소</button>-->
-          <button class="btn-rewrite" @click="$emit('rewrite')">리뷰 재작성</button>
+          <button class="btn-rewrite" @click="$emit('rewrite')">리뷰 수정</button>
         </div>
       </div>
 
@@ -168,7 +168,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { ChevronDown, ThumbsUp, ThumbsDown } from 'lucide-vue-next'
-import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match'
+import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match.ts'
 import TagList from "@/components/common/TagList.vue";
 import {useAuthStore} from "@/stores/auth.ts";
 

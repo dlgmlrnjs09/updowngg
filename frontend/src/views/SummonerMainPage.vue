@@ -59,8 +59,8 @@ import {onMounted, ref, watchEffect} from 'vue'
 import {useRoute} from 'vue-router'
 import Profile from '@/components/summoner/SummonerProfile.vue'
 import MatchList from '@/components/match/MatchList.vue'
-import DetailModal from '@/components/summoner/modal/DetailModal.vue'
-import ReviewModal from '@/components/summoner/modal/ReviewModal.vue'
+import DetailModal from '@/components/review/modal/DetailModal.vue'
+import ReviewModal from '@/components/review/modal/ReviewModal.vue'
 import ProfileSkeleton from '@/components/summoner/SummonerProfileSkeleton.vue'
 import MatchListSkeleton from '@/components/match/MatchListSkeleton.vue'
 import {summonerApi} from '@/api/summoner'
@@ -75,7 +75,7 @@ import type {
   ReviewStatsDto,
   ReviewTagDto
 } from "@/types/review.ts";
-import PreviousReviewModal from "@/components/summoner/modal/PreviousReviewModal.vue";
+import PreviousReviewModal from "@/components/review/modal/PreviousReviewModal.vue";
 import {useToast} from "vue-toastification";
 import {useAuthStore} from "@/stores/auth.ts";
 

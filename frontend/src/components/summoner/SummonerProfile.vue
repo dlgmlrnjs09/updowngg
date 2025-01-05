@@ -39,12 +39,12 @@
     </div>
 
     <!-- 확장 영역 -->
-    <div v-if="isExpanded && displayReview" class="expanded-section">
+    <div v-if="isExpanded && recentReviews.length > 0" class="expanded-section">
       <!-- 자주 받은 태그 -->
       <div class="tags-section">
         <div class="stats-title">자주 받은 태그</div>
         <div v-if="frequentTags && frequentTags.length > 0" class="tags-slider">
-          <TagList :tags="frequentTags" size="medium"/>
+          <TagList :tags="frequentTags" size="medium" is-show-count/>
         </div>
         <div v-else class="no-review-message">
           받은 태그가 없습니다.
@@ -81,36 +81,7 @@
       </div>
 
       <!-- 최근 평가 섹션 -->
-      <div class="recent-reviews">
-        <div class="stats-title">최근 받은 평가</div>
-        <div class="reviews-container">
-          <transition-group
-              name="slide"
-              tag="div"
-              class="review-wrapper"
-          >
-            <div
-                v-for="review in displayReview"
-                :key="review.summonerReviewSeq"
-                class="review-item"
-            >
-              <div class="review-header">
-<!--                <div class="review-rating" :style="{ color: getRatingColor(review.totalAvgRating) }">{{ review.totalAvgRating }}</div>-->
-                <ThumbsUp class="thumb-icon"
-                  :class="{
-                    'up': review.isUp,
-                    'down': !review.isUp
-                  }"
-                />
-                <div class="review-date">{{ formatDate(review.regDt) }}</div>
-              </div>
-              <div class="review-content">
-                {{ review.comment }}
-              </div>
-            </div>
-          </transition-group>
-        </div>
-      </div>
+      <ReviewRolling :reviews="recentReviews" title="최근 받은 평가" wrapper-height="90px"/>
     </div>
     <div v-else class="no-review-message">
       아직 작성된 리뷰가 없습니다.
@@ -130,12 +101,13 @@ import type {
 } from "@/types/review.ts";
 import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
 import TagList from "@/components/common/TagList.vue";
+import ReviewRolling from "@/components/review/ReviewRolling.vue";
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto
   reviewStats: ReviewStatsDto | null
   frequentTags: ReviewTagDto[] | null
-  recentReviews: ReviewRequestDto[] | null
+  recentReviews: ReviewRequestDto[]
   isUpdatedMatchList: boolean
   ratingByChamp: ReviewRatingByChampDto[] | null
   ratingByPosition: ReviewRatingByPositionDto[] | null
@@ -145,43 +117,6 @@ defineEmits<{
   (e: 'showDetail'): void
   (e: 'updateMatches'): void
 }>()
-
-const currentIndex = ref(0)
-const displayReview = computed(() => {
-  if (!props.recentReviews || props.recentReviews.length === 0) {
-    return null;
-  }
-  return [props.recentReviews[currentIndex.value % props.recentReviews.length]]
-})
-
-let timer: number | null = null
-
-const startCarousel = () => {
-  if (props.recentReviews && props.recentReviews.length > 0) {
-    timer = window.setInterval(() => {
-      currentIndex.value++
-    }, 3000)
-  }
-}
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}.${month}.${day}.`;
-}
-
-onMounted(() => {
-  startCarousel()
-})
-
-onUnmounted(() => {
-  if (timer) {
-    clearInterval(timer)
-  }
-})
 
 const isExpanded = ref(true)
 </script>

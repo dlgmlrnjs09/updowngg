@@ -6,7 +6,13 @@
         updownGG
       </div>
       <Search />
-      <div class="search-example">예시: {{ currentExample }}</div>
+
+      <!-- 최근 받은 평가 컴포넌트 -->
+      <ReviewRolling
+          :reviews="recentReviews"
+          :rolling-interval="3000"
+          wrapper-height="0"
+      />
     </div>
   </div>
 </template>
@@ -14,23 +20,29 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import Search from '@/components/common/Search.vue';
+import ReviewRolling from '@/components/review/ReviewRolling.vue';
 
-const examples = ['Faker', 'Hide on bush', 'T1 Gumayusi'];
-const currentIndex = ref(0);
-const currentExample = ref(examples[0]);
-
-let intervalId: number;
-
-onMounted(() => {
-  intervalId = window.setInterval(() => {
-    currentIndex.value = (currentIndex.value + 1) % examples.length;
-    currentExample.value = `${examples[currentIndex.value]}`;
-  }, 3000);
-});
-
-onUnmounted(() => {
-  clearInterval(intervalId);
-});
+// 샘플 리뷰 데이터 (실제로는 API에서 가져올 예정)
+const recentReviews = ref([
+  {
+    summonerReviewSeq: 1,
+    isUp: true,
+    regDt: '2024-01-05',
+    comment: "적극적으로 소통하며 팀워크가 좋았습니다."
+  },
+  {
+    summonerReviewSeq: 2,
+    isUp: true,
+    regDt: '2024-01-04',
+    comment: "라인전 압도적이었고 로밍도 완벽했습니다."
+  },
+  {
+    summonerReviewSeq: 3,
+    isUp: false,
+    regDt: '2024-01-03',
+    comment: "정글러와 협동이 아쉬웠습니다."
+  }
+]);
 </script>
 
 <style scoped>
