@@ -2,6 +2,7 @@ package gg.updown.backend.main.api.ranking.service;
 
 import gg.updown.backend.common.util.CalculateUtil;
 import gg.updown.backend.external.riot.RiotApiBasePath;
+import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
 import gg.updown.backend.main.api.ranking.mapper.SiteRankingMapper;
 import gg.updown.backend.main.api.ranking.model.*;
 import gg.updown.backend.main.api.review.model.dto.ReviewStatsDto;
@@ -41,7 +42,7 @@ public class SiteRankingService {
             List<ChampionStatsDto> mostChampionList = siteRankingMapper.selectMostChampionUpdownCount(ratingDto.getPuuid());
             for (ChampionStatsDto champion : mostChampionList) {
                 champion.setReviewCount(ratingDto.getTotalReviewCnt());
-                champion.setIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion +"/img/champion/" + champion.getNameUs() + ".png");
+                champion.setIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, champion.getNameUs()));
             }
 
             // 3. Top3 태그 Get
@@ -51,7 +52,7 @@ public class SiteRankingService {
             }
             // 4. 소환사 기본 정보 Get
             SummonerBasicInfoDto basicInfoDto = siteRankingMapper.selectTopRankerBasicInfo(ratingDto.getPuuid());
-            basicInfoDto.setProfileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion +"/img/profileicon/" + basicInfoDto.getProfileIconId() + ".png");
+            basicInfoDto.setProfileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, basicInfoDto.getProfileIconId()));
 
 
             resultDtoList.add(SiteRankingResDto.builder()

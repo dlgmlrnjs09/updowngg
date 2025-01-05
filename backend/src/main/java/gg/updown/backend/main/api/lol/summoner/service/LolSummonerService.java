@@ -1,6 +1,7 @@
 package gg.updown.backend.main.api.lol.summoner.service;
 
 import gg.updown.backend.external.riot.RiotApiBasePath;
+import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
 import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
 import gg.updown.backend.external.riot.api.lol.league.model.LeagueInfoBySummonerDto;
@@ -158,7 +159,7 @@ public class LolSummonerService {
 
         BeanUtils.copyProperties(paramSummonerEntity, returnDto);
         if (summonerEntity != null) {
-            returnDto.setProfileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion +"/img/profileicon/" + summonerEntity.getProfileIconId() + ".png");
+            returnDto.setProfileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, summonerEntity.getProfileIconId()));
         }
 
         return returnDto;

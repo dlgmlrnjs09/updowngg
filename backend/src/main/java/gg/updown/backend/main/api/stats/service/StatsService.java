@@ -1,6 +1,7 @@
 package gg.updown.backend.main.api.stats.service;
 
 import gg.updown.backend.external.riot.RiotApiBasePath;
+import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
 import gg.updown.backend.main.api.review.model.dto.ReviewTagDto;
 import gg.updown.backend.main.api.stats.mapper.StatsMapper;
 import gg.updown.backend.main.api.stats.model.dto.ChampionStatsDto;
@@ -39,7 +40,7 @@ public class StatsService {
 
         // 각 챔피언에 태그 리스트 매핑
         for (ChampionStatsDto champion : statsList) {
-            champion.setIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion + "/img/champion/" + champion.getNameUs() + ".png");
+            champion.setIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, champion.getNameUs()));
             champion.setUpRatio();
             champion.setDownRatio();
 

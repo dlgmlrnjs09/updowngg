@@ -1,6 +1,7 @@
 package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.external.riot.RiotApiBasePath;
+import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
 import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
@@ -55,7 +56,7 @@ public class ReviewService {
     public List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid) {
         List<ReviewRatingByChampDto> dtoList = reviewMapper.getAvgRatingByChamp(targetPuuid);
         for (ReviewRatingByChampDto dto : dtoList) {
-            dto.setChampIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion + "/img/champion/" + dto.getChampName() + ".png");
+            dto.setChampIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, dto.getChampName()));
         }
         return dtoList;
     }

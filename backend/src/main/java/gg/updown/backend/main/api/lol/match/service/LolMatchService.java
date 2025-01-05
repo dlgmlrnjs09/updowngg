@@ -1,6 +1,7 @@
 package gg.updown.backend.main.api.lol.match.service;
 
 import gg.updown.backend.external.riot.RiotApiBasePath;
+import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
 import gg.updown.backend.external.riot.api.lol.match.enums.MatchGameMode;
 import gg.updown.backend.external.riot.api.lol.match.model.*;
 import gg.updown.backend.external.riot.api.lol.match.service.MatchApiService;
@@ -162,8 +163,7 @@ public class LolMatchService {
                 .map(participant -> {
                     LolMatchParticipantDto entity = new LolMatchParticipantDto();
                     BeanUtils.copyProperties(participant, entity);
-                    // 챔피언 초상화 URL Set
-                    entity.setChampProfileIconUrl(RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + latestVersion +"/img/champion/" + participant.getChampName() + ".png");
+                    entity.setChampProfileIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, participant.getChampName()));
                     return entity;
                 })
                 .toList();
