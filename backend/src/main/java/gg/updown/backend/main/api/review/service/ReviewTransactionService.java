@@ -16,13 +16,17 @@ public class ReviewTransactionService {
     @Transactional
     public void insertSummonerReview(ReviewSubmitReqDto reqDto) {
         reviewMapper.insertReview(reqDto);
-        reviewMapper.insertReviewTags(reqDto.getSummonerReviewSeq(), reqDto.getTagCodeList());
+        if (!reqDto.getTagCodeList().isEmpty()) {
+            reviewMapper.insertReviewTags(reqDto.getSummonerReviewSeq(), reqDto.getTagCodeList());
+        }
     }
 
     @Transactional
     public void updateSummonerReview(ReviewUpdateReqDto reqDto) {
         reviewMapper.updateReview(reqDto);
         reviewMapper.deleteReviewTags(reqDto.getSummonerReviewSeq());
-        reviewMapper.insertReviewTags(reqDto.getSummonerReviewSeq(), reqDto.getTagCodeList());
+        if (!reqDto.getTagCodeList().isEmpty()) {
+            reviewMapper.insertReviewTags(reqDto.getSummonerReviewSeq(), reqDto.getTagCodeList());
+        }
     }
 }

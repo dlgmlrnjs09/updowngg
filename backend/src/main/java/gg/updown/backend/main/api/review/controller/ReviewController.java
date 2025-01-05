@@ -54,12 +54,12 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.OK).body(reviewList);
     }
 
-    // TODO
     @GetMapping("/rating-avg/champ")
     public ResponseEntity<List<ReviewRatingByChampDto>> getReviewChampRating(@Valid ReviewChampRatingReqDto reqDto) {
         List<ReviewRatingByChampDto> resultList = reviewService.getAvgRatingByChamp(reqDto.getPuuid());
         return ResponseEntity.status(HttpStatus.OK).body(resultList);
     }
+
     @GetMapping("/rating-avg/position")
     public ResponseEntity<List<ReviewRatingByPositionDto>> getReviewPositionRating(@Valid ReviewPositionRatingReqDto reqDto) {
         List<ReviewRatingByPositionDto> resultList = reviewService.getAvgRatingByPosition(reqDto.getPuuid());

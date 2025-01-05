@@ -48,14 +48,14 @@
             COUNT(rt.*) OVER (PARTITION BY r.summoner_review_seq) as frequent_count
         FROM
             site_summoner_review r
-            LEFT JOIN site_summoner_review_tag t ON r.summoner_review_seq = t.summoner_review_seq
-            INNER JOIN site_review_tag rt ON t.tag_code = rt.tag_code
+            LEFT OUTER JOIN site_summoner_review_tag t ON r.summoner_review_seq = t.summoner_review_seq
+            LEFT OUTER JOIN site_review_tag rt ON t.tag_code = rt.tag_code
         WHERE
             reviewer_puuid = #{reviewerPuuid}
           and del_dt IS NULL
     </select>
 
-    <select id="getRecentReviewList" parameterType="String" resultType="reviewDto">
+    <select id="getRecentReviewList" parameterType="String" resultMap="reviewWithTagsMap">
         SELECT
             r.summoner_review_seq,
             r.reviewer_site_code,
@@ -63,11 +63,18 @@
             r.target_puuid,
             r.comment,
             r.reg_dt,
-            r.is_up
+            r.is_up,
+            ssrt.tag_code,
+            srt.tag_value,
+            srt.tag_description,
+            srt.tag_updown
         FROM
             site_summoner_review r
+                LEFT OUTER JOIN site_summoner_review_tag ssrt ON r.summoner_review_seq = ssrt.summoner_review_seq
+                LEFT OUTER JOIN site_review_tag srt ON ssrt.tag_code = srt.tag_code
         WHERE
             r.target_puuid = #{targetPuuid} AND r.del_dt IS NULL
+
         LIMIT
             20
     </select>
