@@ -55,7 +55,7 @@
           and del_dt IS NULL
     </select>
 
-    <select id="getRecentReviewList" parameterType="String" resultMap="reviewWithTagsMap">
+    <select id="getRecentReviewList" parameterType="map" resultMap="reviewWithTagsMap">
         SELECT
             r.summoner_review_seq,
             r.reviewer_site_code,
@@ -73,10 +73,12 @@
                 LEFT OUTER JOIN site_summoner_review_tag ssrt ON r.summoner_review_seq = ssrt.summoner_review_seq
                 LEFT OUTER JOIN site_review_tag srt ON ssrt.tag_code = srt.tag_code
         WHERE
-            r.target_puuid = #{targetPuuid} AND r.del_dt IS NULL
-
+            r.del_dt IS NULL
+            <if test="targetPuuid != null and targetPuuid != ''">
+                and r.target_puuid = #{targetPuuid}
+            </if>
         LIMIT
-            20
+            #{limit}
     </select>
 
     <select id="getReviewTagList" parameterType="String">

@@ -94,7 +94,7 @@ const matches = ref<LolMatchInfoRes[]>([])
 const reviewedMatch = ref<LolMatchInfoRes>({} as LolMatchInfoRes)
 const reviewTags = ref<ReviewTagDto[]>([])
 const frequentTags = ref<ReviewTagDto | null>(null)
-const recentReviews = ref<ReviewRequestDto | null>(null)
+const recentReviews = ref<ReviewRequestDto[]>([])
 const ratingByChamp = ref<ReviewRatingByChampDto | null>(null)
 const ratingByPosition = ref<ReviewRatingByPositionDto | null>(null)
 const showDetailModal = ref(false)
@@ -244,7 +244,7 @@ const fetchFrequentTags = async () => {
 
 const fetchRecentReviews = async () => {
   if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
-  const response = await reviewApi.getRecentReviews(summonerInfo.value.riotAccountInfoEntity.puuid);
+  const response = await reviewApi.getRecentReviewsByPuuid(summonerInfo.value.riotAccountInfoEntity.puuid, 20);
   recentReviews.value = response.data;
 }
 

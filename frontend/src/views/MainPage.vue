@@ -21,28 +21,20 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import Search from '@/components/common/Search.vue';
 import ReviewRolling from '@/components/review/ReviewRolling.vue';
+import type {ReviewRequestDto} from "@/types/review.ts";
+import {reviewApi} from "@/api/review.ts";
 
-// 샘플 리뷰 데이터 (실제로는 API에서 가져올 예정)
-const recentReviews = ref([
-  {
-    summonerReviewSeq: 1,
-    isUp: true,
-    regDt: '2024-01-05',
-    comment: "적극적으로 소통하며 팀워크가 좋았습니다."
-  },
-  {
-    summonerReviewSeq: 2,
-    isUp: true,
-    regDt: '2024-01-04',
-    comment: "라인전 압도적이었고 로밍도 완벽했습니다."
-  },
-  {
-    summonerReviewSeq: 3,
-    isUp: false,
-    regDt: '2024-01-03',
-    comment: "정글러와 협동이 아쉬웠습니다."
-  }
-]);
+const recentReviews = ref<ReviewRequestDto[]>([])
+
+onMounted(async () => {
+  await fetchRecentReviews();
+});
+
+const fetchRecentReviews = async () => {
+  const response = await reviewApi.getRecentReviews(20);
+  recentReviews.value = response.data;
+}
+
 </script>
 
 <style scoped>

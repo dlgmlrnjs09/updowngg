@@ -50,7 +50,7 @@ public class ReviewController {
 
     @GetMapping("/recent")
     public ResponseEntity<List<ReviewDto>> getRecentReviews(@Valid ReviewRecentReqDto reqDto) {
-        List<ReviewDto> reviewList = reviewService.getRecentReviewList(reqDto.getPuuid());
+        List<ReviewDto> reviewList = reviewService.getRecentReviewList(reqDto.getPuuid(), reqDto.getLimit());
         return ResponseEntity.status(HttpStatus.OK).body(reviewList);
     }
 

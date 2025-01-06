@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { ThumbsUp } from 'lucide-vue-next';
 import type { ReviewRequestDto } from "@/types/review.ts";
 import TagList from "@/components/common/TagList.vue";
@@ -59,7 +59,7 @@ let timer: number | null = null;
 
 const displayReview = computed(() => {
   if (!props.reviews || props.reviews.length === 0) {
-    return null;
+    return [];
   }
   return [props.reviews[currentIndex.value % props.reviews.length]];
 });
@@ -72,12 +72,25 @@ const formatDate = (dateString: string) => {
   return `${year}.${month}.${day}`;
 };
 
-onMounted(() => {
-  if (props.reviews && props.reviews.length > 0) {
-    timer = window.setInterval(() => {
-      currentIndex.value++;
-    }, props.rollingInterval || 3000);
-  }
+const startRolling = () => {
+  if (timer) clearInterval(timer);
+  timer = window.setInterval(() => {
+    currentIndex.value++;
+  }, props.rollingInterval || 3000);
+};
+
+watch(
+    () => props.reviews,
+    (newReviews = []) => {
+      if (newReviews.length > 0) {
+        startRolling();
+      }
+    },
+    { deep: true }
+);
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer);
 });
 
 onUnmounted(() => {
@@ -118,7 +131,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 16px;
-  min-height: 100px;
+  /*min-height: 100px;*/
 }
 
 .review-left {

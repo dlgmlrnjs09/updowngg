@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ReviewRecentReqDto {
-    @NotNull(message = "puuid는 필수값입니다.")
+//    @NotNull(message = "puuid는 필수값입니다.")
     private String puuid;
+    private int limit;
 }

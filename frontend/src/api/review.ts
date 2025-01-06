@@ -32,10 +32,17 @@ export const reviewApi = {
             }
         }),
 
-    getRecentReviews: (puuid: string) =>
-        apiClient.get<ReviewRequestDto>('/api/v1/review/recent', {
+    getRecentReviewsByPuuid: (puuid: string, limit: number) =>
+        apiClient.get<ReviewRequestDto[]>('/api/v1/review/recent', {
             params: {
-                puuid
+                puuid,
+                limit
+            }
+        }),
+    getRecentReviews: (limit: number) =>
+        apiClient.get<ReviewRequestDto[]>('/api/v1/review/recent', {
+            params: {
+                limit
             }
         }),
 
