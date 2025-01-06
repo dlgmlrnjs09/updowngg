@@ -2,6 +2,7 @@ package gg.updown.backend.main.api.lol.summoner.model.dto;
 
 import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerLeagueEntity;
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,17 +14,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "LOL 소환사정보 DTO")
 public class LolSummonerProfileResDto {
-    // lol_summoner
-//    private Integer lolAccountSeq;
-//    private String puuid;
-//    private String summonerId;
-//    private String accountId;
-//    private Long summonerLevel;
-//    private LocalDateTime externalModDt;
-//    private String profileIconId;
-//    private String profileIconUrl;
-
     private LolSummonerDto lolSummonerDto;
     private RiotAccountInfoEntity riotAccountInfoEntity;
     private List<LolSummonerLeagueEntity> leagueEntityList;

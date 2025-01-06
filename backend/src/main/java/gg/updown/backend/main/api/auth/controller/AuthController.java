@@ -8,6 +8,8 @@ import gg.updown.backend.main.exception.SiteCommonException;
 import gg.updown.backend.main.exception.SiteErrorMessage;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,11 +35,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth", description = "사이트 인증관련 API")
 public class AuthController {
 
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Operation(summary = "회원가입", description = "일반 회원가입")
     @PutMapping("/signup")
     public ResponseEntity<SignupResDto> signup(@RequestBody SignupReqDto signupReqDto) {
         try {
@@ -52,6 +56,7 @@ public class AuthController {
      * @param loginDto 로그인 정보
      * @return JWT 토큰 쌍 (access token + refresh token)
      */
+    @Operation(summary = "로그인", description = "일반 로그인")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginReqDto loginDto) {
         try {
@@ -62,6 +67,7 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "로그아웃", description = "로그아웃")
     @PostMapping("/logout")
     public ResponseEntity<Boolean> logout(@AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -77,6 +83,7 @@ public class AuthController {
      * @param tokenRefreshDto refresh token 정보
      * @return 새로운 access token
      */
+    @Operation(summary = "액세스토큰 갱신", description = "액세스토큰 갱신")
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestBody JwtToken tokenRefreshDto) {
         String refreshToken = tokenRefreshDto.getRefreshToken();
@@ -93,6 +100,7 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "회원정보 조회", description = "사이트 회원정보 조회")
     @GetMapping("/member-info")
     public ResponseEntity<SiteAccountResEntity> getMemberInfo(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails.getUsername() == null) {

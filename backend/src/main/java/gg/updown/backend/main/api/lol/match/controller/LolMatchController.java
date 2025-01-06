@@ -8,10 +8,18 @@ import gg.updown.backend.main.api.lol.match.model.dto.LolMatchUpdateReqDto;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.exception.SiteCommonException;
 import gg.updown.backend.main.exception.SiteErrorMessage;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.ConstraintDeclarationException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,16 +33,23 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
+@Tag(name = "Match", description = "LOL 경기 관련 API")
 @RequestMapping("/api/v1/match")
 public class LolMatchController {
     private final LolMatchService lolMatchService;
 
+    @Operation(summary = "LOL 경기목록 조회", description = "라이엇 계정정보, LOL 소환사 정보 조회")
     @GetMapping("/list")
-    public ResponseEntity<List<LolMatchInfoResDto>> getMatchList(@Valid LolMatchInfoReqDto reqDto, @AuthenticationPrincipal UserDetailImpl userDetail) {
+    public ResponseEntity<List<LolMatchInfoResDto>> getMatchList(
+            @Valid @ParameterObject LolMatchInfoReqDto reqDto,
+            @AuthenticationPrincipal UserDetailImpl userDetail
+    ) {
         List<LolMatchInfoResDto> responseDto = lolMatchService.getAndInsertMatchList(reqDto.getPuuid(), reqDto.getStartIndex(), reqDto.getCount(), userDetail);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
+    @Operation(summary = "LOL 경기목록 갱신", description = "라이엇 계정정보, LOL 소환사 정보 조회")
+    @ApiResponse(description = "LOL 경기 고유ID 목록", content = @Content(schema = @Schema(implementation = List.class)))
     @GetMapping("/update")
     public ResponseEntity<List<String>> updateMatchListV2(LolMatchUpdateReqDto reqDto) {
         Long startDate = DateUtil.yyyyMMddToMilliseconds("2024-01-01 00:00");

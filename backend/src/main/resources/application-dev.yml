@@ -46,3 +46,21 @@ logging:
       resultsettable: OFF  # SQL 결과 데이터 테이블
       connection: OFF    # 커넥션 연결/해제 정보
     gg.updown.backend: DEBUG
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    # 기본 모델 렌더링 depth
+    # 태그 정렬
+    tags-sorter: alpha
+    # 작업 정렬
+    operations-sorter: method
+    # 필터 활성화
+    filter: true
+    # 요청 지속 시간 표시
+    display-request-duration: true
+    # Models 섹션 펼침 깊이
+    default-models-expand-depth: 99
+    default-model-expand-depth: 99
+  api-docs:
+    path: /v2/api-docs
