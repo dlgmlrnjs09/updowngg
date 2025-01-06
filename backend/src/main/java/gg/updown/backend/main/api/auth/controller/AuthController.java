@@ -11,8 +11,10 @@ import io.jsonwebtoken.Jwts;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -35,6 +38,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Auth", description = "사이트 인증관련 API")
 public class AuthController {
 
@@ -65,6 +69,22 @@ public class AuthController {
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    @Operation(summary = "소셜로그인", description = "디스코드 로그인")
+    @GetMapping("/login/discord")
+    public ResponseEntity<?> discordCallback(@AuthenticationPrincipal OAuth2User oauth2User) {
+        log.debug("Discord callback 호출됨");
+
+        if (oauth2User == null) {
+            log.error("OAuth2User is null");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+        }
+
+        Map<String, Object> attributes = oauth2User.getAttributes();
+        log.debug("Discord user attributes: {}", attributes);
+
+        return ResponseEntity.ok(attributes);
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃")

@@ -11,17 +11,24 @@
         <RouterLink to="/stats">통계</RouterLink>
       </nav>
 
-      <div class="user-actions" v-if="authStore.isAuthenticated" @click="handleProfile">
-        <div class="profile-btn">
-          <div class="profile-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
+      <div class="user-actions" v-if="authStore.isAuthenticated">
+        <div class="profile-dropdown" ref="profileDropdown">
+          <button class="profile-btn" @click="toggleDropdown">
+            <div class="profile-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          </button>
+
+          <div v-if="isDropdownOpen" class="dropdown-menu">
+            <button class="dropdown-item" @click="handleProfile">프로필</button>
+            <button class="dropdown-item" @click="navigateToAccountSettings">계정 설정</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item logout" @click="handleLogout">로그아웃</button>
           </div>
-<!--          프로필-->
         </div>
-        <button class="logout-btn" @click="authStore.logout">로그아웃</button>
       </div>
       <div class="user-actions" v-else>
         <div class="login-wrapper">
@@ -35,8 +42,11 @@
 <script setup lang="ts">
 import {RouterLink, useRouter} from 'vue-router';
 import {useAuthStore} from "@/stores/auth.ts";
+import {onMounted, onUnmounted, ref} from "vue";
 const authStore = useAuthStore();
 const router = useRouter();
+const isDropdownOpen = ref(false);
+const profileDropdown = ref<HTMLElement | null>(null);
 
 const handleProfile = async () => {
   await router.push({
@@ -47,6 +57,36 @@ const handleProfile = async () => {
     },
   })
 }
+
+const handleLogout = async () => {
+  isDropdownOpen.value = false;
+  await authStore.logout();
+}
+
+const navigateToAccountSettings = () => {
+  isDropdownOpen.value = false;
+  router.push('/setting/account');
+};
+
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value;
+};
+
+// 드롭다운 외부 클릭시 닫기
+const handleClickOutside = (event: MouseEvent) => {
+  if (profileDropdown.value && !profileDropdown.value.contains(event.target as Node)) {
+    isDropdownOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  isDropdownOpen.value = false;
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <style scoped>
@@ -126,7 +166,56 @@ const handleProfile = async () => {
 .login-wrapper {
   min-width: 160px;
   display: flex;
-  justify-content: center;
+  justify-content: end;
+}
+
+.profile-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: #141414;
+  border: 1.5px solid #333;
+  border-radius: 8px;
+  padding: 8px;
+  min-width: 160px;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 8px 16px;
+  color: #888;
+  background: none;
+  border: none;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #1a1a1a;
+  color: white;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #333;
+  margin: 8px 0;
+}
+
+.logout {
+  color: #ff4444;
+}
+
+.logout:hover {
+  background: #1a1a1a;
+  color: #ff6666;
 }
 
 .logout-btn,

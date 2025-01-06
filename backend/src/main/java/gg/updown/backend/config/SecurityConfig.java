@@ -1,8 +1,10 @@
 package gg.updown.backend.config;
 
 import gg.updown.backend.main.api.auth.filter.JwtAuthenticationFilter;
+import gg.updown.backend.main.api.auth.service.DiscordOAuthService;
 import gg.updown.backend.main.api.auth.service.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +15,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -26,6 +31,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -41,13 +47,32 @@ public class SecurityConfig {
                 // CORS 설정 추가
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // 세션 사용하지 않음 (JWT 사용으로 불필요)
-                .sessionManagement(session -> session
+                /*.sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )*/
+                // OAuth2 로그인을 위해 ALWAYS로 변경
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
                 // URL별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService())
+                        )
+                        .successHandler((request, response, authentication) -> {
+                            log.debug("OAuth2 로그인 성공");
+                            OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+                            log.debug("User Attributes: {}", oauth2User.getAttributes());
+                            response.sendRedirect("/api/v1/auth/login/discord");
+                        })
+                        .failureHandler((request, response, exception) -> {
+                            log.error("OAuth2 로그인 실패", exception);
+                            response.sendRedirect("/login?error=oauth2_error");
+                        })
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
                         UsernamePasswordAuthenticationFilter.class);
@@ -92,5 +117,10 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService() {
+        return new DiscordOAuthService();
     }
 }
