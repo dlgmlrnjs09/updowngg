@@ -1,8 +1,7 @@
 package gg.updown.backend.main.api.lol.match.service;
 
-import gg.updown.backend.external.riot.RiotApiBasePath;
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
-import gg.updown.backend.external.riot.api.lol.match.enums.MatchGameMode;
+import gg.updown.backend.external.riot.enums.MatchGameMode;
 import gg.updown.backend.external.riot.api.lol.match.model.*;
 import gg.updown.backend.external.riot.api.lol.match.service.MatchApiService;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;

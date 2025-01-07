@@ -1,8 +1,8 @@
 package gg.updown.backend.main.api.stats.model.dto;
 
-import gg.updown.backend.external.riot.api.lol.league.enums.Tier;
-import gg.updown.backend.external.riot.api.lol.match.enums.MatchPosition;
-import gg.updown.backend.external.riot.api.lol.match.enums.MatchGameMode;
+import gg.updown.backend.external.riot.enums.Tier;
+import gg.updown.backend.external.riot.enums.MatchPosition;
+import gg.updown.backend.external.riot.enums.MatchGameMode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 

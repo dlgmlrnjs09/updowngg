@@ -1,4 +1,4 @@
-package gg.updown.backend.external.riot.api.lol.match.enums;
+package gg.updown.backend.external.riot.enums;
 
 public enum MatchGameMode {
     ARAM(450, "칼바람나락"),

@@ -1,4 +1,4 @@
-package gg.updown.backend.external.riot.api.lol.league.enums;
+package gg.updown.backend.external.riot.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

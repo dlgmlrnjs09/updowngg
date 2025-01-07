@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.community.common.mapper.CommunityMapper">
+    <insert id="insertPost" parameterType="map" useGeneratedKeys="true" keyProperty="postEntity.postId">
+        INSERT INTO site_community_post (
+            writer_site_code,
+            community_code,
+            title,
+            content
+        ) VALUES (
+             #{postEntity.writerSiteCode},
+             #{communityCode},
+             #{postEntity.title},
+             #{postEntity.content}
+         );
+    </insert>
+
+</mapper>

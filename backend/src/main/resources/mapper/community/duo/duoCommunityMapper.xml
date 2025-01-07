@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.community.duo.mapper.DuoCommunityMapper">
+    <select id="getDuoPostList" resultType="DuoCommunityPostDto">
+        select
+            scp.post_id
+            , community_code
+            , title
+            , content
+            , reg_dt
+            , upd_dt
+            , del_dt
+            , game_mode
+            , position_self
+            , position_find
+            , is_use_mic
+        from
+            site_community_post scp
+                inner join site_community_duo scd on (scp.post_id = scd.post_id)
+        where
+            scp.community_code = 'duo'
+        offset 0 limit 10
+    </select>
+
+    <insert id="insertDuoPost" parameterType="DuoCommunityEntity">
+        INSERT INTO site_community_duo (
+            post_id,
+            game_mode,
+            position_self,
+            position_find,
+            is_use_mic
+        ) VALUES (
+             #{postId},
+             #{duoCommunityEntity.gameMode},
+             #{duoCommunityEntity.positionSelf},
+             #{duoCommunityEntity.positionFind},
+             #{duoCommunityEntity.isUseMic}
+        );
+    </insert>
+</mapper>

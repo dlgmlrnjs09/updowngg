@@ -1,4 +1,4 @@
-package gg.updown.backend.external.riot.api.lol.match.enums;
+package gg.updown.backend.external.riot.enums;
 
 public enum MatchPosition {
     TOP("탑"),
