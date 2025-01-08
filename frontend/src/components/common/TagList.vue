@@ -37,7 +37,7 @@ import type { ReviewTagDto } from "@/types/review"
 
 defineProps<{
   tags: ReviewTagDto[] | null
-  size: 'small' | 'medium' | 'large'
+  size: 'xSmall' | 'small' | 'medium' | 'large'
   isShowCount: boolean
 }>()
 
@@ -45,6 +45,7 @@ const hoveredTag = ref<ReviewTagDto | null>(null)
 const tooltipStyle = ref({})
 
 const sizeClasses = {
+  xSmall: 'text-[10px] px-2 py-0.5',
   small: 'px-2 py-1 text-xs',
   medium: 'px-3 py-1 text-sm',
   large: 'px-4 py-2 text-base'

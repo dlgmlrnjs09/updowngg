@@ -27,4 +27,13 @@ public class LolMatchParticipantEntity {
     private String champName;
     private int totalDamageToChampion;
     private int totalDamageTaken;
+    private boolean isWin;
+
+    public boolean isWin() {
+        return isWin;
+    }
+
+    public void setWin(boolean win) {
+        isWin = win;
+    }
 }

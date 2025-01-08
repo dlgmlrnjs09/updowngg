@@ -53,6 +53,7 @@ public class LolMatchModelConverter {
                     .champName(dto.getChampionName())
                     .totalDamageToChampion(dto.getTotalDamageDealtToChampions())
                     .totalDamageTaken(dto.getTotalDamageTaken())
+                    .isWin(dto.isWin())
                     .build());
         }
 

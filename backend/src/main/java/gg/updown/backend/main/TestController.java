@@ -2,6 +2,8 @@ package gg.updown.backend.main;
 
 import gg.updown.backend.config.JasyptConfigDES;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
+import gg.updown.backend.main.api.community.duo.model.DuoPostCardDto;
+import gg.updown.backend.main.api.community.duo.service.DuoCommunityService;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.riot.account.service.RiotAccountService;
 import gg.updown.backend.main.riot.ddragon.service.DdragonService;
@@ -10,6 +12,8 @@ import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,10 +24,11 @@ public class TestController {
     private final DdragonService ddragonService;
     private final LolMatchService matchService;
     private final JasyptConfigDES jasyptConfig;
+    private final DuoCommunityService duoCommunityService;
 
     @GetMapping("/test")
     public void test() {
-        ddragonService.insertChampionNameList();
+        List<DuoPostCardDto> a = (List<DuoPostCardDto>) duoCommunityService.getPostList("duo");
     }
 
     @GetMapping("/encodeing")

@@ -10,9 +10,11 @@ import gg.updown.backend.external.riot.api.lol.summoner.model.SummonerDto;
 import gg.updown.backend.external.riot.api.lol.summoner.service.SummonerApiService;
 import gg.updown.backend.main.api.lol.summoner.mapper.LolSummonerMapper;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerDto;
+import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerMostChampionDto;
 import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerProfileResDto;
 import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerLeagueEntity;
+import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
 import gg.updown.backend.main.riot.account.mapper.RiotAccountMapper;
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
 import gg.updown.backend.common.util.DateUtil;
@@ -22,6 +24,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.lang.invoke.CallSite;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,5 +188,21 @@ public class LolSummonerService {
         }
 
         return resultList;
+    }
+
+    public LolSummonerEntity getSummonerInfoBySiteCode(long siteCode) {
+        return lolSummonerMapper.getSummonerInfoBySiteCode(siteCode);
+    }
+
+    public SummonerBasicInfoDto getSummonerBasicInfoBySiteCode(long siteCode) {
+        return lolSummonerMapper.getSummonerBasicInfo(siteCode);
+    }
+
+    public List<LolSummonerMostChampionDto> getSummonerMostChampions(String puuid, int limit) {
+        List<LolSummonerMostChampionDto> list = lolSummonerMapper.getSummonerMostChampions(puuid, limit);
+        list.forEach(m ->
+                m.setIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, m.getNameUs()))
+        );
+        return list;
     }
 }

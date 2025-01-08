@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="gg.updown.backend.main.api.community.duo.mapper.DuoCommunityMapper">
-    <select id="getDuoPostList" resultType="DuoCommunityPostDto">
+    <select id="getDuoPostList" resultType="DuoCommunityEntity">
         select
-            scp.post_id
-            , community_code
-            , title
-            , content
-            , reg_dt
-            , upd_dt
-            , del_dt
-            , game_mode
-            , position_self
-            , position_find
-            , is_use_mic
+            scp.post_id,
+            scp.community_code ,
+            scp.title ,
+            scp."content" ,
+            scp.reg_dt ,
+            scp.upd_dt ,
+            scp.writer_site_code ,
+            scd.game_mode ,
+            scd.position_self ,
+            scd.position_find ,
+            scd.is_use_mic
         from
             site_community_post scp
                 inner join site_community_duo scd on (scp.post_id = scd.post_id)
         where
-            scp.community_code = 'duo'
-        offset 0 limit 10
+            scp.del_dt is null
+            and scp.community_code = 'duo'
+        order by scp.post_id desc
+
     </select>
 
     <insert id="insertDuoPost" parameterType="DuoCommunityEntity">
@@ -31,10 +33,10 @@
             is_use_mic
         ) VALUES (
              #{postId},
-             #{duoCommunityEntity.gameMode},
-             #{duoCommunityEntity.positionSelf},
-             #{duoCommunityEntity.positionFind},
-             #{duoCommunityEntity.isUseMic}
+             #{gameMode},
+             #{positionSelf},
+             #{positionFind},
+             #{isUseMic}
         );
     </insert>
 </mapper>

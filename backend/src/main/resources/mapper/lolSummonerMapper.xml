@@ -16,6 +16,36 @@
             puuid = #{puuid}
     </select>
 
+    <select id="getSummonerInfoBySiteCode" parameterType="long" resultType="LolSummonerEntity">
+        SELECT
+            lol_account_seq
+             , sa.puuid
+             , summoner_id
+             , account_id
+             , summoner_level
+             , external_mod_dt
+             , profile_icon_id
+        FROM
+            site_account sa
+                inner join lol_summoner ls on (sa.puuid = ls.puuid)
+        WHERE
+            sa.member_site_code = #{siteCode}
+    </select>
+
+    <select id="getSummonerBasicInfo" parameterType="long" resultType="summonerBasicInfoDto">
+        select
+            ls.puuid,
+            game_name,
+            tag_line,
+            ls.profile_icon_id
+        from
+            site_account sa
+                inner join riot_account ra on (sa.puuid = ra.puuid)
+                inner join lol_summoner ls on (ra.puuid = ls.puuid)
+        where
+            sa.member_site_code = #{siteCode}
+    </select>
+
     <insert id="insertSummonerInfo" parameterType="LolSummonerEntity">
         INSERT INTO lol_summoner (
              puuid
@@ -162,4 +192,39 @@
                 inactive = #{inactive},
                 updated_at = CURRENT_TIMESTAMP
     </insert>
+
+    <select id="getSummonerMostChampions" parameterType="map" resultType="LolSummonerMostChampionDto">
+        WITH MostPlayedChamp AS (
+            SELECT
+            lmp.puuid,
+            lmp.champ_name,
+            lc.name_kr,
+            COUNT(*) as play_count,
+            COUNT(CASE WHEN is_win = true THEN 1 END) as win_count,
+            ROW_NUMBER() OVER (PARTITION BY lmp.puuid ORDER BY COUNT(*) DESC) as rn
+            FROM
+            lol_match_participant lmp
+                left outer join lol_champion lc on (lmp.champ_name = lc.name_us)
+            WHERE
+            lmp.puuid = #{puuid}
+            GROUP BY
+            lmp.puuid, lmp.champ_name, lc.name_kr
+            HAVING
+            COUNT(*) > 0
+        )
+        SELECT
+            mpc.champ_name as name_us,
+            mpc.name_kr,
+            mpc.play_count,
+            mpc.win_count,
+            ROUND(mpc.win_count * 100.0 / mpc.play_count, 0) as win_rate
+            FROM
+            MostPlayedChamp mpc
+            WHERE
+            mpc.rn <![CDATA[ <= ]]> #{limit}
+            GROUP BY
+            mpc.puuid, mpc.champ_name, mpc.name_kr, mpc.play_count, mpc.win_count, mpc.rn
+            ORDER BY
+            mpc.puuid, mpc.play_count DESC
+    </select>
 </mapper>

@@ -2,6 +2,7 @@ package gg.updown.backend.main.api.community.common.controller;
 
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.community.common.CommunityServiceFactory;
+import gg.updown.backend.main.api.community.common.model.CommunityPostDto;
 import gg.updown.backend.main.api.community.common.model.CommunityPostEntity;
 import gg.updown.backend.main.api.community.common.model.CommunityPostSubmitReqDto;
 import gg.updown.backend.main.api.community.common.service.CommunityInterface;
@@ -24,8 +25,17 @@ public class CommunityController {
 
     private final CommunityServiceFactory communityServiceFactory;
 
+    @GetMapping("/{communityCode}/list")
+    public ResponseEntity<List<? extends CommunityPostDto>> getPosts(
+            @PathVariable String communityCode
+    ) {
+        CommunityInterface communityService = communityServiceFactory.getCommunityService(communityCode);
+        List<? extends  CommunityPostDto> resultList = communityService.getPostList(communityCode);
+        return ResponseEntity.ok(resultList);
+    }
+
     @PostMapping("/{communityCode}/submit")
-    public ResponseEntity<?> submitPost(
+    public ResponseEntity<Boolean> submitPost(
             @PathVariable String communityCode,
             @RequestBody CommunityPostSubmitReqDto paramEntity,
             @AuthenticationPrincipal UserDetails userDetails

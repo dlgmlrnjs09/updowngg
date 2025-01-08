@@ -172,7 +172,8 @@
             champ_id,
             champ_name,
             total_damage_to_champion,
-            total_damage_taken
+            total_damage_taken,
+            is_win
         ) VALUES
         <foreach collection="list" item="participant" separator=",">
         (
@@ -193,7 +194,8 @@
             #{participant.champId},
             #{participant.champName},
             #{participant.totalDamageToChampion},
-            #{participant.totalDamageTaken}
+            #{participant.totalDamageTaken},
+            #{participant.isWin}
         )
         </foreach>
     </insert>

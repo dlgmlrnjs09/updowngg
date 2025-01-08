@@ -9,6 +9,6 @@ import java.util.List;
 
 @Mapper
 public interface DuoCommunityMapper {
-    List<DuoCommunityEntity> getDuoPostList();
     void insertDuoPost(CommunityPostEntity dto);
+    List<DuoCommunityEntity> getDuoPostList();
 }

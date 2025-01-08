@@ -1,3 +1,7 @@
+import type {LolSummonerDto, LolSummonerMostChampionDto} from "@/types/summoner.ts";
+import type {ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
+import type {summonerBasicInfoDto} from "@/types/ranking.ts";
+
 export interface CommunityPostDto {
     postId?: number;
     communityCode: string;
@@ -14,4 +18,12 @@ export interface DuoCommunityDto {
     positionSelf: string;
     positionFind: string;
     isUseMic: boolean;
+}
+
+export interface DuoPostCardDto {
+    postDto: CommunityPostDto;
+    summonerBasicInfoDto: summonerBasicInfoDto
+    frequentTagDtoList: ReviewTagDto[]
+    reviewStatsDto: ReviewStatsDto
+    mostChampionDto: LolSummonerMostChampionDto[]
 }
