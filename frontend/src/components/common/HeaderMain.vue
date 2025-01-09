@@ -9,6 +9,7 @@
         <RouterLink to="/">홈</RouterLink>
         <RouterLink to="/ranking">랭킹</RouterLink>
         <RouterLink to="/stats">통계</RouterLink>
+        <RouterLink to="/community/duo">커뮤니티</RouterLink>
       </nav>
 
       <div class="user-actions" v-if="authStore.isAuthenticated">
@@ -102,14 +103,14 @@ onUnmounted(() => {
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0 24px;
   height: 100%;
   display: grid;
   grid-template-columns: 180px minmax(300px, auto) 200px;
   align-items: center;
-  gap: 48px;
+  gap: 24px;
 }
 
 .logo {

@@ -1,3 +1,4 @@
+<!-- Header.vue -->
 <template>
   <header class="header">
     <div class="header-content">
@@ -6,39 +7,41 @@
           <div class="logo-icon">up</div>
           updownGG
         </RouterLink>
+        <div class="search-container">
+          <Search />
+        </div>
+      </div>
+
+      <div class="right-section">
         <nav class="nav">
           <RouterLink to="/">홈</RouterLink>
           <RouterLink to="/ranking">랭킹</RouterLink>
           <RouterLink to="/stats">통계</RouterLink>
+          <RouterLink to="/community/duo">커뮤니티</RouterLink>
         </nav>
-      </div>
 
-      <div class="search-container">
-        <Search />
-      </div>
+        <div class="user-actions" v-if="authStore.isAuthenticated">
+          <div class="profile-dropdown" ref="profileDropdown">
+            <button class="profile-btn" @click="toggleDropdown">
+              <div class="profile-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+            </button>
 
-      <!-- 프로필-->
-      <div class="user-actions" v-if="authStore.isAuthenticated">
-        <div class="profile-dropdown" ref="profileDropdown">
-          <button class="profile-btn" @click="toggleDropdown">
-            <div class="profile-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+            <div v-if="isDropdownOpen" class="dropdown-menu">
+              <button class="dropdown-item" @click="handleProfile">프로필</button>
+              <button class="dropdown-item" @click="navigateToAccountSettings">계정 설정</button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item logout" @click="handleLogout">로그아웃</button>
             </div>
-          </button>
-
-          <div v-if="isDropdownOpen" class="dropdown-menu">
-            <button class="dropdown-item" @click="handleProfile">프로필</button>
-            <button class="dropdown-item" @click="navigateToAccountSettings">계정 설정</button>
-            <div class="dropdown-divider"></div>
-            <button class="dropdown-item logout" @click="handleLogout">로그아웃</button>
           </div>
         </div>
-      </div>
-      <div class="user-actions" v-else>
-        <router-link to="/login" class="login-btn">로그인</router-link>
+        <div class="user-actions" v-else>
+          <router-link to="/login" class="login-btn">로그인</router-link>
+        </div>
       </div>
     </div>
   </header>
@@ -75,7 +78,6 @@ const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value;
 };
 
-// 드롭다운 외부 클릭시 닫기
 const handleClickOutside = (event: MouseEvent) => {
   if (profileDropdown.value && !profileDropdown.value.contains(event.target as Node)) {
     isDropdownOpen.value = false;
@@ -109,20 +111,27 @@ onUnmounted(() => {
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0 24px;
   height: 100%;
-  display: grid;
-  grid-template-columns: minmax(300px, auto) minmax(400px, 600px) minmax(200px, auto);
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 64px;
 }
 
 .left-section {
   display: flex;
   align-items: center;
-  gap: 64px;
+  gap: 24px;
+  flex: 1;
+  max-width: 500px;
+}
+
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 35px;
 }
 
 .logo {
@@ -149,6 +158,11 @@ onUnmounted(() => {
   font-weight: 700;
 }
 
+.search-container {
+  flex: 1;
+  max-width: 400px;
+}
+
 .nav {
   display: flex;
   gap: 32px;
@@ -168,17 +182,10 @@ onUnmounted(() => {
   color: white;
 }
 
-.search-container :deep(.search-input) {
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 8px;
-}
-
 .user-actions {
   display: flex;
   align-items: center;
   gap: 12px;
-  justify-content: flex-end;
 }
 
 .profile-dropdown {
@@ -270,19 +277,24 @@ onUnmounted(() => {
 
 @media (max-width: 1024px) {
   .header-content {
-    grid-template-columns: auto minmax(300px, 1fr) auto;
-    gap: 48px;
+    padding: 0 16px;
   }
 
   .left-section {
-    gap: 48px;
+    gap: 24px;
+  }
+
+  .right-section {
+    gap: 24px;
+  }
+
+  .nav {
+    gap: 24px;
   }
 }
 
 @media (max-width: 768px) {
-  .header-content {
-    grid-template-columns: auto 1fr auto;
-    padding: 0 16px;
+  .left-section {
     gap: 16px;
   }
 

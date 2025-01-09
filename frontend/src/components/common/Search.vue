@@ -38,14 +38,12 @@ const handleSearch = async () => {
   const query = searchQuery.value.trim()
   if (!query) return
 
-  // '#' 기준으로 소환사 이름과 태그 분리
   const [summonerId, tagLine] = query.split('#')
 
   try {
     isLoading.value = true
     const response = await summonerApi.getInfoBySummonerId(summonerId, tagLine)
 
-    // 검색 결과가 있으면 소환사 페이지로 이동
     if (response.data) {
       router.push({
         name: 'summoner',
@@ -69,11 +67,11 @@ const handleSearch = async () => {
 
 .search-input {
   width: 100%;
-  padding: 16px 20px;
-  font-size: 16px;
+  padding: 8px 16px;
+  font-size: 14px;
   background: #141414;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 8px;
   color: white;
   outline: none;
   transition: all 0.2s ease;
@@ -92,13 +90,13 @@ const handleSearch = async () => {
 
 .search-icon {
   position: absolute;
-  right: 16px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #888;
   cursor: pointer;
   transition: color 0.2s;
-  padding: 8px;
+  padding: 4px;
 }
 
 .search-icon:hover {
@@ -106,8 +104,8 @@ const handleSearch = async () => {
 }
 
 .search-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 
 .search-box.loading .search-input {

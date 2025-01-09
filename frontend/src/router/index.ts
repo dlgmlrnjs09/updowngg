@@ -40,6 +40,11 @@ const router = createRouter({
             path: '/setting/account',
             name: 'settingAccount',
             component: () => import('@/views/AccountSettings.vue')
+        },
+        {
+            path: '/community/duo',
+            name: 'duoCommunity',
+            component: () => import('@/views/Community.vue')
         }
     ],
     scrollBehavior(to, from, savedPosition) {
