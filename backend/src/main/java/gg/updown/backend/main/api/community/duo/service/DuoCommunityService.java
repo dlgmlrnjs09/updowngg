@@ -6,10 +6,7 @@ import gg.updown.backend.main.api.community.common.model.CommunityPostEntity;
 import gg.updown.backend.main.api.community.common.model.CommunityPostSubmitReqDto;
 import gg.updown.backend.main.api.community.common.service.CommunityInterface;
 import gg.updown.backend.main.api.community.duo.mapper.DuoCommunityMapper;
-import gg.updown.backend.main.api.community.duo.model.DuoCommunityEntity;
-import gg.updown.backend.main.api.community.duo.model.DuoCommunityPostDto;
-import gg.updown.backend.main.api.community.duo.model.DuoCommunitySearchFilter;
-import gg.updown.backend.main.api.community.duo.model.DuoPostCardDto;
+import gg.updown.backend.main.api.community.duo.model.*;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerDto;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerMostChampionDto;
 import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
@@ -26,10 +23,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,25 +43,34 @@ public class DuoCommunityService implements CommunityInterface {
     @Override
     public List<? extends CommunityPostDto> getPostList(String communityCode, Map<String, String> searchParamMap) {
         DuoCommunitySearchFilter searchFilter = this.convertSearchMapToFilter(searchParamMap);
-
         List<DuoCommunityEntity> postList = duoCommunityMapper.getDuoPostList(searchFilter);
-        List<DuoPostCardDto> resultList = new ArrayList<>();
-        for (DuoCommunityEntity post : postList) {
-            DuoPostCardDto postCardDto = new DuoPostCardDto();
-            DuoCommunityPostDto innerDto = new DuoCommunityPostDto();
-            postCardDto.setPostDto(innerDto);
-            BeanUtils.copyProperties(post, postCardDto);
-            BeanUtils.copyProperties(post, postCardDto.getPostDto());
-            SummonerBasicInfoDto summonerDto = lolSummonerService.getSummonerBasicInfoBySiteCode(post.getWriterSiteCode());
-            summonerDto.setProfileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, summonerDto.getProfileIconId()));
-            postCardDto.setSummonerBasicInfoDto(summonerDto);
-            postCardDto.setFrequentTagDtoList(reviewService.getFrequentTagCount(summonerDto.getPuuid()));
-            postCardDto.setReviewStatsDto(reviewService.getReviewStats(summonerDto.getPuuid()));
-            postCardDto.setMostChampionDto(lolSummonerService.getSummonerMostChampions(summonerDto.getPuuid(), 3));
-            resultList.add(postCardDto);
+
+        if (postList.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        return resultList;
+        // 1. 작성자 sitecode 목록 추출
+        Set<Long> writerSiteCodes = postList.stream()
+                .map(DuoCommunityEntity::getWriterSiteCode)
+                .collect(Collectors.toSet());
+
+        // 2. 작성자 정보 조회하여 Map에 저장
+        Map<Long, DuoSummonerInfoDto> summonerInfoMap = writerSiteCodes.stream()
+                .collect(Collectors.toMap(
+                        siteCode -> siteCode,
+                        this::getSummonerInfo,
+                        (existing, replacement) -> existing,
+                        HashMap::new
+                ));
+
+        List<? extends CommunityPostDto> dubug = postList.stream()
+                .map(post -> createPostCardDto(post, summonerInfoMap.get(post.getWriterSiteCode())))
+                .toList();
+
+        // 3. 게시글 + 작성자 매핑
+        return postList.stream()
+                .map(post -> createPostCardDto(post, summonerInfoMap.get(post.getWriterSiteCode())))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -102,5 +105,30 @@ public class DuoCommunityService implements CommunityInterface {
         searchFilter.setLimit(Integer.parseInt(searchParamMap.getOrDefault("limit", "15")));
 
         return searchFilter;
+    }
+
+    private DuoSummonerInfoDto getSummonerInfo(Long siteCode) {
+        SummonerBasicInfoDto summonerDto = lolSummonerService.getSummonerBasicInfoBySiteCode(siteCode);
+        summonerDto.setProfileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, summonerDto.getProfileIconId()));
+
+        DuoSummonerInfoDto summonerInfoDto = new DuoSummonerInfoDto();
+        summonerInfoDto.setSummonerBasicInfoDto(summonerDto);
+        summonerInfoDto.setFrequentTagDtoList(reviewService.getFrequentTagCount(summonerDto.getPuuid()));
+        summonerInfoDto.setReviewStatsDto(reviewService.getReviewStats(summonerDto.getPuuid()));
+        summonerInfoDto.setMostChampionDto(lolSummonerService.getSummonerMostChampions(summonerDto.getPuuid(), 3));
+
+        return summonerInfoDto;
+    }
+
+    private DuoPostCardDto createPostCardDto(DuoCommunityEntity post, DuoSummonerInfoDto summonerInfo) {
+        DuoPostCardDto postCardDto = new DuoPostCardDto();
+        DuoCommunityPostDto innerDto = new DuoCommunityPostDto();
+        postCardDto.setPostDto(innerDto);
+
+        BeanUtils.copyProperties(post, postCardDto);
+        BeanUtils.copyProperties(post, postCardDto.getPostDto());
+        postCardDto.setDuoSummonerInfoDto(summonerInfo);
+
+        return postCardDto;
     }
 }

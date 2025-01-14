@@ -25,6 +25,10 @@ export interface DuoCommunityDto {
 
 export interface DuoPostCardDto {
     postDto: CommunityPostDto;
+    duoSummonerInfoDto: DuoSummonerInfoDto
+}
+
+export interface DuoSummonerInfoDto {
     summonerBasicInfoDto: summonerBasicInfoDto
     frequentTagDtoList: ReviewTagDto[]
     reviewStatsDto: ReviewStatsDto

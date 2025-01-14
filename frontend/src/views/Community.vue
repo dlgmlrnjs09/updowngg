@@ -61,7 +61,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div
             v-for="card in postCards"
-            :key="card.postId"
+            :key="card.postDto.postId"
             class="bg-[#141414] rounded-xl p-4 group transition-all duration-200 h-[360px] flex flex-col"
         >
           <div class="flex items-start gap-3 mb-2 bg-[#1A1A1A] p-2 rounded-lg">
@@ -115,7 +115,7 @@
           <div class="bg-[#1A1A1A] rounded-lg rounded-b-none p-3 transition-colors duration-200">
             <div class="flex gap-3">
               <img
-                  :src="card.summonerBasicInfoDto?.profileIconUrl"
+                  :src="card.duoSummonerInfoDto?.summonerBasicInfoDto.profileIconUrl"
                   alt="Game Profile"
                   class="rounded-full w-[4.6rem] h-[4.6rem]"
               />
@@ -124,21 +124,21 @@
                   <div class="flex flex-col justify-between py-1">
                     <div class="flex items-center gap-2">
                       <div class="text-white text-sm font-medium">
-                        {{ card.summonerBasicInfoDto.gameName }} #{{card.summonerBasicInfoDto.tagLine}}
+                        {{ card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName }} #{{card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine}}
                       </div>
                     </div>
                     <div class="flex items-center gap-3">
                       <div class="flex items-center gap-1">
                         <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
-                        <span class="text-[#4CAF50] text-xs">{{ card.reviewStatsDto.upCount }}</span>
+                        <span class="text-[#4CAF50] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.upCount }}</span>
                       </div>
                       <div class="flex items-center gap-1">
                         <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
-                        <span class="text-[#FF5252] text-xs">{{ card.reviewStatsDto.downCount }}</span>
+                        <span class="text-[#FF5252] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.downCount }}</span>
                       </div>
                     </div>
                     <div class="flex gap-1.5 flex-wrap">
-                      <tag-list :tags="card.frequentTagDtoList" size="xSmall" :is-show-count="false"/>
+                      <tag-list :tags="card.duoSummonerInfoDto?.frequentTagDtoList" size="xSmall" :is-show-count="false"/>
                     </div>
                   </div>
                   <!-- 버튼 영역 -->
@@ -164,7 +164,7 @@
             <div class="px-3 py-2">
               <div class="grid grid-cols-3 gap-2">
                 <div
-                    v-for="(champion, index) in card.mostChampionDto"
+                    v-for="(champion, index) in card.duoSummonerInfoDto?.mostChampionDto"
                     :key="index"
                     class="bg-[#141414] rounded-lg p-2 transition-colors duration-200"
                 >
@@ -183,9 +183,9 @@
                       </div>
                       <div class="flex items-center gap-1 mt-0.5">
                         <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
-                        <span class="text-[#4CAF50] text-xs">{{ card.reviewStatsDto.upCount }}</span>
+                        <span class="text-[#4CAF50] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.upCount }}</span>
                         <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
-                        <span class="text-[#FF5252] text-xs">{{ card.reviewStatsDto.downCount }}</span>
+                        <span class="text-[#FF5252] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.downCount }}</span>
                       </div>
                     </div>
                   </div>
@@ -201,7 +201,7 @@
     <div class="grid grid-cols-1">
       <button
           class="load-more-button"
-          @click="onFilterUpdate"
+          @click="onLoadMore"
       >
         <div class="button-content">
           <span v-if="!isLoading">더보기</span>
@@ -231,6 +231,10 @@ const isLoading = ref(false)
 const postCards = ref<DuoPostCardDto[]>([]);
 const currentStartIndex = ref(0);
 
+onMounted(async () => {
+  await fetchPosts({})
+})
+
 const handleDuoSubmit = async (formData: CommunityPostDto) => {
   await communityApi.insertPost('duo', formData);
   showWriteModal.value = false
@@ -240,10 +244,10 @@ const handleDuoSubmit = async (formData: CommunityPostDto) => {
 }
 
 const fetchPosts = async (filter: SearchFilter) => {
-
   isLoading.value = true
   const response = await communityApi.getPost('duo', filter);
-  if (currentStartIndex.value === 0) {
+
+  if (filter.offset === 0) {
     postCards.value = response.data
   } else {
     postCards.value = [...postCards.value, ...response.data]
@@ -253,8 +257,22 @@ const fetchPosts = async (filter: SearchFilter) => {
   isLoading.value = false
 }
 
+// 필터 변경시 (셀렉트박스 변경)
 const onFilterUpdate = () => {
-  currentStartIndex.value += 15
+  currentStartIndex.value = 0
+  const reqDto: SearchFilter = {
+    gameMode: selectedGameMode.value,
+    tier: selectedTier.value,
+    positionSelf: selectedPosition.value,
+    offset: currentStartIndex.value,
+    limit: 15
+  };
+  fetchPosts(reqDto)
+}
+
+// 더보기 버튼 클릭시
+const onLoadMore = () => {
+  currentStartIndex.value += 15  // 더보기 시에만 증가
   const reqDto: SearchFilter = {
     gameMode: selectedGameMode.value,
     tier: selectedTier.value,
@@ -274,10 +292,6 @@ const getGameModeName = (code: string) => {
   };
   return gameModeMap[code] || code;
 };
-
-onMounted(async () => {
-  await fetchPosts({})
-})
 </script>
 
 <style scoped>
