@@ -2,21 +2,24 @@
   <div class="min-h-screen bg-[#0A0A0A] p-6">
     <div class="max-w-7xl mx-auto mb-8">
       <!-- 상단 영역 -->
-      <div class="flex justify-between items-center mt-20 mb-5">
+      <div class="flex justify-between items-center mt-20 mb-14">
         <div class="bg-[#141414] p-3 rounded-xl flex-1 mr-4">
           <div class="flex gap-3 items-center">
-            <div class="relative flex-1">
-              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                  v-model="searchQuery"
-                  type="text"
-                  placeholder="듀오 검색하기"
-                  class="w-full bg-[#1A1A1A] text-white text-sm pl-9 pr-4 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF]"
-              />
-            </div>
+            <select
+                v-model="selectedGameMode"
+                class="bg-[#1A1A1A] text-white text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF]"
+                @change="onFilterUpdate"
+            >
+              <option value="">모든 큐</option>
+              <option value="SOLO_RANK">솔로랭크</option>
+              <option value="FLEX_RANK">자유랭크</option>
+              <option value="NORMAL">일반게임</option>
+              <option value="ARAM">칼바람나락</option>
+            </select>
             <select
                 v-model="selectedPosition"
                 class="bg-[#1A1A1A] text-white text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF]"
+                @change="onFilterUpdate"
             >
               <option value="">모든 포지션</option>
               <option value="TOP">탑</option>
@@ -28,6 +31,7 @@
             <select
                 v-model="selectedTier"
                 class="bg-[#1A1A1A] text-white text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF]"
+                @change="onFilterUpdate"
             >
               <option value="">모든 티어</option>
               <option value="IRON">아이언</option>
@@ -58,7 +62,7 @@
         <div
             v-for="card in postCards"
             :key="card.postId"
-            class="bg-[#141414] rounded-xl p-4 group  transition-all duration-200 h-[360px] flex flex-col"
+            class="bg-[#141414] rounded-xl p-4 group transition-all duration-200 h-[360px] flex flex-col"
         >
           <div class="flex items-start gap-3 mb-2 bg-[#1A1A1A] p-2 rounded-lg">
             <div class="grid grid-cols-4 gap-3 items-start flex-1">
@@ -89,12 +93,14 @@
               <!-- 큐 타입 -->
               <div class="flex flex-col items-center">
                 <span class="text-[10px] text-gray-400 mb-0.5">큐 타입</span>
-                <span class="text-xs text-white">일반게임</span>
+                <span class="text-xs text-white">
+                  {{ getGameModeName(card.postDto.gameMode) }}
+                </span>
               </div>
 
               <!-- 음성 -->
               <div v-if="true" class="flex flex-col items-center">
-                <span class="text-[10px] text-gray-400 mb-0.5"> 마이크 사용</span>
+                <span class="text-[10px] text-gray-400 mb-0.5">마이크 사용</span>
                 <MicIcon class="w-4 h-4 text-[#2979FF]" />
               </div>
             </div>
@@ -111,7 +117,7 @@
               <img
                   :src="card.summonerBasicInfoDto?.profileIconUrl"
                   alt="Game Profile"
-                  class="rounded-lg w-[4.6rem] h-[4.6rem]"
+                  class="rounded-full w-[4.6rem] h-[4.6rem]"
               />
               <div class="flex-1">
                 <div class="flex justify-between h-[4.6rem]">
@@ -120,11 +126,6 @@
                       <div class="text-white text-sm font-medium">
                         {{ card.summonerBasicInfoDto.gameName }} #{{card.summonerBasicInfoDto.tagLine}}
                       </div>
-                      <img
-                          :src="`/src/assets/icon/position/position_ad.svg`"
-                          :alt="card.position"
-                          class="w-4 h-4"
-                      />
                     </div>
                     <div class="flex items-center gap-3">
                       <div class="flex items-center gap-1">
@@ -158,7 +159,7 @@
           </div>
 
           <!-- 게임 정보 섹션 -->
-          <div class="bg-[#1A1A1A]  rounded-lg rounded-t-none divide-y divide-[#232323] transition-colors duration-200">
+          <div class="bg-[#1A1A1A] rounded-lg rounded-t-none divide-y divide-[#232323] transition-colors duration-200">
             <!-- 챔피언 정보 -->
             <div class="px-3 py-2">
               <div class="grid grid-cols-3 gap-2">
@@ -174,9 +175,6 @@
                           :alt="champion.nameUs"
                           class="w-8 h-8 rounded"
                       />
-                      <div class="absolute -bottom-1 -right-1 bg-black text-[10px] text-white px-1 rounded font-medium">
-                        <!--                        {{ champion.games }}-->
-                      </div>
                     </div>
                     <div class="flex-1">
                       <div class="flex items-center gap-1.5 mt-0.5">
@@ -199,38 +197,75 @@
       </div>
     </div>
   </div>
+  <div class="max-w-7xl mx-auto mb-20">
+    <div class="grid grid-cols-1">
+      <button
+          class="load-more-button"
+          @click="$emit('loadMore')"
+      >
+        <div class="button-content">
+          <span v-if="true">더보기</span>
+          <div v-else class="spinner"></div>
+        </div>
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
-import { Search, ThumbsUp, ThumbsDown, MicIcon, MicOffIcon, MailIcon, InfoIcon} from 'lucide-vue-next'
+import { ref, onMounted } from 'vue'
+import { ThumbsUp, ThumbsDown, MicIcon } from 'lucide-vue-next'
 import WriteModal from '@/components/community/duo/WriteModal.vue'
-import type {CommunityPostDto, DuoPostCardDto} from "@/types/community.ts";
-import {communityApi} from "@/api/community.ts";
+import type {CommunityPostDto, DuoPostCardDto, SearchFilter} from "@/types/community.ts";
+import { communityApi } from "@/api/community.ts";
 import TagList from "@/components/common/TagList.vue";
-import Toast, {useToast} from "vue-toastification";
+import { useToast } from "vue-toastification";
+import type {RankingSearchFilter} from "@/types/ranking.ts";
 
-const searchQuery = ref('')
 const selectedPosition = ref('')
+const selectedGameMode = ref('')
 const selectedTier = ref('')
 const showWriteModal = ref(false)
 const postCards = ref<DuoPostCardDto[]>();
+const currentStartIndex = ref(0);
 
 const handleDuoSubmit = async (formData: CommunityPostDto) => {
   await communityApi.insertPost('duo', formData);
   showWriteModal.value = false
   const toast = useToast();
   toast.success('게시글 등록에 성공했습니다!')
-  await fetchPosts();
+  await fetchPosts({});
 }
 
-const fetchPosts = async () => {
-  const response = await communityApi.getPost('duo');
+const fetchPosts = async (filter: SearchFilter) => {
+  const response = await communityApi.getPost('duo', filter);
   postCards.value = response.data;
 }
 
+const onFilterUpdate = () => {
+  const reqDto: SearchFilter = {
+    gameMode: selectedGameMode.value,
+    tier: selectedTier.value,
+    positionSelf: selectedPosition.value,
+    offset: 0,
+    limit: currentStartIndex.value
+  };
+  fetchPosts(reqDto)
+  currentStartIndex.value += 15
+}
+
+const getGameModeName = (code) => {
+  const gameModeMap = {
+    'ARAM': '칼바람나락',
+    'NORMAL': '일반게임',
+    'SOLO_RANK': '개인랭크',
+    'FLEX_RANK': '자유랭크'
+  };
+  return gameModeMap[code] || code;
+};
+
 onMounted(async () => {
-  await fetchPosts()
+  await fetchPosts({})
 })
 </script>
 
@@ -240,5 +275,38 @@ onMounted(async () => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.load-more-button {
+  background: #141414;
+  border: 1px solid #2979FF;
+  color: #2979FF;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  height: 48px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.load-more-button:hover:not(:disabled) {
+  background: rgba(41, 121, 255, 0.1);
+}
+
+.load-more-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  border-color: #4a4a4a;
+  color: #4a4a4a;
+}
+
+.button-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20px;
 }
 </style>

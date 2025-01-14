@@ -8,6 +8,7 @@ import gg.updown.backend.main.api.community.common.service.CommunityInterface;
 import gg.updown.backend.main.api.community.duo.mapper.DuoCommunityMapper;
 import gg.updown.backend.main.api.community.duo.model.DuoCommunityEntity;
 import gg.updown.backend.main.api.community.duo.model.DuoCommunityPostDto;
+import gg.updown.backend.main.api.community.duo.model.DuoCommunitySearchFilter;
 import gg.updown.backend.main.api.community.duo.model.DuoPostCardDto;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerDto;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerMostChampionDto;
@@ -16,6 +17,9 @@ import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
 import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
 import gg.updown.backend.main.api.ranking.service.SiteRankingService;
 import gg.updown.backend.main.api.review.service.ReviewService;
+import gg.updown.backend.main.enums.SiteLeagueTier;
+import gg.updown.backend.main.enums.SiteMatchGameMode;
+import gg.updown.backend.main.enums.SiteMatchPosition;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -24,6 +28,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,8 +47,10 @@ public class DuoCommunityService implements CommunityInterface {
     private final SiteRankingService siteRankingService;
 
     @Override
-    public List<? extends CommunityPostDto> getPostList(String communityCode) {
-        List<DuoCommunityEntity> postList = duoCommunityMapper.getDuoPostList();
+    public List<? extends CommunityPostDto> getPostList(String communityCode, Map<String, String> searchParamMap) {
+        DuoCommunitySearchFilter searchFilter = this.convertSearchMapToFilter(searchParamMap);
+
+        List<DuoCommunityEntity> postList = duoCommunityMapper.getDuoPostList(searchFilter);
         List<DuoPostCardDto> resultList = new ArrayList<>();
         for (DuoCommunityEntity post : postList) {
             DuoPostCardDto postCardDto = new DuoPostCardDto();
@@ -73,5 +81,26 @@ public class DuoCommunityService implements CommunityInterface {
     @Override
     public void updatePost(String communityCode, CommunityPostEntity post) {
 
+    }
+
+    private DuoCommunitySearchFilter convertSearchMapToFilter(Map<String, String> searchParamMap) {
+        DuoCommunitySearchFilter searchFilter = new DuoCommunitySearchFilter();
+
+        Optional.ofNullable(searchParamMap.get("tier"))
+                .filter(tier -> !tier.isEmpty())
+                .ifPresent(tier -> searchFilter.setTier(SiteLeagueTier.valueOf(tier)));
+
+        Optional.ofNullable(searchParamMap.get("positionSelf"))
+                .filter(pos -> !pos.isEmpty())
+                .ifPresent(pos -> searchFilter.setPositionSelf(SiteMatchPosition.findByCode(pos)));
+
+        Optional.ofNullable(searchParamMap.get("gameMode"))
+                .filter(mode -> !mode.isEmpty())
+                .ifPresent(mode -> searchFilter.setGameMode(SiteMatchGameMode.valueOf(mode)));
+
+        searchFilter.setOffset(Integer.valueOf(searchParamMap.getOrDefault("offset", "0")));
+        searchFilter.setLimit(Integer.valueOf(searchParamMap.getOrDefault("limit", "10")));
+
+        return searchFilter;
     }
 }

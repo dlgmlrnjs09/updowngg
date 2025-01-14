@@ -5,9 +5,10 @@ import gg.updown.backend.main.api.community.common.model.CommunityPostEntity;
 import gg.updown.backend.main.api.community.common.model.CommunityPostSubmitReqDto;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CommunityInterface {
-    List<? extends CommunityPostDto> getPostList(String communityCode);
+    List<? extends CommunityPostDto> getPostList(String communityCode, Map<String, String> searchParamMap);
     void insertPost(String communityCode, CommunityPostSubmitReqDto post);
     void updatePost(String communityCode, CommunityPostEntity post);
 }

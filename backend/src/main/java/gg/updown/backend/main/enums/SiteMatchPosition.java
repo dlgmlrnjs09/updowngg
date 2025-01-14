@@ -2,6 +2,8 @@ package gg.updown.backend.main.enums;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+
 @Getter
 public enum SiteMatchPosition {
     TOP("TOP","탑", "TOP"),
@@ -19,6 +21,13 @@ public enum SiteMatchPosition {
         this.code = code;
         this.nameKr = nameKr;
         this.nameEn = nameEn;
+    }
+
+    public static SiteMatchPosition findByCode(String code) {
+        return Arrays.stream(SiteMatchPosition.values())
+                .filter(position -> position.getCode().equals(code))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid position code: " + code));
     }
 
 }

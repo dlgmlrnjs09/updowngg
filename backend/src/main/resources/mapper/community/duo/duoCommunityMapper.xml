@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="gg.updown.backend.main.api.community.duo.mapper.DuoCommunityMapper">
-    <select id="getDuoPostList" resultType="DuoCommunityEntity">
+    <select id="getDuoPostList" parameterType="DuoCommunitySearchFilter" resultType="DuoCommunityEntity">
         select
             scp.post_id,
             scp.community_code ,
@@ -20,8 +20,17 @@
         where
             scp.del_dt is null
             and scp.community_code = 'duo'
+            <if test="gameMode != null">
+                and game_mode = #{gameMode}
+            </if>
+            <if test="positionSelf != null">
+                and position_self = #{positionSelf.code}
+            </if>
+            <if test="positionFind != null">
+                and position_find = #{positionFind}
+            </if>
         order by scp.post_id desc
-
+        offset #{offset} limit #{limit}
     </select>
 
     <insert id="insertDuoPost" parameterType="DuoCommunityEntity">

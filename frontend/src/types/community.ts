@@ -1,6 +1,9 @@
 import type {LolSummonerDto, LolSummonerMostChampionDto} from "@/types/summoner.ts";
 import type {ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
 import type {summonerBasicInfoDto} from "@/types/ranking.ts";
+import type {MatchGameMode} from "@/types/match.ts";
+import type {Tier} from "@/types/league.ts";
+import {MatchPosition} from "@/types/match.ts";
 
 export interface CommunityPostDto {
     postId?: number;
@@ -26,4 +29,13 @@ export interface DuoPostCardDto {
     frequentTagDtoList: ReviewTagDto[]
     reviewStatsDto: ReviewStatsDto
     mostChampionDto: LolSummonerMostChampionDto[]
+}
+
+export interface SearchFilter {
+    gameMode?: string;
+    tier?: string;
+    positionSelf?: string;
+    positionFind?: string;
+    offset?: number;
+    limit?: number;
 }
