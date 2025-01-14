@@ -197,14 +197,14 @@
       </div>
     </div>
   </div>
-  <div class="max-w-7xl mx-auto mb-20">
+  <div v-if="showReadMore" class="max-w-7xl mx-auto mb-20">
     <div class="grid grid-cols-1">
       <button
           class="load-more-button"
-          @click="$emit('loadMore')"
+          @click="onFilterUpdate"
       >
         <div class="button-content">
-          <span v-if="true">더보기</span>
+          <span v-if="!isLoading">더보기</span>
           <div v-else class="spinner"></div>
         </div>
       </button>
@@ -226,7 +226,9 @@ const selectedPosition = ref('')
 const selectedGameMode = ref('')
 const selectedTier = ref('')
 const showWriteModal = ref(false)
-const postCards = ref<DuoPostCardDto[]>();
+const showReadMore = ref(true)
+const isLoading = ref(false)
+const postCards = ref<DuoPostCardDto[]>([]);
 const currentStartIndex = ref(0);
 
 const handleDuoSubmit = async (formData: CommunityPostDto) => {
@@ -238,23 +240,32 @@ const handleDuoSubmit = async (formData: CommunityPostDto) => {
 }
 
 const fetchPosts = async (filter: SearchFilter) => {
+
+  isLoading.value = true
   const response = await communityApi.getPost('duo', filter);
-  postCards.value = response.data;
+  if (currentStartIndex.value === 0) {
+    postCards.value = response.data
+  } else {
+    postCards.value = [...postCards.value, ...response.data]
+  }
+
+  showReadMore.value = response.data.length >= 15;
+  isLoading.value = false
 }
 
 const onFilterUpdate = () => {
+  currentStartIndex.value += 15
   const reqDto: SearchFilter = {
     gameMode: selectedGameMode.value,
     tier: selectedTier.value,
     positionSelf: selectedPosition.value,
-    offset: 0,
-    limit: currentStartIndex.value
+    offset: currentStartIndex.value,
+    limit: 15
   };
   fetchPosts(reqDto)
-  currentStartIndex.value += 15
 }
 
-const getGameModeName = (code) => {
+const getGameModeName = (code: string) => {
   const gameModeMap = {
     'ARAM': '칼바람나락',
     'NORMAL': '일반게임',

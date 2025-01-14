@@ -130,7 +130,7 @@ const positions = [
 
 const myPosition = ref('TOP')
 const targetPosition = ref('TOP')
-const queueType = ref('RANKED_SOLO')
+const queueType = ref('SOLO_RANK')
 const hasMic = ref(false)
 const content = ref('')
 

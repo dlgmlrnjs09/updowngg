@@ -98,8 +98,8 @@ public class DuoCommunityService implements CommunityInterface {
                 .filter(mode -> !mode.isEmpty())
                 .ifPresent(mode -> searchFilter.setGameMode(SiteMatchGameMode.valueOf(mode)));
 
-        searchFilter.setOffset(Integer.valueOf(searchParamMap.getOrDefault("offset", "0")));
-        searchFilter.setLimit(Integer.valueOf(searchParamMap.getOrDefault("limit", "10")));
+        searchFilter.setOffset(Integer.parseInt(searchParamMap.getOrDefault("offset", "0")));
+        searchFilter.setLimit(Integer.parseInt(searchParamMap.getOrDefault("limit", "15")));
 
         return searchFilter;
     }
