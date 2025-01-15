@@ -1,2 +1,6 @@
 riot-api:
   latest-version: 14.24.1
+
+match:
+  basic:
+    start-time: 2024-01-01 00:00

@@ -20,6 +20,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,6 +37,9 @@ import java.util.List;
 @Tag(name = "Match", description = "LOL 경기 관련 API")
 @RequestMapping("/api/v1/match")
 public class LolMatchController {
+    @Value("${match.basic.start-time}")
+    private String basicStartTime;
+
     private final LolMatchService lolMatchService;
 
     @Operation(summary = "LOL 경기목록 조회", description = "라이엇 계정정보, LOL 소환사 정보 조회")
@@ -52,7 +56,7 @@ public class LolMatchController {
     @ApiResponse(description = "LOL 경기 고유ID 목록", content = @Content(schema = @Schema(implementation = List.class)))
     @GetMapping("/update")
     public ResponseEntity<List<String>> updateMatchListV2(LolMatchUpdateReqDto reqDto) {
-        Long startDate = DateUtil.yyyyMMddToMilliseconds("2024-01-01 00:00");
+        Long startDate = DateUtil.yyyyMMddToMilliseconds(basicStartTime);
         Long endDate = DateUtil.getCurrentTimeMillis();
         List<String> responseDto = lolMatchService.getAndInsertMatchIdList(reqDto.getPuuid(), startDate, endDate);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
