@@ -16,6 +16,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://13.124.117.180:4173",
                         "http://www.updowngg.lol",
                         "https://www.updowngg.lol",
+                        "https://13.124.117.180",
+                        "https://13.124.117.180:4173",
                         "updowngg.lol",
                         "www.updowngg.lol"
                 )
