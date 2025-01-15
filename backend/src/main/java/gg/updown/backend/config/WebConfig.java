@@ -19,7 +19,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "https://13.124.117.180",
                         "https://13.124.117.180:4173",
                         "updowngg.lol",
-                        "www.updowngg.lol"
+                        "www.updowngg.lol",
+                        "https://updowngg.lol"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
