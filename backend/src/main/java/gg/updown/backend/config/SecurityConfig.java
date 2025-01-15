@@ -93,6 +93,7 @@ public class SecurityConfig {
         configuration.addAllowedOrigin("https://13.124.117.180:4173");
         configuration.addAllowedOrigin("https://13.124.117.180");
         configuration.addAllowedOrigin("https://updowngg.lol");
+        configuration.addAllowedOrigin("https://13.124.117.180:443");
         // 허용할 HTTP 메서드 설정
         configuration.addAllowedMethod("*");
         // 허용할 헤더 설정
