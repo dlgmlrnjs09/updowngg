@@ -83,7 +83,7 @@
                 <span class="text-[10px] text-gray-400 mb-0.5">찾는 포지션</span>
                 <div class="bg-[#141414] p-1 rounded">
                   <img
-                      :src="require(`@/assets/icon/position/position_${card.postDto.positionFind}.svg`)"
+                      :src="`/src/assets/icon/position/position_${card.postDto.positionFind}.svg`"
                       :alt="card.postDto.positionFind"
                       class="w-4 h-4"
                   />

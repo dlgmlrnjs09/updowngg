@@ -29,7 +29,7 @@
                   : 'border-[#333] text-gray-400 hover:border-gray-500'
               ]"
             >
-              <img :src="require(`@/assets/icon/position/position_${position.value}.svg`)" :alt="position.label" class="w-6 h-6 mb-1" />
+              <img :src="`/src/assets/icon/position/position_${position.value}.svg`" :alt="position.label" class="w-6 h-6 mb-1" />
               <span class="text-xs">{{ position.label }}</span>
             </button>
           </div>
@@ -49,7 +49,7 @@
                   : 'border-[#333] text-gray-400 hover:border-gray-500'
               ]"
             >
-              <img :src="require(`@/assets/icon/position/position_${position.value}.svg`)" :alt="position.label" class="w-6 h-6 mb-1" />
+              <img :src="`/src/assets/icon/position/position_${position.value}.svg`" :alt="position.label" class="w-6 h-6 mb-1" />
               <span class="text-xs">{{ position.label }}</span>
             </button>
           </div>
