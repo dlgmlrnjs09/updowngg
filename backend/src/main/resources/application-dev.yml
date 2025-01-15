@@ -19,7 +19,7 @@ spring:
         registration:
           discord:
             client-id: 1325814241160335462
-            client-secret: HC2ykhyoDwKFTZw2Lev_ywpywgNF09Tg
+            client-secret: ENC(0l1zDR5TtICNIBA/opRReD8QorxnGGJsnTyQfAythYXfIVE0H5Ofe5vrI2nERB2a)
             scope:
               - identify
               - email

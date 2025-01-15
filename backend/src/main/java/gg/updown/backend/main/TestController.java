@@ -28,7 +28,7 @@ public class TestController {
 
     @GetMapping("/test")
     public void test() {
-        List<DuoPostCardDto> a = (List<DuoPostCardDto>) duoCommunityService.getPostList("duo");
+//        List<DuoPostCardDto> a = (List<DuoPostCardDto>) duoCommunityService.getPostList("duo");
     }
 
     @GetMapping("/encodeing")
@@ -37,7 +37,7 @@ public class TestController {
     }
 
     public String jasyptEncoding(String value) {
-        String key = "gmlrnjs0";
+        String key = "";
         StandardPBEStringEncryptor pbeEnc = new StandardPBEStringEncryptor();
         pbeEnc.setAlgorithm("PBEWithMD5AndDES");
         pbeEnc.setPassword(key);
