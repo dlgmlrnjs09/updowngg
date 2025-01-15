@@ -28,6 +28,7 @@ public class TestController {
 
     @GetMapping("/test")
     public void test() {
+        System.out.println("");
 //        List<DuoPostCardDto> a = (List<DuoPostCardDto>) duoCommunityService.getPostList("duo");
     }
 
