@@ -2,7 +2,7 @@
   <div class="main">
     <div class="search-container">
       <div class="main-logo">
-        <div class="main-logo-icon">up</div>
+        <div class="main-logo-icon"><img src="/favicon.ico" alt="favicon"></div>
         updownGG
       </div>
       <Search />
@@ -64,9 +64,8 @@ const fetchRecentReviews = async () => {
 }
 
 .main-logo-icon {
-  width: 72px;
-  height: 72px;
-  background: #2979FF;
+  width: 120px;
+  height: 120px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -89,8 +88,8 @@ const fetchRecentReviews = async () => {
   }
 
   .main-logo-icon {
-    width: 56px;
-    height: 56px;
+    width: 70px;
+    height: 70px;
     font-size: 24px;
   }
 }

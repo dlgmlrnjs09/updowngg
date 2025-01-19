@@ -4,7 +4,7 @@
     <div class="header-content">
       <div class="left-section">
         <RouterLink to="/" class="logo">
-          <div class="logo-icon">up</div>
+          <div class="logo-icon"><img src="/favicon.ico" alt="favicon"></div>
           updownGG
         </RouterLink>
         <div class="search-container">
@@ -146,9 +146,8 @@ onUnmounted(() => {
 }
 
 .logo-icon {
-  width: 28px;
-  height: 28px;
-  background: #2979FF;
+  width: 40px;
+  height: 40px;
   border-radius: 6px;
   display: flex;
   align-items: center;

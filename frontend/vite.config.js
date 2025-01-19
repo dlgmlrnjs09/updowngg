@@ -34,6 +34,6 @@ export default defineConfig(({ command, mode }) => {
     define: {
       // 전역 변수로 환경변수 정의
       __API_URL__: JSON.stringify(env.VITE_API_URL)
-    }
+    },
   }
 })
