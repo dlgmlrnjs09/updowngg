@@ -48,11 +48,7 @@ public class AuthController {
     @Operation(summary = "회원가입", description = "일반 회원가입")
     @PutMapping("/signup")
     public ResponseEntity<SignupResDto> signup(@RequestBody SignupReqDto signupReqDto) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(authService.signup(signupReqDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(authService.signup(signupReqDto));
     }
 
     /**

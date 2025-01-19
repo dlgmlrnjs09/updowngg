@@ -208,7 +208,7 @@ const handleSignup = async () => {
     isLoading.value = true;
     const response = await authApi.signup({
       ...form.value,
-      riotId: `${form.value.riotId}#${form.value.riotTag}`
+      riotId: `${form.value.riotId}`
     });
 
     toast.success('회원가입이 완료되었습니다! 로그인해주세요.');
