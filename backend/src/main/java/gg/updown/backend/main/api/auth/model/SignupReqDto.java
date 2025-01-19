@@ -13,4 +13,6 @@ public class SignupReqDto {
     private String email;
     private String password;
     private String passwordConfirm;
+    private String riotId;
+    private String riotTag;
 }

@@ -1,5 +1,7 @@
 package gg.updown.backend.main.api.auth.service;
 
+import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
+import gg.updown.backend.external.riot.api.account.service.AccountApiService;
 import gg.updown.backend.main.api.auth.mapper.AuthMapper;
 import gg.updown.backend.main.api.auth.model.*;
 import io.jsonwebtoken.Claims;
@@ -28,6 +30,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final AccountApiService accountApiService;
 
     public SignupResDto signup(SignupReqDto signupReqDto) {
         SignupResDto resDto = new SignupResDto();
@@ -36,11 +39,10 @@ public class AuthService {
             resDto.setSuccess(false);
             resDto.setMessage("이미 존재하는 이메일입니다.");
         } else {
-            // TODO : puuid 변수로 변경
-            String tempPuuid = "Cz4CWT2ssLZRo_d2TQZVxqK6nqPFN8RfAMhuJJeIWJPjViNYmdHuD0q1vHtWeroD33wcmOB0HjH82Q";
-            authMapper.insertSiteAccount(tempPuuid, signupReqDto.getEmail(), passwordEncoder.encode(signupReqDto.getPassword()));
             resDto.setSuccess(true);
             resDto.setMessage("회원가입에 성공했습니다.");
+            AccountInfoResDto riotAccountDto = accountApiService.getAccountInfoByRiotId(signupReqDto.getRiotId(), signupReqDto.getRiotTag());
+            authMapper.insertSiteAccount(riotAccountDto.getPuuid(), signupReqDto.getEmail(), passwordEncoder.encode(signupReqDto.getPassword()));
         }
 
         return resDto;

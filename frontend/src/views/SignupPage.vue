@@ -20,6 +20,38 @@
             <p v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email }}</p>
           </div>
 
+          <!-- 롤 닉네임과 태그 입력 -->
+          <div class="group">
+            <label class="block mb-2 text-sm font-medium text-gray-300">롤 닉네임</label>
+            <div class="flex gap-3">
+              <div class="flex-1">
+                <input
+                    type="text"
+                    v-model="form.riotId"
+                    placeholder="게임 닉네임을 입력하세요"
+                    @blur="validateRiotId"
+                    class="w-full px-4 py-3 bg-[#111111] border border-[#333] rounded-md focus:border-blue-500 outline-none transition-colors text-sm"
+                    :class="{ 'border-red-500': errors.riotId }"
+                />
+                <p v-if="errors.riotId" class="mt-1 text-xs text-red-500">{{ errors.riotId }}</p>
+              </div>
+              <div class="w-32">
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">#</span>
+                  <input
+                      type="text"
+                      v-model="form.riotTag"
+                      placeholder="KR1"
+                      @blur="validateRiotTag"
+                      class="w-full pl-8 pr-4 py-3 bg-[#111111] border border-[#333] rounded-md focus:border-blue-500 outline-none transition-colors text-sm"
+                      :class="{ 'border-red-500': errors.riotTag }"
+                  />
+                </div>
+                <p v-if="errors.riotTag" class="mt-1 text-xs text-red-500">{{ errors.riotTag }}</p>
+              </div>
+            </div>
+          </div>
+
           <!-- 비밀번호 입력 -->
           <div class="group">
             <label class="block mb-2 text-sm font-medium text-gray-300">비밀번호</label>
@@ -73,15 +105,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import apiClient from "@/api/axios.ts";
-import {authApi} from "@/api/auth.ts";
+import { authApi } from "@/api/auth.ts";
 import { useToast } from 'vue-toastification'
-
 
 interface SignupForm {
   email: string;
   password: string;
   passwordConfirm: string;
+  riotId: string;
+  riotTag: string;
 }
 
 const router = useRouter();
@@ -89,15 +121,19 @@ const isLoading = ref(false);
 const toast = useToast()
 
 const form = ref<SignupForm>({
-  email: 'heekwon0867@naver.com',
-  password: 'gmlrnjs0',
-  passwordConfirm: 'gmlrnjs0',
+  email: '',
+  password: '',
+  passwordConfirm: '',
+  riotId: '',
+  riotTag: '',
 });
 
 const errors = ref({
   email: '',
   password: '',
   passwordConfirm: '',
+  riotId: '',
+  riotTag: '',
 });
 
 const hasErrors = computed(() => {
@@ -112,6 +148,26 @@ const validateEmail = () => {
     errors.value.email = '올바른 이메일 형식이 아닙니다.';
   } else {
     errors.value.email = '';
+  }
+};
+
+const validateRiotId = () => {
+  if (!form.value.riotId) {
+    errors.value.riotId = '롤 닉네임을 입력해주세요.';
+  } else if (form.value.riotId.length < 3 || form.value.riotId.length > 16) {
+    errors.value.riotId = '닉네임은 3-16자 사이여야 합니다.';
+  } else {
+    errors.value.riotId = '';
+  }
+};
+
+const validateRiotTag = () => {
+  if (!form.value.riotTag) {
+    errors.value.riotTag = '태그를 입력해주세요.';
+  } else if (!/^[A-Za-z0-9]{3,5}$/.test(form.value.riotTag)) {
+    errors.value.riotTag = '태그는 3-5자의 영문과 숫자로만 구성되어야 합니다.';
+  } else {
+    errors.value.riotTag = '';
   }
 };
 
@@ -141,6 +197,8 @@ const validatePasswordConfirm = () => {
 
 const handleSignup = async () => {
   validateEmail();
+  validateRiotId();
+  validateRiotTag();
   validatePassword();
   validatePasswordConfirm();
 
@@ -148,7 +206,10 @@ const handleSignup = async () => {
 
   try {
     isLoading.value = true;
-    const response = await authApi.signup(form.value);
+    const response = await authApi.signup({
+      ...form.value,
+      riotId: `${form.value.riotId}#${form.value.riotTag}`
+    });
 
     toast.success('회원가입이 완료되었습니다! 로그인해주세요.');
     await router.push('/login');
