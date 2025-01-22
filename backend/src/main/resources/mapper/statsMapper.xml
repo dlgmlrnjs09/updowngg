@@ -4,8 +4,6 @@
 
 	<sql id="statsFilterCondition">
 		lm.queue_id = #{matchGameMode.queueId}
-		AND lmp.match_id = ssr.match_id
-		AND lmp.puuid = ssr.target_puuid
 		<if test="matchPosition != null">
 			AND lmp.position = #{matchPosition}
 		</if>
@@ -27,8 +25,8 @@
 			lc.name_us,
 			lc.name_kr,
 			COALESCE(COUNT(DISTINCT CASE WHEN <include refid="statsFilterCondition"/> THEN lmp.match_id END), 0) as playCount,
-			COALESCE(COUNT(DISTINCT CASE WHEN <include refid="statsFilterCondition"/> THEN ssr.summoner_review_seq END), 0) as reviewCount,
-			COALESCE(COUNT(DISTINCT CASE WHEN <include refid="statsFilterCondition"/> AND ssr.is_up = true THEN ssr.summoner_review_seq END ), 0) as upCount
+			COALESCE(COUNT(DISTINCT CASE WHEN <include refid="statsFilterCondition"/> AND lmp.match_id = ssr.match_id AND lmp.puuid = ssr.target_puuid THEN ssr.summoner_review_seq END), 0) as reviewCount,
+			COALESCE(COUNT(DISTINCT CASE WHEN <include refid="statsFilterCondition"/> AND lmp.match_id = ssr.match_id AND lmp.puuid = ssr.target_puuid AND ssr.is_up = true THEN ssr.summoner_review_seq END ), 0) as upCount
 		FROM
 			lol_champion lc
 			LEFT OUTER JOIN lol_match_participant lmp ON (
@@ -90,6 +88,7 @@
 				LEFT OUTER JOIN site_summoner_review ssr ON (
 					lmp.puuid = ssr.target_puuid
 					AND ssr.del_dt IS NULL
+					AND lmp.match_id = ssr.match_id
 				)
 				LEFT OUTER JOIN site_summoner_review_tag srt ON (
         			ssr.summoner_review_seq = srt.summoner_review_seq

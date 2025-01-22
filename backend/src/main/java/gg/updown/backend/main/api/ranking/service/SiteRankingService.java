@@ -41,7 +41,7 @@ public class SiteRankingService {
             // 2. 모스트3 챔피언정보 Get
             List<ChampionStatsDto> mostChampionList = siteRankingMapper.selectMostChampionUpdownCount(ratingDto.getPuuid());
             for (ChampionStatsDto champion : mostChampionList) {
-                champion.setReviewCount(ratingDto.getTotalReviewCnt());
+//                champion.setReviewCount(ratingDto.getTotalReviewCnt());
                 champion.setIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, champion.getNameUs()));
             }
 

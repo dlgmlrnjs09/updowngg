@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Schema(description = "사이트 랭킹정보 DTO")
 public class SiteRankingResDto {
     private SummonerBasicInfoDto summonerBasicInfoDto;

@@ -14,6 +14,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Schema(description = "챔피언별 통계 DTO")
 public class ChampionStatsDto {
     @Schema(description = "챔피언 명(영문)")
@@ -23,11 +24,11 @@ public class ChampionStatsDto {
     @Schema(description = "챔피언 아이콘 URL")
     private String iconUrl;
     @Schema(description = "챔피언으로 치룬 경기 수")
-    private Long playCount;
+    private long playCount;
     @Schema(description = "챔피언으로 받은 경기 수")
-    private Long reviewCount;
+    private long reviewCount;
     @Schema(description = "챔피언으로 받은 추천 수")
-    private Long upCount;
+    private long upCount;
     @Schema(description = "챔피언 추천 비율")
     private double upRatio;
     @Schema(description = "챔피언 비추천 비율")
@@ -64,5 +65,10 @@ public class ChampionStatsDto {
             this.downRatio = 0.0;
         }
         this.downRatio = Math.round((double) getDownCount() / reviewCount * 100 * 10) / 10.0;
+    }
+
+    public void setIconUrl(String iconUrl) {
+        iconUrl = iconUrl.replaceAll("FiddleSticks", "Fiddlesticks");
+        this.iconUrl = iconUrl;
     }
 }

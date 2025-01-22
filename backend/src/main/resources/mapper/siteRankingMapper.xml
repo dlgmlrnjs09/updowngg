@@ -21,39 +21,40 @@
 
     <select id="selectTopRankerRatings" parameterType="siteRankingReqDto" resultType="reviewStatsDto">
         SELECT
-        ls.puuid,
-        COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> THEN ssr.summoner_review_seq END), 0) as totalReviewCnt,
-        COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> AND ssr.is_up = true THEN ssr.summoner_review_seq END), 0) as upCount,
-        COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> AND ssr.is_up = false THEN ssr.summoner_review_seq END), 0) as downCount,
-        COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> THEN lmp.match_id END), 0) as playCount
+            ls.puuid,
+            COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> THEN ssr.summoner_review_seq END), 0) as totalReviewCnt,
+            COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> AND ssr.is_up = true THEN ssr.summoner_review_seq END), 0) as upCount,
+            COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> AND ssr.is_up = false THEN ssr.summoner_review_seq END), 0) as downCount,
+            COALESCE(COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> THEN lmp.match_id END), 0) as playCount
         FROM
-        lol_summoner ls
-        LEFT OUTER JOIN lol_match_participant lmp ON (
-        ls.puuid = lmp.puuid
-        <if test="matchPosition != null">
-            AND lmp.position = #{matchPosition}
-        </if>
-        )
-        LEFT OUTER JOIN lol_match lm ON (
-        lmp.match_id = lm.match_id
-        <if test="matchGameMode != null">
-            AND lm.queue_id = #{matchGameMode.queueId}
-        </if>
-        )
-        LEFT OUTER JOIN lol_summoner_league lsl ON (
-        lmp.summoner_id = lsl.summoner_id
-        <if test="tier != null">
-            AND lsl.tier = #{tier}
-        </if>
-        )
-        LEFT OUTER JOIN site_summoner_review ssr ON (
-        ls.puuid = ssr.target_puuid
-        AND ssr.del_dt IS NULL
-        )
+            lol_summoner ls
+            LEFT OUTER JOIN lol_match_participant lmp ON (
+                ls.puuid = lmp.puuid
+                <if test="matchPosition != null">
+                    AND lmp.position = #{matchPosition}
+                </if>
+            )
+            LEFT OUTER JOIN lol_match lm ON (
+                lmp.match_id = lm.match_id
+                <if test="matchGameMode != null">
+                    AND lm.queue_id = #{matchGameMode.queueId}
+                </if>
+            )
+            LEFT OUTER JOIN lol_summoner_league lsl ON (
+                lmp.summoner_id = lsl.summoner_id
+                <if test="tier != null">
+                    AND lsl.tier = #{tier}
+                </if>
+            )
+            LEFT OUTER JOIN site_summoner_review ssr ON (
+                ls.puuid = ssr.target_puuid
+                AND ssr.del_dt IS NULL
+                AND lmp.match_id = ssr.match_id
+            )
         GROUP BY
-        ls.puuid
+            ls.puuid
         ORDER BY
-        totalReviewCnt DESC
+            totalReviewCnt DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
@@ -107,6 +108,7 @@
             mpc.puuid,
             mpc.champ_name as name_us,
             mpc.play_count,
+            COUNT(ssr.*) as reviewCount,
             COUNT(CASE WHEN ssr.is_up = true THEN 1 END) as up_count,
             COUNT(CASE WHEN ssr.is_up = false THEN 1 END) as down_count
         FROM

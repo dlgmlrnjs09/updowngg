@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 @Schema(description = "LOL 소환사 기본정보")
 public class SummonerBasicInfoDto {
     @Schema(description = "라이엇 계정 고유ID")

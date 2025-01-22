@@ -79,7 +79,7 @@
             </td>
             <td class="py-4 px-4">
               <div class="flex gap-2">
-                <TagList :tags="champion.topTagList" size="small"/>
+                <TagList :tags="champion.topTagList" size="small" is-show-count/>
               </div>
             </td>
           </tr>
@@ -91,12 +91,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
-import { statsApi } from "@/api/stats.ts"
-import { ThumbsUp, ThumbsDown, ArrowUpDown } from 'lucide-vue-next'
-import type { ChampionResDto, SearchFilter } from "@/types/stats.ts"
+import {computed, onMounted, ref} from 'vue'
+import {statsApi} from "@/api/stats.ts"
+import {ArrowUpDown, ThumbsDown, ThumbsUp} from 'lucide-vue-next'
+import type {ChampionResDto, SearchFilter} from "@/types/stats.ts"
 import FilterSection from '@/components/common/SearchFilter.vue'
 import TagList from "@/components/common/TagList.vue"
+import {MatchGameMode} from "@/types/match.ts";
 
 const championStats = ref<ChampionResDto[] | null>(null)
 const sortColumn = ref<string>('')
@@ -147,7 +148,7 @@ const onFilterUpdate = (filter: SearchFilter) => {
 }
 
 onMounted(() => {
-  fetchChampionStats({})
+  fetchChampionStats({"queueType": MatchGameMode.SOLO_RANK})
 })
 </script>
 

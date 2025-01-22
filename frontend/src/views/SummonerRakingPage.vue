@@ -63,7 +63,7 @@
             </td>
             <td class="py-4 px-4">
               <div class="flex gap-2">
-                <TagList :tags="player.reviewTagDtoList" size="small"/>
+                <TagList :tags="player.reviewTagDtoList" size="small" is-show-count/>
               </div>
             </td>
           </tr>
