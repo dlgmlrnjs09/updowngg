@@ -26,6 +26,10 @@ export default defineConfig(({ command, mode }) => {
         }
       }
     ],
+    server: {
+      host: '0.0.0.0',  // 모든 네트워크 인터페이스에서 수신
+      port: 4173
+    },
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))

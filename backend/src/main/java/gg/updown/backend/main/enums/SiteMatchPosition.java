@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 @Getter
 public enum SiteMatchPosition {
-    TOP("TOP","탑", "TOP"),
+    TOP("TOP", "탑", "TOP"),
     JUNGLE("JG", "정글", "JUNGLE"),
     MIDDLE("MID", "미드", "MIDDLE"),
     BOTTOM("AD", "원딜", "BOTTOM"),

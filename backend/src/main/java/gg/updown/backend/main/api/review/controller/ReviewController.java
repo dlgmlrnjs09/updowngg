@@ -1,7 +1,9 @@
 package gg.updown.backend.main.api.review.controller;
 
 import gg.updown.backend.main.api.review.model.dto.*;
+import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
+import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,6 +31,12 @@ public class ReviewController {
         return reviewService.getReviewTagList();
     }
 
+    @Operation(summary = "등록된 태그 카테고리 조회", description = "사이트 등록된 태그 카테고리 목록조회")
+    @GetMapping("/tag-category")
+    public List<ReviewTagCategoryEntity> getReviewTagCategoryList() {
+        return reviewService.getReviewTagCategoryList();
+    }
+
     @Operation(summary = "리뷰 등록", description = "소환사 리뷰 등록")
     @PostMapping("/submit")
     public ResponseEntity<Long> submitReview(@RequestBody @Valid ReviewSubmitReqDto reviewSubmitReqDto) {
@@ -41,6 +49,14 @@ public class ReviewController {
     public ResponseEntity<Long> updateReview(@RequestBody @Valid ReviewUpdateReqDto reviewUpdateReqDto) {
         reviewService.updateReview(reviewUpdateReqDto);
         return ResponseEntity.ok(reviewUpdateReqDto.getSummonerReviewSeq());
+    }
+
+    @Operation(summary = "태그 신청", description = "신규태그 신청")
+    @PostMapping("/tag-suggest")
+    public ResponseEntity<Long> insertSuggestedTag(@RequestBody List<ReviewTagSuggestReqDto> reqDto) {
+        reviewService.insertSuggestTagList(reqDto);
+        // 필요시 시퀀스 리턴 추가
+        return ResponseEntity.ok(0L);
     }
 
     @Operation(summary = "받은리뷰 통계 조회", description = "특정 대상의 받은리뷰 통계조회")

@@ -7,14 +7,18 @@ import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
 import gg.updown.backend.main.api.review.model.dto.*;
+import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
+import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -45,6 +49,10 @@ public class ReviewService {
 
     public List<ReviewTagEntity> getReviewTagList() {
         return reviewMapper.getReviewTagList();
+    }
+
+    public List<ReviewTagCategoryEntity> getReviewTagCategoryList() {
+        return reviewMapper.getReviewTagCategoryList();
     }
 
     public List<ReviewDto> getWroteReviewList(String reviewerPuuid) {
@@ -95,5 +103,15 @@ public class ReviewService {
 
     public List<ReviewRatingByPositionDto> getAvgRatingByPosition(String targetPuuid) {
         return reviewMapper.getAvgRatingByPosition(targetPuuid);
+    }
+
+    public void insertSuggestTagList(List<ReviewTagSuggestReqDto> reqDto) {
+        List<ReviewTagSuggestEntity> entityList = new ArrayList<>();
+        for (ReviewTagSuggestReqDto dto : reqDto) {
+            ReviewTagSuggestEntity entity = new ReviewTagSuggestEntity();
+            BeanUtils.copyProperties(dto, entity);
+            entityList.add(entity);
+        }
+        reviewMapper.insertSuggestTagList(entityList);
     }
 }

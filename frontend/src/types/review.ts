@@ -2,8 +2,27 @@ export interface ReviewTagDto {
     tagCode: string
     tagValue: string
     tagDescription: string
+    tagCategory: string
     tagUpdown: boolean
     frequentCount: number
+}
+
+export interface ReviewTagCategoryDto {
+    categoryKey: string
+    categoryValue: string
+    regDt: string
+}
+
+export interface ReviewTagSuggestDto {
+    suggestSeq?: number
+    tagValue: string
+    tagDescription: string
+    isUp: boolean | null
+    status?: string
+    reason?: string
+    reviewSeq?: number
+    tagCategory?: number
+    regDt?: string
 }
 
 export interface ReviewRequestDto {

@@ -15,6 +15,8 @@ public class ReviewTagEntity {
     private String tagValue;
     @Schema(description = "태그 설명")
     private String tagDescription;
+    @Schema(description = "태그 카테고리")
+    private String tagCategory;
     @Schema(description = "긍정/부정 여부")
     private boolean tagUpdown;
 }

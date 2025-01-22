@@ -4,6 +4,8 @@
 
 	<sql id="statsFilterCondition">
 		lm.queue_id = #{matchGameMode.queueId}
+		AND lmp.match_id = ssr.match_id
+		AND lmp.puuid = ssr.target_puuid
 		<if test="matchPosition != null">
 			AND lmp.position = #{matchPosition}
 		</if>

@@ -1,7 +1,9 @@
 package gg.updown.backend.main.api.review.mapper;
 
 import gg.updown.backend.main.api.review.model.dto.*;
+import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
+import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -10,6 +12,7 @@ import java.util.List;
 @Mapper
 public interface ReviewMapper {
     List<ReviewTagEntity> getReviewTagList();
+    List<ReviewTagCategoryEntity> getReviewTagCategoryList();
     void insertReview(ReviewSubmitReqDto reqDto);
     void insertReviewTags(@Param("reviewSeq") Long reviewSeq, @Param("tagCodeList") List<String> tagCodeList);
     void updateReview(ReviewUpdateReqDto reqDto);
@@ -21,4 +24,5 @@ public interface ReviewMapper {
     List<ReviewDto> getRecentReviewList(@Param("targetPuuid") String targetPuuid, @Param("limit")int limit);
     List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid);
     List<ReviewRatingByPositionDto> getAvgRatingByPosition(String targetPuuid);
+    void insertSuggestTagList(List<ReviewTagSuggestEntity> reqDto);
 }

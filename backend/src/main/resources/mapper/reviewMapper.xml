@@ -86,11 +86,23 @@
             tag_code,
             tag_value,
             tag_description,
-            tag_updown
+            tag_updown,
+            tag_category
         FROM
             site_review_tag
         ORDER BY
             tag_updown desc, reg_dt desc
+    </select>
+
+    <select id="getReviewTagCategoryList" parameterType="String" resultType="reviewTagCategoryEntity">
+        SELECT
+            category_key,
+            category_value,
+            reg_dt
+        FROM
+            site_review_tag_category
+        ORDER BY
+            reg_dt desc
     </select>
 
     <!-- 리뷰 등록 -->
@@ -226,5 +238,24 @@
                 WHEN 'UTILITY' THEN 5
             END
     </select>
+
+    <insert id="insertSuggestTagList">
+        INSERT INTO site_review_tag_suggestion (
+            review_seq,
+            tag_value,
+            tag_description,
+            is_up,
+            tag_category
+        ) VALUES
+        <foreach collection="list" item="tag" separator=",">
+            (
+            #{tag.reviewSeq},
+            #{tag.tagValue},
+            #{tag.tagDescription},
+            #{tag.isUp},
+            #{tag.tagCategory}
+            )
+        </foreach>
+    </insert>
 </mapper>
 

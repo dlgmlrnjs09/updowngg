@@ -3,14 +3,17 @@ import type {
     ReviewRatingByChampDto,
     ReviewRatingByPositionDto,
     ReviewRequestDto,
-    ReviewStatsDto,
-    ReviewTagDto
+    ReviewStatsDto, ReviewTagCategoryDto,
+    ReviewTagDto, ReviewTagSuggestDto
 } from '@/types/review'
 import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 
 export const reviewApi = {
     getTagList: () =>
         apiClient.get<ReviewTagDto[]>('/api/v1/review/tag', {}),
+
+    getTagCategoryList: () =>
+        apiClient.get<ReviewTagCategoryDto[]>('/api/v1/review/tag-category', {}),
 
     submitReview: (reviewData: ReviewRequestDto) =>
         apiClient.post<number>('/api/v1/review/submit', reviewData),
@@ -59,5 +62,8 @@ export const reviewApi = {
                 puuid
             }
         }),
+
+    suggestReviewTags: (tag: ReviewTagSuggestDto[]) =>
+        apiClient.post<number>('/api/v1/review/tag-suggest', tag),
 }
 

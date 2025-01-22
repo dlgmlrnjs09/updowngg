@@ -38,9 +38,21 @@
       <ReviewModal
           v-if="showReviewModal"
           :player="selectedPlayer"
-          @close="showReviewModal = false"
           :review-tags="reviewTags"
+          :review-tag-categories="reviewTagCategories"
+          :suggest-tag="suggestTag"
+          @close="handleReviewModalClose"
+          @clearSuggestTag="suggestTag = []"
+          @openTagSuggest="showTagSuggestModal = true"
           @submit="handleReviewSubmit"
+      />
+
+      <TagSuggestModal
+          v-if="showTagSuggestModal"
+          :player="selectedPlayer"
+          :review-tag-categories="reviewTagCategories"
+          @close="showTagSuggestModal = false"
+          @submit="handleTagSuggest"
       />
 
       <PreviousReviewModal
@@ -72,12 +84,13 @@ import type {
   ReviewRatingByChampDto,
   ReviewRatingByPositionDto,
   ReviewRequestDto,
-  ReviewStatsDto,
-  ReviewTagDto
+  ReviewStatsDto, ReviewTagCategoryDto,
+  ReviewTagDto, ReviewTagSuggestDto
 } from "@/types/review.ts";
 import PreviousReviewModal from "@/components/review/modal/PreviousReviewModal.vue";
 import {useToast} from "vue-toastification";
 import {useAuthStore} from "@/stores/auth.ts";
+import TagSuggestModal from "@/components/review/modal/TagSuggestModal.vue";
 
 const toast = useToast();
 const authStore = useAuthStore();
@@ -93,14 +106,17 @@ const reviewStatsInfo = ref<ReviewStatsDto | null>(null)
 const matches = ref<LolMatchInfoRes[]>([])
 const reviewedMatch = ref<LolMatchInfoRes>({} as LolMatchInfoRes)
 const reviewTags = ref<ReviewTagDto[]>([])
+const reviewTagCategories = ref<ReviewTagCategoryDto[]>([])
 const frequentTags = ref<ReviewTagDto | null>(null)
 const recentReviews = ref<ReviewRequestDto[]>([])
 const ratingByChamp = ref<ReviewRatingByChampDto | null>(null)
 const ratingByPosition = ref<ReviewRatingByPositionDto | null>(null)
 const showDetailModal = ref(false)
 const showReviewModal = ref(false)
+const showTagSuggestModal = ref(false)
 const showPreviousReviewModal = ref(false)
 const selectedPlayer = ref(<LolMatchParticipant>({}));
+const suggestTag = ref<ReviewTagSuggestDto[]>([])
 
 const fetchSummonerInfo = async () => {
   try {
@@ -146,21 +162,37 @@ const fetchMatchList = async (startIndex: number = 0) => {
   }
 }
 
+const handleReviewModalClose = () => {
+  showReviewModal.value = false;
+  suggestTag.value = [];  // 모달이 닫힐 때 suggestTag 초기화
+}
+
+// 리뷰 submit 완료 후처리
 const handleReviewSubmit = async (reviewData: ReviewRequestDto) => {
   showReviewModal.value = false;
   try {
+    // suggestedTags 배열 형태로 변경
+    if (Array.isArray(suggestTag.value)) {
+      // 각 제안된 태그에 리뷰 시퀀스 번호 추가
+      const tagsWithReviewSeq = suggestTag.value.map(tag => ({
+        ...tag,
+        reviewSeq: reviewData.summonerReviewSeq
+      }));
+
+      // 모든 제안된 태그를 한번에 전송
+      await reviewApi.suggestReviewTags(tagsWithReviewSeq);
+      suggestTag.value = [] as ReviewTagSuggestDto[];
+    }
+
     // 모든 매치에서 동일한 소환사의 reviewDto 업데이트
     matches.value.forEach((match, matchIndex) => {
-      // 각 매치에서 같은 소환사 찾기
       const playerIndex = match.participantList.findIndex(
           p => p.puuid === reviewData.targetPuuid
       );
 
       if (playerIndex !== -1) {
-        // 해당 소환사의 reviewDto 업데이트
         matches.value[matchIndex].participantList[playerIndex].reviewDto = {
           ...reviewData,
-          // matchId: review  // 각 매치의 ID로 업데이트
         };
       }
     });
@@ -177,6 +209,13 @@ const handleReviewSubmit = async (reviewData: ReviewRequestDto) => {
   } catch (error) {
     toast.error('데이터 업데이트 중 오류가 발생했습니다.');
   }
+}
+
+const handleTagSuggest = async (tagData: ReviewTagSuggestDto) => {
+  showTagSuggestModal.value = false;
+
+  // 새로운 태그를 배열에 추가
+  suggestTag.value = [...suggestTag.value, tagData];
 }
 
 const loadMoreMatches = async () => {
@@ -209,7 +248,8 @@ const updateMatchList = async () => {
 }
 
 const openReviewModal = (player: any) => {
-  selectedPlayer.value = player
+  selectedPlayer.value = player;
+  suggestTag.value = []; // suggestTag 배열 초기화
 
   reviewedMatch.value = matches.value.find(match =>
       match.matchInfo.matchId == selectedPlayer.value.matchId
@@ -217,12 +257,12 @@ const openReviewModal = (player: any) => {
 
   if (authStore.isAuthenticated) {
     if (!player.reviewDto.reviewable) {
-      showPreviousReviewModal.value = true
+      showPreviousReviewModal.value = true;
     } else {
-      showReviewModal.value = true
+      showReviewModal.value = true;
     }
   } else {
-    toast.error('리뷰작성은 로그인 후에 가능합니다.')
+    toast.error('리뷰작성은 로그인 후에 가능합니다.');
   }
 }
 
@@ -234,6 +274,11 @@ const handleReviewModify = () => {
 const fetchReviewTags = async () => {
   const response = await reviewApi.getTagList();
   reviewTags.value = response.data
+}
+
+const fetchReviewTagCategories = async () => {
+  const response = await reviewApi.getTagCategoryList();
+  reviewTagCategories.value = response.data
 }
 
 const fetchFrequentTags = async () => {
@@ -272,6 +317,7 @@ watchEffect(async () => {
       await fetchSummonerReviewStats();
       await fetchMatchList();
       await fetchReviewTags();
+      await fetchReviewTagCategories();
       await fetchFrequentTags();
       await fetchRecentReviews();
       await fetchRatingByChamp();
@@ -284,6 +330,7 @@ watchEffect(async () => {
 
 onMounted(async () => {
   await fetchReviewTags()
+  await fetchReviewTagCategories();
 })
 </script>
 
