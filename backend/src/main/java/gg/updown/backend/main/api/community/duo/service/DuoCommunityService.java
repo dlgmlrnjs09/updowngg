@@ -13,6 +13,7 @@ import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
 import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
 import gg.updown.backend.main.api.ranking.service.SiteRankingService;
+import gg.updown.backend.main.api.review.model.dto.ReviewStatsDto;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import gg.updown.backend.main.enums.SiteLeagueTier;
 import gg.updown.backend.main.enums.SiteMatchGameMode;
@@ -63,10 +64,6 @@ public class DuoCommunityService implements CommunityInterface {
                         HashMap::new
                 ));
 
-        List<? extends CommunityPostDto> dubug = postList.stream()
-                .map(post -> createPostCardDto(post, summonerInfoMap.get(post.getWriterSiteCode())))
-                .toList();
-
         // 3. 게시글 + 작성자 매핑
         return postList.stream()
                 .map(post -> createPostCardDto(post, summonerInfoMap.get(post.getWriterSiteCode())))
@@ -116,6 +113,10 @@ public class DuoCommunityService implements CommunityInterface {
         summonerInfoDto.setFrequentTagDtoList(reviewService.getFrequentTagCount(summonerDto.getPuuid()));
         summonerInfoDto.setReviewStatsDto(reviewService.getReviewStats(summonerDto.getPuuid()));
         summonerInfoDto.setMostChampionDto(lolSummonerService.getSummonerMostChampions(summonerDto.getPuuid(), 3));
+
+        if (summonerInfoDto.getReviewStatsDto() == null) {
+            summonerInfoDto.setReviewStatsDto(new ReviewStatsDto());
+        }
 
         return summonerInfoDto;
     }

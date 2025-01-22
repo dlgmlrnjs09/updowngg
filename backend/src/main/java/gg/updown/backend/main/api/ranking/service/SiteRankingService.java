@@ -35,7 +35,7 @@ public class SiteRankingService {
         List<ReviewStatsDto> rankerRatingList = siteRankingMapper.selectTopRankerRatings(reqDto);
         for (ReviewStatsDto ratingDto : rankerRatingList) {
             // 2. 평가점수, 비율 Set
-            ratingDto.setScore(CalculateUtil.calculateWilsonScore(ratingDto.getUpCount().intValue(), ratingDto.getDownCount().intValue()));
+            ratingDto.setScore(CalculateUtil.calculateWilsonScore((int) ratingDto.getUpCount(), (int) ratingDto.getDownCount()));
             ratingDto.setUpRatio(CalculateUtil.getRatio(ratingDto.getTotalReviewCnt(), ratingDto.getUpCount()));
             ratingDto.setDownRatio(CalculateUtil.getRatio(ratingDto.getTotalReviewCnt(), ratingDto.getDownCount()));
             // 2. 모스트3 챔피언정보 Get

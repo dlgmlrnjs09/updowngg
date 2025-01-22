@@ -16,17 +16,17 @@ public class ReviewStatsDto {
     @Schema(description = "라이엇 계정 고유ID")
     private String puuid;
     @Schema(description = "추천 수")
-    private Long upCount;
+    private long upCount;
     @Schema(description = "비추천 수")
-    private Long downCount;
+    private long downCount;
     @Schema(description = "추천 비율")
     private double upRatio;
     @Schema(description = "비추천 비율")
     private double downRatio;
     @Schema(description = "총 받은 리뷰 수")
-    private Long totalReviewCnt;
+    private long totalReviewCnt;
     @Schema(description = "치룬 경기 수")
-    private Long playCount;
+    private long playCount;
     @Schema(description = "추천점수")
     private double score;
 }
