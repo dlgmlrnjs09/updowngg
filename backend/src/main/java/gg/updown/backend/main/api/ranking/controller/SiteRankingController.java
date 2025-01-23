@@ -26,7 +26,8 @@ public class SiteRankingController {
     @Operation(summary = "랭킹목록 조회", description = "사이트 랭킹목록 조회")
     @GetMapping("/list")
     public ResponseEntity<List<SiteRankingResDto>> getSiteRanking(@Valid SiteRankingReqDto reqDto) {
-        List<SiteRankingResDto> resultList = service.selectTopRankers(reqDto);
+        List<SiteRankingResDto> resultList = service.selectTopRankersBulk(reqDto);
+
         return ResponseEntity.ok(resultList);
     }
 }

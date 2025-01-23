@@ -154,4 +154,93 @@
         WHERE rn <![CDATA[ <= ]]> 3
         GROUP BY puuid;
     </select>
+
+    <select id="selectBulkMostChampionUpdownCount" parameterType="list" resultType="championStatsDto">
+        WITH MostPlayedChamp AS (
+            SELECT
+                lmp.puuid,
+                lmp.champ_name,
+                COUNT(*) as play_count,
+                ROW_NUMBER() OVER (PARTITION BY lmp.puuid ORDER BY COUNT(*) DESC) as rn
+            FROM
+                lol_match_participant lmp
+            WHERE
+                lmp.puuid IN
+                <foreach item="puuid" collection="list" open="(" separator="," close=")">
+                    #{puuid}
+                </foreach>
+            GROUP BY
+                lmp.puuid, lmp.champ_name
+            HAVING
+                COUNT(*) > 0
+        )
+        SELECT
+            mpc.puuid,
+            mpc.champ_name as name_us,
+            mpc.play_count,
+            COUNT(ssr.*) as reviewCount,
+            COUNT(CASE WHEN ssr.is_up = true THEN 1 END) as up_count,
+            COUNT(CASE WHEN ssr.is_up = false THEN 1 END) as down_count
+        FROM
+            MostPlayedChamp mpc
+            LEFT JOIN lol_match_participant lmp ON (mpc.puuid = lmp.puuid AND mpc.champ_name = lmp.champ_name)
+            LEFT JOIN site_summoner_review ssr ON (lmp.match_id = ssr.match_id AND lmp.puuid = ssr.target_puuid)
+        WHERE
+            mpc.rn <![CDATA[ <= ]]> 3
+        GROUP BY
+            mpc.puuid, mpc.champ_name, mpc.play_count, mpc.rn
+        ORDER BY
+            mpc.puuid, mpc.play_count DESC
+    </select>
+
+    <select id="selectBulkTopTagsBySummoner" parameterType="list" resultType="summonerTagDto">
+        WITH RankedTags AS (
+            SELECT
+                ssr.target_puuid as puuid,
+                srt.tag_code,
+                srt.tag_value,
+                srt.tag_description,
+                srt.tag_updown,
+                COUNT(*) as frequentCount,
+                ROW_NUMBER() OVER (PARTITION BY ssr.target_puuid ORDER BY COUNT(*) DESC) as rn
+            FROM
+                site_summoner_review ssr
+                JOIN site_summoner_review_tag ssrt ON ssr.summoner_review_seq = ssrt.summoner_review_seq
+                JOIN site_review_tag srt ON ssrt.tag_code = srt.tag_code
+            WHERE
+                ssr.target_puuid IN
+                <foreach item="puuid" collection="list" open="(" separator="," close=")">
+                    #{puuid}
+                </foreach>
+            GROUP BY
+                ssr.target_puuid, srt.tag_code, srt.tag_value, srt.tag_description, srt.tag_updown
+        )
+        SELECT
+            puuid,
+            tag_code,
+            tag_value,
+            tag_description,
+            tag_updown,
+            frequentCount
+        FROM
+            RankedTags
+        WHERE
+            rn <![CDATA[ <= ]]> 3
+    </select>
+
+    <select id="selectBulkTopRankerBasicInfo" parameterType="list" resultType="summonerBasicInfoDto">
+        SELECT
+            ls.puuid,
+            ra.game_name,
+            ra.tag_line,
+            ls.profile_icon_id
+        FROM
+            riot_account ra
+            INNER JOIN lol_summoner ls ON ra.puuid = ls.puuid
+        WHERE
+            ra.puuid IN
+            <foreach item="puuid" collection="list" open="(" separator="," close=")">
+                #{puuid}
+            </foreach>
+    </select>
 </mapper>

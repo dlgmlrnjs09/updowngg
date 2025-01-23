@@ -23,4 +23,8 @@ public interface SiteRankingMapper {
 
     List<ChampionStatsDto> selectMostChampionUpdownCount(@Param("puuid")String puuid);
     SummonerTagDto selectTopTagsBySummoner(@Param("puuid")String puuid);
+
+    List<ChampionStatsDto> selectBulkMostChampionUpdownCount(List<String> puuids);
+    List<SummonerTagDto> selectBulkTopTagsBySummoner(List<String> puuids);
+    List<SummonerBasicInfoDto> selectBulkTopRankerBasicInfo(List<String> puuids);
 }

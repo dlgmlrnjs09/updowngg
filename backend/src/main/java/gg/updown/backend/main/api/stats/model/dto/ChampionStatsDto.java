@@ -15,8 +15,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Schema(description = "챔피언별 통계 DTO")
+@Schema(description = "챔피언 통계 DTO")
 public class ChampionStatsDto {
+    private String puuid;
+
     @Schema(description = "챔피언 명(영문)")
     private String nameUs;
     @Schema(description = "챔피언 명(국문)")
