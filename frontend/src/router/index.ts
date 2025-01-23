@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '@/views/MainPage.vue';
 import {useAuthStore} from "@/stores/auth.ts";
+import {authApi} from "@/api/auth.ts";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,20 @@ const router = createRouter({
             path: '/community/duo',
             name: 'duoCommunity',
             component: () => import('@/views/Community.vue')
+        },
+        {
+            path: '/oauth2/discord/callback',
+            name: 'discordCallback',
+            component: () => import('@/views/AccountSettings.vue'),
+            beforeEnter: async (to, from, next) => {
+                try {
+                    const response = (await authApi.connectDiscord()).data;
+                    next('/setting/account');
+                } catch (error) {
+                    console.error('Discord callback error:', error);
+                    next('/setting/account');
+                }
+            }
         }
     ],
     scrollBehavior(to, from, savedPosition) {

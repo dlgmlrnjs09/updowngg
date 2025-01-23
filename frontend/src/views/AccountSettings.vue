@@ -47,6 +47,9 @@
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useToast } from 'vue-toastification';
+import axios from "axios";
+import {authApi} from "@/api/auth.ts";
+import type {DiscordAccount} from "@/types/auth.ts";
 
 const authStore = useAuthStore();
 const toast = useToast();
@@ -57,16 +60,9 @@ const discordUsername = ref('');
 // 디스코드 연동 상태 확인
 const checkDiscordLink = async () => {
   try {
-    // API 호출로 디스코드 연동 상태 확인
-    const response = await fetch('/api/v1/auth/discord/status', {
-      headers: {
-        Authorization: `Bearer ${authStore.accessToken}`
-      }
-    });
-    const data = await response.json();
-
-    isDiscordLinked.value = data.isLinked;
-    discordUsername.value = data.username || '';
+    const response = (await authApi.checkDiscord()).data as DiscordAccount;
+    isDiscordLinked.value = response.discordCode !== undefined;
+    discordUsername.value = response.globalName || '';
   } catch (error) {
     console.error('Failed to check Discord link status:', error);
     toast.error('디스코드 연동 상태 확인에 실패했습니다.');
@@ -78,26 +74,19 @@ const handleDiscordLink = async () => {
   if (isDiscordLinked.value) {
     // 연동 해제 처리
     try {
-      const response = await fetch('/api/v1/auth/discord/unlink', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${authStore.accessToken}`
-        }
-      });
-
-      if (response.ok) {
+        await authApi.disconnectDiscord()
         isDiscordLinked.value = false;
         discordUsername.value = '';
         toast.success('디스코드 연동이 해제되었습니다.');
-      }
     } catch (error) {
       console.error('Failed to unlink Discord:', error);
       toast.error('디스코드 연동 해제에 실패했습니다.');
     }
   } else {
-    // 디스코드 OAuth 연동 페이지로 리다이렉트
     try {
-      window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/discord`;
+      await authApi.connectDiscord();
+      const redirectUri = `${window.location.origin}/oauth2/discord/callback`;
+      window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/discord?redirect_uri=${encodeURIComponent(redirectUri)}`;
     } catch (error) {
       console.error('Failed to redirect to Discord auth:', error);
       toast.error('디스코드 연동 시도 중 오류가 발생했습니다.');

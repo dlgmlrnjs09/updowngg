@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.auth.mapper;
 
+import gg.updown.backend.main.api.auth.model.DiscordAccountEntity;
 import gg.updown.backend.main.api.auth.model.SiteAccountEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -13,4 +14,7 @@ public interface AuthMapper {
             @Param("memberEmail")String memberEmail,
             @Param("memberPassword") String memberPassword
     );
+    DiscordAccountEntity getDiscordAccountBySiteCode(Long siteCode);
+    void conflictDiscordAccount(@Param("siteCode") long siteCode, @Param("entity") DiscordAccountEntity entity);
+    void disconnectDiscordAccount(long siteCode);
 }

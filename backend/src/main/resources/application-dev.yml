@@ -84,3 +84,5 @@ springdoc:
   api-docs:
     path: /v2/api-docs
 
+frontend:
+  url: http://localhost:4173

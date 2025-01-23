@@ -22,4 +22,97 @@
         INSERT INTO site_account (puuid, member_email, member_password)
         VALUES (#{puuid}, #{memberEmail}, #{memberPassword})
     </insert>
+
+    <insert id="conflictDiscordAccount" parameterType="map">
+        INSERT INTO discord_account (
+            member_site_code,
+            discord_code,
+            username,
+            global_name,
+            avatar,
+            banner,
+            banner_color,
+            accent_color,
+            avatar_decoration_data,
+            email,
+            verified,
+            mfa_enabled,
+            public_flags,
+            flags,
+            locale,
+            clan,
+            primary_guild
+        ) VALUES (
+             #{siteCode},
+             #{entity.discordCode},
+             #{entity.username},
+             #{entity.globalName},
+             #{entity.avatar},
+             #{entity.banner},
+             #{entity.bannerColor},
+             #{entity.accentColor},
+             #{entity.avatarDecorationData},
+             #{entity.email},
+             #{entity.verified},
+             #{entity.mfaEnabled},
+             #{entity.publicFlags},
+             #{entity.flags},
+             #{entity.locale},
+             #{entity.clan},
+             #{entity.primaryGuild}
+         ) ON CONFLICT (member_site_code)
+            DO UPDATE
+            SET discord_code = #{entity.discordCode},
+                username = #{entity.username},
+                global_name = #{entity.globalName},
+                avatar = #{entity.avatar},
+                banner = #{entity.banner},
+                banner_color = #{entity.bannerColor},
+                accent_color = #{entity.accentColor},
+                avatar_decoration_data = #{entity.avatarDecorationData},
+                email = #{entity.email},
+                verified = #{entity.verified},
+                mfa_enabled = #{entity.mfaEnabled},
+                public_flags = #{entity.publicFlags},
+                flags = #{entity.flags},
+                locale = #{entity.locale},
+                clan = #{entity.clan},
+                primary_guild = #{entity.primaryGuild},
+                del_dt = null
+    </insert>
+
+    <select id="getDiscordAccountBySiteCode" parameterType="Long" resultType="DiscordAccountEntity">
+        SELECT
+            member_site_code,
+           discord_code,
+           username,
+           global_name,
+           avatar,
+           banner,
+           banner_color,
+           accent_color,
+           avatar_decoration_data,
+           email,
+           verified,
+           mfa_enabled,
+           public_flags,
+           flags,
+           locale,
+           clan,
+           primary_guild,
+           reg_dt,
+           upd_dt,
+           del_dt
+        FROM
+            discord_account
+        WHERE
+            member_site_code = #{siteCode}
+            and del_dt is null
+    </select>
+
+    <update id="disconnectDiscordAccount" parameterType="Long">
+        UPDATE discord_account
+        SET del_dt = now()
+        WHERE member_site_code = #{siteCode}
+    </update>
 </mapper>

@@ -64,10 +64,7 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService())
                         )
                         .successHandler((request, response, authentication) -> {
-                            log.debug("OAuth2 로그인 성공");
-                            OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-                            log.debug("User Attributes: {}", oauth2User.getAttributes());
-                            response.sendRedirect("/api/v1/auth/login/discord");
+                            response.sendRedirect("/api/v1/auth/discord/callback");
                         })
                         .failureHandler((request, response, exception) -> {
                             log.error("OAuth2 로그인 실패", exception);

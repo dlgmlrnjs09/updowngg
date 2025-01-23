@@ -13,16 +13,10 @@ import org.springframework.stereotype.Service;
 public class DiscordOAuthService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        log.debug("DiscordOAuthService.loadUser 시작");
-        log.debug("ClientRegistration: {}", userRequest.getClientRegistration());
-        log.debug("AccessToken: {}", userRequest.getAccessToken().getTokenValue());
-
         try {
             OAuth2User user = super.loadUser(userRequest);
-            log.debug("OAuth2User 로드 성공: {}", user.getAttributes());
             return user;
         } catch (Exception e) {
-            log.error("OAuth2User 로드 실패", e);
             throw e;
         }
     }

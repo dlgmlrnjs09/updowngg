@@ -1,5 +1,12 @@
 import apiClient from './axios';
-import type {AuthTokens, LoginCredentials, SignupCredentials, SignupResponse, SiteAccount} from '@/types/auth';
+import type {
+    AuthTokens,
+    DiscordAccount,
+    LoginCredentials,
+    SignupCredentials,
+    SignupResponse,
+    SiteAccount
+} from '@/types/auth';
 
 export const authApi = {
     signup: (credentials: SignupCredentials) =>
@@ -10,5 +17,14 @@ export const authApi = {
         apiClient.post<boolean>('/api/v1/auth/logout'),
     getMemberInfo: () =>
         apiClient.get<SiteAccount>('/api/v1/auth/member-info', {
+        }),
+    connectDiscord: () =>
+        apiClient.get<DiscordAccount>('/api/v1/auth/discord/connect', {
+        }),
+    disconnectDiscord: () =>
+        apiClient.post<void>('/api/v1/auth/discord/disconnect', {
+        }),
+    checkDiscord: () =>
+        apiClient.get<DiscordAccount>('/api/v1/auth/discord/account', {
         }),
 };
