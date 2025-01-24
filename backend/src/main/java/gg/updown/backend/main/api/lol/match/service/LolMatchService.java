@@ -173,6 +173,10 @@ public class LolMatchService {
         .build();
     }
 
+    public LolMatchEntity getMatchInfo(String matchId) {
+        return matchMapper.getMatchInfo(matchId);
+    }
+
     /**
      * DB에 저장되지 않은 match Id 전체 목록 가져오기
      * @param puuid

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.notification.mapper.NotificationMapper">
+	<insert id="insertNotification" parameterType="notificationEntity">
+		INSERT INTO site_notification (
+			notification_id,
+			notification_type,
+			target_site_code,
+			content
+		) VALUES (
+			 #{notificationId},
+			 #{notificationType},
+			 #{targetSiteCode},
+			 #{content}
+		 )
+	</insert>
+
+	<select id="getNotifications" parameterType="long" resultType="notificationEntity">
+		SELECT
+			notification_seq,
+			notification_id,
+			notification_type,
+			target_site_code,
+			content,
+			read_yn,
+			read_dt,
+			reg_dt
+		FROM site_notification
+		WHERE target_site_code = #{targetSiteCode}
+		ORDER BY notification_seq desc
+		LIMIT 10
+	</select>
+</mapper>

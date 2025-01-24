@@ -1,25 +1,26 @@
 package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.common.util.DateUtil;
-import gg.updown.backend.external.riot.RiotApiBasePath;
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
+import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
+import gg.updown.backend.main.api.notification.model.NotificationEntity;
+import gg.updown.backend.main.api.notification.service.NotificationService;
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
 import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -34,17 +35,19 @@ public class ReviewService {
     private final ReviewTransactionService transactionService;
     private final LolSummonerService summonerService;
     private final LolMatchService matchService;
+    private final NotificationService notificationService;
 
     public ReviewService(
             ReviewMapper reviewMapper,
             ReviewTransactionService transactionService,
             LolSummonerService summonerService,
-            @Lazy LolMatchService matchService
+            @Lazy LolMatchService matchService, NotificationService notificationService
     ) {
         this.reviewMapper = reviewMapper;
         this.transactionService = transactionService;
         this.summonerService = summonerService;
         this.matchService = matchService;
+        this.notificationService = notificationService;
     }
 
     public List<ReviewTagEntity> getReviewTagList() {
@@ -68,6 +71,13 @@ public class ReviewService {
             Long startDate = DateUtil.yyyyMMddToMilliseconds(basicStartTime);
             Long endDate = DateUtil.getCurrentTimeMillis();
             matchService.getAndInsertMatchIdList(reqDto.getTargetPuuid(), startDate, endDate);
+
+            LolMatchEntity matchInfo = matchService.getMatchInfo(reqDto.getMatchId());
+            notificationService.notify(NotificationEntity.builder()
+                    .notificationId(UUID.randomUUID().toString())
+                    .targetSiteCode(1000000)
+                    .content(DateUtil.formatDateTimeYYYYMMDD(matchInfo.getGameStartDt()) + "에 플레이한 " + matchInfo.getGameMode() + "게임에 새로운 평가가 등록되었습니다.")
+                    .build());
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -106,6 +116,10 @@ public class ReviewService {
     }
 
     public void insertSuggestTagList(List<ReviewTagSuggestReqDto> reqDto) {
+        if (reqDto.isEmpty()) {
+            return;
+        }
+
         List<ReviewTagSuggestEntity> entityList = new ArrayList<>();
         for (ReviewTagSuggestReqDto dto : reqDto) {
             ReviewTagSuggestEntity entity = new ReviewTagSuggestEntity();

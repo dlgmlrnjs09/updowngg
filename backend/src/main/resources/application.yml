@@ -4,3 +4,8 @@ riot-api:
 match:
   basic:
     start-time: 2024-01-01 00:00
+
+server:
+  servlet:
+    session:
+      persistent: false

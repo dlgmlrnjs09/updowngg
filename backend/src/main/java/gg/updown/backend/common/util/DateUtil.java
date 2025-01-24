@@ -42,4 +42,14 @@ public class DateUtil {
     public static Long getCurrentTimeMillis() {
         return System.currentTimeMillis();
     }
+
+    /**
+     * 밀리초 -> YYYY-MM-DD
+     * @param dateTime
+     * @return
+     */
+    public static String formatDateTimeYYYYMMDD(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return dateTime.format(formatter);
+    }
 }

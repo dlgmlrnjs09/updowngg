@@ -10,9 +10,11 @@ import {onMounted, computed} from 'vue'
 import Header from '@/components/common/Header.vue';
 import {useAuthStore} from "@/stores/auth.ts";
 import HeaderMain from "@/components/common/HeaderMain.vue";
+import {useNotificationStore} from "@/stores/notification.ts";
 
 const auth = useAuthStore()
 const route = useRoute()
+const notification = useNotificationStore()
 
 // 현재 라우트에 따라 헤더 컴포넌트 결정
 const currentHeader = computed(() => {
@@ -23,6 +25,9 @@ const currentHeader = computed(() => {
 
 onMounted(async () => {
   await auth.initializeAuth();
+  if (auth.isAuthenticated && auth.user) {
+    notification.initSSE();
+  }
 });
 </script>
 

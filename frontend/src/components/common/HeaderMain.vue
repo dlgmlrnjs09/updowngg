@@ -13,6 +13,7 @@
       </nav>
 
       <div class="user-actions" v-if="authStore.isAuthenticated">
+        <Notification/>
         <div class="profile-dropdown" ref="profileDropdown">
           <button class="profile-btn" @click="toggleDropdown">
             <div class="profile-icon">
@@ -44,6 +45,7 @@
 import {RouterLink, useRouter} from 'vue-router';
 import {useAuthStore} from "@/stores/auth.ts";
 import {onMounted, onUnmounted, ref} from "vue";
+import Notification from "@/components/common/Notification.vue";
 const authStore = useAuthStore();
 const router = useRouter();
 const isDropdownOpen = ref(false);

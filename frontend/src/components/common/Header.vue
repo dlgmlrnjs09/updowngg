@@ -22,6 +22,7 @@
 
         <div class="user-actions" v-if="authStore.isAuthenticated">
           <div class="profile-dropdown" ref="profileDropdown">
+            <Notification/>
             <button class="profile-btn" @click="toggleDropdown">
               <div class="profile-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,6 +53,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuthStore } from "@/stores/auth.ts";
 import Search from "@/components/common/Search.vue";
+import Notification from "@/components/common/Notification.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();

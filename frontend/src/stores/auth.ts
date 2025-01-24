@@ -7,6 +7,7 @@ import type { SiteAccount, LoginCredentials } from '@/types/auth';
 import { useToast } from "vue-toastification";
 import type {LolSummonerProfileResDto, RiotAccountInfoEntity} from "@/types/summoner.ts";
 import {summonerApi} from "@/api/summoner.ts";
+import {useNotificationStore} from "@/stores/notification.ts";
 
 export const useAuthStore = defineStore('auth', () => {
     const user: Ref<SiteAccount | null> = ref(null);
@@ -14,6 +15,7 @@ export const useAuthStore = defineStore('auth', () => {
     const isAuthenticated: Ref<boolean> = ref(false);
     const isInitialized: Ref<boolean> = ref(false);  // 초기화 상태 추가
     const toast = useToast();
+    const notificationStore = useNotificationStore();
 
     async function login(credentials: LoginCredentials): Promise<boolean> {
         try {
@@ -26,7 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
             isAuthenticated.value = true;
             await fetchUserInfo();
             await fetchUserRiotInfo();
-
+            notificationStore.initSSE();
             return true;
         } catch (error) {
             console.error('Login failed:', error);
@@ -43,6 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
                 localStorage.removeItem('refreshToken');
                 user.value = null;
                 isAuthenticated.value = false;
+                notificationStore.clearEventSource();
             } else {
                 toast.error('로그아웃에 실패했습니다.')
             }
@@ -62,6 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
             isAuthenticated.value = false;
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
+            notificationStore.clearEventSource();
         }
     }
 
@@ -78,6 +82,7 @@ export const useAuthStore = defineStore('auth', () => {
             isAuthenticated.value = false;
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
+            notificationStore.clearEventSource();
         }
     }
 
