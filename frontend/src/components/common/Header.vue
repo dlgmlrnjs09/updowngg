@@ -198,7 +198,7 @@ onUnmounted(() => {
 .dropdown-menu {
   position: absolute;
   top: 100%;
-  right: 0;
+  /*right: 0;*/
   margin-top: 8px;
   background: #141414;
   border: 1.5px solid #333;

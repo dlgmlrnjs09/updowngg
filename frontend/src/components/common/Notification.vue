@@ -7,7 +7,7 @@
       </div>
     </button>
 
-    <div v-if="isDropdownOpen" class="dropdown-menu">
+    <div v-if="isDropdownOpen" class="dropdown-notification">
       <div class="dropdown-header">
         <h3>알림</h3>
         <button @click="handleReadAll(store.notifications.slice(0,10).filter(n => !n.readYn).map(n => n.notificationId))" class="read-all-btn">
@@ -138,7 +138,7 @@ const formatTime = (dateString: string) => {
   font-weight: 600;
 }
 
-.dropdown-menu {
+.dropdown-notification {
   position: absolute;
   top: 100%;
   /*right: 0;*/
@@ -154,20 +154,20 @@ const formatTime = (dateString: string) => {
 }
 
 /* Webkit 스크롤바 스타일링 */
-.dropdown-menu::-webkit-scrollbar {
+.dropdown-notification::-webkit-scrollbar {
   width: 6px;
 }
 
-.dropdown-menu::-webkit-scrollbar-track {
+.dropdown-notification::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.dropdown-menu::-webkit-scrollbar-thumb {
+.dropdown-notification::-webkit-scrollbar-thumb {
   background-color: rgba(41, 121, 255, 0.3);
   border-radius: 3px;
 }
 
-.dropdown-menu::-webkit-scrollbar-thumb:hover {
+.dropdown-notification::-webkit-scrollbar-thumb:hover {
   background-color: rgba(41, 121, 255, 0.5);
 }
 
@@ -249,7 +249,7 @@ const formatTime = (dateString: string) => {
 }
 
 @media (max-width: 1024px) {
-  .dropdown-menu {
+  .dropdown-notification {
     right: 0;
   }
 }
