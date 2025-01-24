@@ -159,7 +159,7 @@ onUnmounted(() => {
 .user-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   justify-self: end;
   min-width: 160px;
   justify-content: flex-end;

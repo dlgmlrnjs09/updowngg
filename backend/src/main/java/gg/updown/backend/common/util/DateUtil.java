@@ -44,7 +44,7 @@ public class DateUtil {
     }
 
     /**
-     * 밀리초 -> YYYY-MM-DD
+     * localDateTime -> YYYY-MM-DD
      * @param dateTime
      * @return
      */

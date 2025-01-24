@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.notification.model;
 
+import jakarta.annotation.security.DenyAll;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationEntity {
+public class NotificationDto {
     private long notificationSeq;
     private String notificationId;
     private String notificationType;
@@ -20,6 +21,7 @@ public class NotificationEntity {
     private String championName;
     private LocalDateTime readDt;
     private LocalDateTime regDt;
+    private String championIconUrl;
     private LocalDateTime gameCreateDt;
     private String gameModeName;
 }

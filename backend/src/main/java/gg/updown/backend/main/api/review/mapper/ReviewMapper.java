@@ -8,6 +8,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Mapper
 public interface ReviewMapper {
@@ -25,4 +27,5 @@ public interface ReviewMapper {
     List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid);
     List<ReviewRatingByPositionDto> getAvgRatingByPosition(String targetPuuid);
     void insertSuggestTagList(List<ReviewTagSuggestEntity> reqDto);
+    Map<String, Object> getReviewNotificationElement(@Param("matchId")String matchId, @Param("targetPuuid")String targetPuuid);
 }

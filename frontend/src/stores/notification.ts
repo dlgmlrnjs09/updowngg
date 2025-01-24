@@ -59,6 +59,18 @@ export const useNotificationStore = defineStore('notification', {
             }
         },
 
+        async markAsReadAll(ids: string[]) {
+            try {
+                await notificationApi.markAsReadAll(ids)
+                this.notifications.forEach(notification => {
+                    notification.readYn = true
+                })
+                this.unreadCount = 0
+            } catch (error) {
+                console.error('Failed to mark all notifications as read:', error)
+            }
+        },
+
         clearEventSource() {
             if (this.eventSource) {
                 this.eventSource.close()

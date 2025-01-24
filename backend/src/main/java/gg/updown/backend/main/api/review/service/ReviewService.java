@@ -2,24 +2,27 @@ package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
-import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
-import gg.updown.backend.main.api.notification.model.NotificationEntity;
+import gg.updown.backend.main.api.notification.model.NotificationDto;
 import gg.updown.backend.main.api.notification.service.NotificationService;
 import gg.updown.backend.main.api.review.mapper.ReviewMapper;
 import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
+import gg.updown.backend.main.enums.SiteMatchGameMode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -72,14 +75,20 @@ public class ReviewService {
             Long endDate = DateUtil.getCurrentTimeMillis();
             matchService.getAndInsertMatchIdList(reqDto.getTargetPuuid(), startDate, endDate);
 
-            LolMatchEntity matchInfo = matchService.getMatchInfo(reqDto.getMatchId());
-            notificationService.notify(NotificationEntity.builder()
+            Map<String, Object> matchInfo = reviewMapper.getReviewNotificationElement(reqDto.getMatchId(), reqDto.getTargetPuuid());
+            LocalDateTime gameStartDt = ((Timestamp) matchInfo.get("game_create_dt")).toLocalDateTime();
+            String gameModeName = SiteMatchGameMode.findByQueueCode((String) matchInfo.get("game_mode")).getQueueName();
+            notificationService.notify(NotificationDto.builder()
                     .notificationId(UUID.randomUUID().toString())
                     .targetSiteCode(1000000)
-                    .content(DateUtil.formatDateTimeYYYYMMDD(matchInfo.getGameStartDt()) + "에 플레이한 " + matchInfo.getGameMode() + "게임에 새로운 평가가 등록되었습니다.")
+//                    .content(gameStartDt + " 에 플레이한 " + gameModeName + " 게임에 새로운 평가가 등록되었습니다.")
+                    .championName((String) matchInfo.get("champ_name"))
+                    .championIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, (String) matchInfo.get("champ_name")))
+                    .gameCreateDt(gameStartDt)
+                    .gameModeName(gameModeName)
                     .build());
         } catch (Exception e) {
-            log.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 

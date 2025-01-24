@@ -6,12 +6,18 @@
 			notification_id,
 			notification_type,
 			target_site_code,
-			content
+			content,
+			champion_name,
+			game_create_dt,
+			game_mode_name
 		) VALUES (
 			 #{notificationId},
 			 #{notificationType},
 			 #{targetSiteCode},
-			 #{content}
+			 #{content},
+			 #{championName},
+			 #{gameCreateDt},
+			 #{gameModeName}
 		 )
 	</insert>
 
@@ -24,10 +30,34 @@
 			content,
 			read_yn,
 			read_dt,
-			reg_dt
+			reg_dt,
+			champion_name,
+			game_create_dt,
+			game_mode_name
 		FROM site_notification
 		WHERE target_site_code = #{targetSiteCode}
+		  AND reg_dt >= NOW() - INTERVAL '30 days'
 		ORDER BY notification_seq desc
 		LIMIT 10
 	</select>
+
+	<update id="readNotification" parameterType="map">
+		UPDATE site_notification
+		SET read_yn = true
+		WHERE
+		    target_site_code = #{siteCode}
+			and notification_id = #{id}
+		    and read_dt = now()
+	</update>
+
+	<update id="readNotifications" parameterType="map">
+		<foreach collection="ids" item="id" separator=";">
+			UPDATE site_notification
+			SET read_yn = true,
+			    read_dt = now()
+			WHERE
+                target_site_code = #{siteCode}
+                and notification_id = #{id}
+		</foreach>
+	</update>
 </mapper>

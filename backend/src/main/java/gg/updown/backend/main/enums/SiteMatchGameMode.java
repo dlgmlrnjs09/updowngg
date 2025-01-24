@@ -2,6 +2,8 @@ package gg.updown.backend.main.enums;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+
 @Getter
 public enum SiteMatchGameMode {
     ARAM("ARAM", "칼바람나락"),
@@ -15,5 +17,12 @@ public enum SiteMatchGameMode {
     SiteMatchGameMode(String queueCode, String queueName) {
         this.queueCode = queueCode;
         this.queueName = queueName;
+    }
+
+    public static SiteMatchGameMode findByQueueCode(String queueCode) {
+        return Arrays.stream(values())
+                .filter(mode -> mode.getQueueCode().equals(queueCode))
+                .findFirst()
+                .orElse(null);
     }
 }

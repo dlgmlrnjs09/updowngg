@@ -1,14 +1,17 @@
 import apiClient from './axios'
-import type {Notification} from '@/types/notification'
+import type {Notification, ReviewNotification} from '@/types/notification'
 
 export const notificationApi = {
     // 알림 목록 조회
     getNotifications: () =>
-        apiClient.get<Notification[]>('/api/v1/notification/list'),
+        apiClient.get<ReviewNotification[]>('/api/v1/notification/list'),
 
     // 알림 읽음 처리
     markAsRead: (id: string) =>
-        apiClient.post(`/api/v1/notification/${id}/read`),
+        apiClient.post(`/api/v1/notification/read/${id}`),
+
+    markAsReadAll: (ids: string[]) =>
+        apiClient.post('/api/v1/notification/read/all', ids),
 
     // 실시간 알림 구독
     subscribe: () => {

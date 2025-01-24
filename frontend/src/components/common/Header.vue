@@ -186,11 +186,13 @@ onUnmounted(() => {
 .user-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .profile-dropdown {
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .dropdown-menu {

@@ -9,7 +9,7 @@
       <Profile
           v-if="summonerInfo"
           :profile-data="summonerInfo"
-          :review-stats="reviewStatsInfo"
+          :review-stats="reviewStatsInfo || null"
           :frequent-tags="frequentTags"
           :recent-reviews="recentReviews"
           :is-updated-match-list="isUpdatedMatchList"

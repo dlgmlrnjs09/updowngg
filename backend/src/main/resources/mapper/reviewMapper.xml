@@ -257,5 +257,18 @@
             )
         </foreach>
     </insert>
+
+    <select id="getReviewNotificationElement" parameterType="map" resultType="map">
+        SELECT
+            lm.game_mode,
+            lm.game_create_dt,
+            lmp.champ_name
+        FROM
+            lol_match lm
+                INNER JOIN lol_match_participant lmp on (lm.match_id = lmp.match_id)
+        WHERE
+            lm.match_id = #{matchId}
+          and lmp.puuid = #{targetPuuid}
+    </select>
 </mapper>
 
