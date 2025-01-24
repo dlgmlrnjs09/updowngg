@@ -2,6 +2,8 @@ package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
+import gg.updown.backend.main.api.auth.model.SiteAccountEntity;
+import gg.updown.backend.main.api.auth.service.AuthService;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
 import gg.updown.backend.main.api.notification.model.NotificationDto;
@@ -39,18 +41,20 @@ public class ReviewService {
     private final LolSummonerService summonerService;
     private final LolMatchService matchService;
     private final NotificationService notificationService;
+    private final AuthService authService;
 
     public ReviewService(
             ReviewMapper reviewMapper,
             ReviewTransactionService transactionService,
             LolSummonerService summonerService,
-            @Lazy LolMatchService matchService, NotificationService notificationService
+            @Lazy LolMatchService matchService, NotificationService notificationService, AuthService authService
     ) {
         this.reviewMapper = reviewMapper;
         this.transactionService = transactionService;
         this.summonerService = summonerService;
         this.matchService = matchService;
         this.notificationService = notificationService;
+        this.authService = authService;
     }
 
     public List<ReviewTagEntity> getReviewTagList() {
@@ -67,20 +71,27 @@ public class ReviewService {
 
     public void submitReview(ReviewSubmitReqDto reqDto) {
         transactionService.insertSummonerReview(reqDto);
-        // 리뷰남긴 사용자 정보, 경기목록 가져오기
         // 리뷰작성과 무관하므로 log만 출력
         try {
+
+            // 리뷰남긴 사용자 정보, 경기목록 가져오기
             summonerService.conflictSummonerInfo(reqDto.getTargetPuuid());
             Long startDate = DateUtil.yyyyMMddToMilliseconds(basicStartTime);
             Long endDate = DateUtil.getCurrentTimeMillis();
             matchService.getAndInsertMatchIdList(reqDto.getTargetPuuid(), startDate, endDate);
+
+            // 리뷰남긴 사용자 계정으로 알림 전송
+            SiteAccountEntity accountEntity = authService.getSiteAccountByPuuid(reqDto.getTargetPuuid());
+            if (accountEntity == null) {
+                return;
+            }
 
             Map<String, Object> matchInfo = reviewMapper.getReviewNotificationElement(reqDto.getMatchId(), reqDto.getTargetPuuid());
             LocalDateTime gameStartDt = ((Timestamp) matchInfo.get("game_create_dt")).toLocalDateTime();
             String gameModeName = SiteMatchGameMode.findByQueueCode((String) matchInfo.get("game_mode")).getQueueName();
             notificationService.notify(NotificationDto.builder()
                     .notificationId(UUID.randomUUID().toString())
-                    .targetSiteCode(1000000)
+                    .targetSiteCode(accountEntity.getMemberSiteCode())
 //                    .content(gameStartDt + " 에 플레이한 " + gameModeName + " 게임에 새로운 평가가 등록되었습니다.")
                     .championName((String) matchInfo.get("champ_name"))
                     .championIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, (String) matchInfo.get("champ_name")))

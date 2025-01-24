@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface AuthMapper {
     SiteAccountEntity getSiteAccountByEmail(String email);
+    SiteAccountEntity getSiteAccountByPuuid(String puuid);
     boolean isExistDuplicateEmail(String email);
     void insertSiteAccount(
             @Param("puuid")String puuid,

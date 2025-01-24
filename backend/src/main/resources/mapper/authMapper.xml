@@ -11,6 +11,16 @@
             AND del_dt IS NULL
     </select>
 
+    <select id="getSiteAccountByPuuid" parameterType="String" resultType="SiteAccountEntity">
+        SELECT member_site_code,
+               puuid,
+               member_email,
+               member_password
+        FROM site_account
+        WHERE puuid = #{puuid}
+          AND del_dt IS NULL
+    </select>
+
     <select id="isExistDuplicateEmail" parameterType="String" resultType="boolean">
         SELECT CASE when count(*) > 0 THEN true ELSE false END
         FROM site_account

@@ -110,6 +110,8 @@ public class AuthService {
         authMapper.disconnectDiscordAccount(siteCode);
     }
 
+    public SiteAccountEntity getSiteAccountByPuuid(String puuid) {return authMapper.getSiteAccountByPuuid(puuid);}
+
     private DiscordAccountEntity convertAttrToDiscordAccountEntity(Map<String, Object> attr) {
         return DiscordAccountEntity.builder()
                 .discordCode(Optional.ofNullable(attr.get("id")).map(Object::toString).orElse(null))
