@@ -43,6 +43,11 @@ const router = createRouter({
             component: () => import('@/views/AccountSettings.vue')
         },
         {
+            path: '/review/history',
+            name: 'reviewHistory',
+            component: () => import('@/views/ReviewHistoryPage.vue')
+        },
+        {
             path: '/community/duo',
             name: 'duoCommunity',
             component: () => import('@/views/Community.vue')
