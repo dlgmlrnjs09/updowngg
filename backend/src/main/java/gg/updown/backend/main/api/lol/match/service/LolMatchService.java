@@ -87,7 +87,7 @@ public class LolMatchService {
                 String loginUserPuuid = userDetails.getPuuid();
 
                 // 로그인한 사용자 작성한 리뷰
-                List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid);
+                List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid, null);
                 Map<String, ReviewDto> reviewMap = wroteReviewList.stream()
                         .collect(Collectors.toMap(ReviewDto::getTargetPuuid, review -> review));
 
@@ -128,7 +128,7 @@ public class LolMatchService {
      * @param matchId
      * @return
      */
-    private LolMatchInfoResDto getMatchResDtoAndInsertConditional(String matchId) {
+    public LolMatchInfoResDto getMatchResDtoAndInsertConditional(String matchId) {
         LolMatchEntity matchInfoEntity = null;
         List<LolMatchParticipantEntity> participantList = null;
         // 이미 DB에 존재하면 DB에서 get, 없으면 API에서 get 및 DB 저장
@@ -175,6 +175,10 @@ public class LolMatchService {
 
     public LolMatchEntity getMatchInfo(String matchId) {
         return matchMapper.getMatchInfo(matchId);
+    }
+
+    public List<LolMatchParticipantEntity> getMatchParticipant(String matchId) {
+        return matchMapper.getMatchParticipantList(matchId);
     }
 
     /**

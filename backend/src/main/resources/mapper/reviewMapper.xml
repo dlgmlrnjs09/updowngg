@@ -51,8 +51,13 @@
             LEFT OUTER JOIN site_summoner_review_tag t ON r.summoner_review_seq = t.summoner_review_seq
             LEFT OUTER JOIN site_review_tag rt ON t.tag_code = rt.tag_code
         WHERE
-            reviewer_puuid = #{reviewerPuuid}
-          and del_dt IS NULL
+            del_dt IS NULL
+            <if test="reviewerPuuid != null">
+                and reviewer_puuid = #{reviewerPuuid}
+            </if>
+            <if test="reviewerSiteCode != null">
+                and reviewer_site_code = #{reviewerSiteCode}
+            </if>
     </select>
 
     <select id="getRecentReviewList" parameterType="map" resultMap="reviewWithTagsMap">

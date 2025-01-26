@@ -19,7 +19,7 @@ public interface ReviewMapper {
     void insertReviewTags(@Param("reviewSeq") Long reviewSeq, @Param("tagCodeList") List<String> tagCodeList);
     void updateReview(ReviewUpdateReqDto reqDto);
     void deleteReviewTags(Long reviewSeq);
-    List<ReviewDto> getWroteReviewList(String reviewerPuuid);
+    List<ReviewDto> getWroteReviewList(@Param("reviewerPuuid") String reviewerPuuid, @Param("reviewerSiteCode") String reviewerSiteCode);
     ReviewStatsDto getReviewStatus(String targetPuuid);
     ReviewStatsDto getReviewAvgRating(String targetPuuid);
     List<ReviewTagDto> getFrequentTagCount(String targetPuuid);

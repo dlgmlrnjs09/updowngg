@@ -1,3 +1,5 @@
+import type {LolMatchInfo, LolMatchParticipant} from "@/types/match.ts";
+
 export interface ReviewTagDto {
     tagCode: string
     tagValue: string
@@ -65,4 +67,10 @@ export interface ReviewRatingByPositionDto {
     playCount: number;
     upCount: number;
     downCount: number;
+}
+
+export interface ReviewHistoryDto {
+    reviewDto: ReviewRequestDto
+    matchDto: LolMatchInfo
+    participantDtoList: LolMatchParticipant[]
 }

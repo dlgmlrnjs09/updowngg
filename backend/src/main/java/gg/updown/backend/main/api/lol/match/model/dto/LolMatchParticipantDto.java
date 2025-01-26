@@ -49,4 +49,9 @@ public class LolMatchParticipantDto {
     private ReviewDto reviewDto;
     // 리뷰평점 객체
     private ReviewStatsDto reviewStatsDto;
+
+    public void setChampProfileIconUrl(String iconUrl) {
+        iconUrl = iconUrl.replaceAll("FiddleSticks", "Fiddlesticks");
+        this.champProfileIconUrl = iconUrl;
+    }
 }

@@ -65,8 +65,8 @@ public class ReviewService {
         return reviewMapper.getReviewTagCategoryList();
     }
 
-    public List<ReviewDto> getWroteReviewList(String reviewerPuuid) {
-        return reviewMapper.getWroteReviewList(reviewerPuuid);
+    public List<ReviewDto> getWroteReviewList(String reviewerPuuid, String reviewerSiteCode) {
+        return reviewMapper.getWroteReviewList(reviewerPuuid, reviewerSiteCode);
     }
 
     public void submitReview(ReviewSubmitReqDto reqDto) {

@@ -1,9 +1,11 @@
 package gg.updown.backend.main.api.review.controller;
 
+import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
+import gg.updown.backend.main.api.review.service.ReviewHistoryService;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +28,7 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final ReviewHistoryService historyService;
 
     @Operation(summary = "등록된 태그목록 조회", description = "사이트 등록된 태그목록 조회")
     @GetMapping("/tag")
@@ -92,5 +97,12 @@ public class ReviewController {
     public ResponseEntity<List<ReviewRatingByPositionDto>> getReviewPositionRating(@Valid ReviewPositionRatingReqDto reqDto) {
         List<ReviewRatingByPositionDto> resultList = reviewService.getAvgRatingByPosition(reqDto.getPuuid());
         return ResponseEntity.status(HttpStatus.OK).body(resultList);
+    }
+
+    @Operation(summary = "작성한 리뷰내역 조회", description = "로그인한 사용자 작성한 리뷰목록 조회")
+    @GetMapping("/history/written")
+    public List<ReviewHistoryDto> getReviewWrittenHistory(@Valid ReviewHistoryReqDto reviewHistoryReqDto, @AuthenticationPrincipal UserDetails userDetail) {
+        UserDetailImpl userDetails = (UserDetailImpl) userDetail;
+        return historyService.getWrittenHistory(userDetails.getSiteCode());
     }
 }

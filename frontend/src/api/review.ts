@@ -1,5 +1,6 @@
 import apiClient from './axios'
 import type {
+    ReviewHistoryDto,
     ReviewRatingByChampDto,
     ReviewRatingByPositionDto,
     ReviewRequestDto,
@@ -65,5 +66,13 @@ export const reviewApi = {
 
     suggestReviewTags: (tag: ReviewTagSuggestDto[]) =>
         apiClient.post<number>('/api/v1/review/tag-suggest', tag),
+
+    getWrittenReviewHistory: (limit: number, offset: number) =>
+        apiClient.get<ReviewHistoryDto[]>('/api/v1/review/history/written', {
+            params: {
+                limit,
+                offset
+            }
+        }),
 }
 
