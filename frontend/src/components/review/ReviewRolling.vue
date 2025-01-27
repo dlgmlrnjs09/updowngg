@@ -54,6 +54,12 @@ const props = defineProps<{
   wrapperHeight?: string;
 }>();
 
+onMounted(() => {
+  if (props.reviews && props.reviews.length > 0) {
+    startRolling();
+  }
+});
+
 const currentIndex = ref(0);
 let timer: number | null = null;
 
@@ -73,10 +79,15 @@ const formatDate = (dateString: string) => {
 };
 
 const startRolling = () => {
-  if (timer) clearInterval(timer);
-  timer = window.setInterval(() => {
-    currentIndex.value++;
-  }, props.rollingInterval || 3000);
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+  if (props.reviews && props.reviews.length > 0) {
+    timer = window.setInterval(() => {
+      currentIndex.value++;
+    }, props.rollingInterval || 3000);
+  }
 };
 
 watch(
@@ -86,7 +97,10 @@ watch(
         startRolling();
       }
     },
-    { deep: true }
+    {
+      deep: true,
+      immediate: true
+    }
 );
 
 onUnmounted(() => {
