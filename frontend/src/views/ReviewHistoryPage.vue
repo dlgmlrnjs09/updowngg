@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-bold text-white">평가 내역</h1>
         <div class="flex gap-4">
           <button
-              @click="activeTab = 'written'"
+              @click="handleTabChange('written')"
               :class="[
              'px-4 py-2 rounded-lg text-sm transition-colors',
              activeTab === 'written'
@@ -15,7 +15,7 @@
            ]"
           >작성한 리뷰</button>
           <button
-              @click="activeTab = 'received'"
+              @click="handleTabChange('received')"
               :class="[
              'px-4 py-2 rounded-lg text-sm transition-colors',
              activeTab === 'received'
@@ -35,8 +35,9 @@
             <!-- Game Info -->
             <div class="min-w-[130px]">
               <div class="text-white text-sm font-medium">{{ review.matchDto.gameModeName}}</div>
-              <div class="text-gray-400 text-xs mt-1"><!--{{ review.timeAgo }}-->O분 전</div>
-<!--              <div class="text-gray-400 text-xs">{{ review.duration }}</div>-->
+              <div class="text-gray-400 text-xs mt-1 flex gap-1">
+                <span>{{ formatTimeAgo(review.matchDto.gameStartDt) }}</span>
+              </div>
             </div>
 
             <!-- Champion Icon & Level -->
@@ -67,7 +68,7 @@
             </div>
 
             <!-- Players Grid -->
-            <div class="grid grid-cols-2 gap-x-4 gap-y-1 min-w-[200px]">
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1 w-[250px]">
               <div v-for="player in review.participantDtoList"
                    :key="player.riotIdGameName"
                    class="flex items-center gap-1.5">
@@ -83,7 +84,7 @@
       <div class="flex justify-center mt-6 gap-2">
         <button v-for="page in totalPages"
                 :key="page"
-                @click="currentPage = page"
+                @click="handlePageChange(page)"
                 :class="[
                  'w-8 h-8 rounded-lg text-sm font-medium transition-colors',
                  currentPage === page
@@ -99,19 +100,50 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
-import {reviewApi} from "@/api/review.ts";
-import type {ReviewHistoryDto, ReviewTagSuggestDto} from "@/types/review.ts";
+import { reviewApi } from "@/api/review.ts";
+import type { ReviewHistoryDto } from "@/types/review.ts";
 import TagList from "@/components/common/TagList.vue";
+import { formatTimeAgo } from "@/common.ts";
 
 const activeTab = ref('written')
 const currentPage = ref(1)
 const totalPages = ref(5)
 const histories = ref<ReviewHistoryDto[]>([])
+const isLoading = ref(false)
 
-onMounted(async () => {
-  const response = await reviewApi.getWrittenReviewHistory(10, 0);
-  histories.value = response.data;
-});
+// 데이터 로딩 함수
+const fetchReviews = async () => {
+  try {
+    isLoading.value = true
+    const offset = (currentPage.value - 1) * 10
+    const response = activeTab.value === 'written'
+        ? await reviewApi.getWrittenReviewHistory(10, offset)
+        : await reviewApi.getReceivedReviewHistory(10, offset)
+    histories.value = response.data
+  } catch (error) {
+    console.error('Error fetching reviews:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 탭 변경 핸들러
+const handleTabChange = async (tab: string) => {
+  activeTab.value = tab
+  currentPage.value = 1 // 탭 변경시 페이지 초기화
+  await fetchReviews()
+}
+
+// 페이지 변경 핸들러
+const handlePageChange = async (page: number) => {
+  currentPage.value = page
+  await fetchReviews()
+}
+
+// 컴포넌트 마운트시 초기 데이터 로딩
+onMounted(() => {
+  fetchReviews()
+})
 
 const getReviewWithParticipant = computed(() => {
   return histories.value.map(review => ({

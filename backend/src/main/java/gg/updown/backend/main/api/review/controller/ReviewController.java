@@ -105,4 +105,11 @@ public class ReviewController {
         UserDetailImpl userDetails = (UserDetailImpl) userDetail;
         return historyService.getWrittenHistory(userDetails.getSiteCode());
     }
+
+    @Operation(summary = "받은 리뷰내역 조회", description = "로그인한 사용자 받은 리뷰목록 조회")
+    @GetMapping("/history/received")
+    public List<ReviewHistoryDto> getReviewReceivedHistory(@Valid ReviewHistoryReqDto reviewHistoryReqDto, @AuthenticationPrincipal UserDetails userDetail) {
+        UserDetailImpl userDetails = (UserDetailImpl) userDetail;
+        return historyService.getReceivedHistory(userDetails.getPuuid());
+    }
 }

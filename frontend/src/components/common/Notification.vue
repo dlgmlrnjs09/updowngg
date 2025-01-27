@@ -23,7 +23,7 @@
         <div class="flex items-center gap-3">
           <img :src="notificationEntity.championIconUrl" class="w-8 h-8 rounded-full" alt=""/>
           <span class="content">
-       <span class="text-blue-400">{{ formatTime(notificationEntity.gameCreateDt) }}</span>에 플레이한
+       <span class="text-blue-400">{{ formatTimeAgo(notificationEntity.gameCreateDt) }}</span>에 플레이한
        <span class="text-green-400">{{notificationEntity.gameModeName}}</span> 게임의 평가가 도착했어요!
      </span>
         </div>
@@ -31,7 +31,7 @@
 <!--          <button class="read-btn" @click.stop="handleRead(notificationEntity.notificationId)">-->
 <!--            {{ notificationEntity.readYn ? '읽음' : '읽기' }}-->
 <!--          </button>-->
-          <span class="time">{{ formatTime(notificationEntity.regDt) }}</span>
+          <span class="time">{{ formatTimeAgo(notificationEntity.regDt) }}</span>
         </div>
       </div>
       <div v-if="!store.notifications" class="empty-state">
@@ -45,6 +45,7 @@
 import { useNotificationStore } from '@/stores/notification.ts'
 import { onMounted, ref, onUnmounted } from 'vue'
 import { Bell } from 'lucide-vue-next'
+import {formatTimeAgo} from "../../common.ts";
 
 const store = useNotificationStore()
 const isDropdownOpen = ref(false)
@@ -75,26 +76,6 @@ const handleRead = (id: string) => {
 
 const handleReadAll = (ids: string[]) => {
   store.markAsReadAll(ids)
-}
-
-
-const formatTime = (dateString: string) => {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diff = now.getTime() - date.getTime();
-
-  const minutes = Math.floor(diff / (1000 * 60));
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(hours / 24);
-
-  if (minutes < 60) {
-    return `${minutes}분 전`;
-  } else if (hours < 24) {
-    return `${hours}시간 전`;
-  } else if (days < 30) {
-    return `${days}일 전`;
-  }
-  return date.toLocaleDateString();
 }
 </script>
 

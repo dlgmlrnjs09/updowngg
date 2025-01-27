@@ -2,6 +2,7 @@ package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
+import gg.updown.backend.external.riot.enums.MatchGameMode;
 import gg.updown.backend.main.api.auth.model.SiteAccountEntity;
 import gg.updown.backend.main.api.auth.service.AuthService;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
@@ -69,11 +70,14 @@ public class ReviewService {
         return reviewMapper.getWroteReviewList(reviewerPuuid, reviewerSiteCode);
     }
 
+    public List<ReviewDto> getReceivedReviewList(String targetPuuid) {
+        return reviewMapper.getReceivedReviewList(targetPuuid);
+    }
+
     public void submitReview(ReviewSubmitReqDto reqDto) {
         transactionService.insertSummonerReview(reqDto);
         // 리뷰작성과 무관하므로 log만 출력
         try {
-
             // 리뷰남긴 사용자 정보, 경기목록 가져오기
             summonerService.conflictSummonerInfo(reqDto.getTargetPuuid());
             Long startDate = DateUtil.yyyyMMddToMilliseconds(basicStartTime);
@@ -88,7 +92,7 @@ public class ReviewService {
 
             Map<String, Object> matchInfo = reviewMapper.getReviewNotificationElement(reqDto.getMatchId(), reqDto.getTargetPuuid());
             LocalDateTime gameStartDt = ((Timestamp) matchInfo.get("game_create_dt")).toLocalDateTime();
-            String gameModeName = SiteMatchGameMode.findByQueueCode((String) matchInfo.get("game_mode")).getQueueName();
+            String gameModeName = MatchGameMode.getQueueName((Integer) matchInfo.get("queue_id"));
             notificationService.notify(NotificationDto.builder()
                     .notificationId(UUID.randomUUID().toString())
                     .targetSiteCode(accountEntity.getMemberSiteCode())

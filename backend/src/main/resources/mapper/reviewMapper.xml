@@ -60,6 +60,33 @@
             </if>
     </select>
 
+    <select id="getReceivedReviewList" parameterType="String" resultMap="reviewWithTagsMap">
+        SELECT
+            r.summoner_review_seq,
+            r.match_id,
+            reviewer_site_code,
+            reviewer_puuid,
+            target_puuid,
+            is_up,
+            comment,
+            is_up,
+            r.reg_dt,
+            upd_dt,
+            del_dt,
+            t.tag_code,
+            rt.tag_value,
+            rt.tag_description,
+            rt.tag_updown,
+            COUNT(rt.*) OVER (PARTITION BY r.summoner_review_seq) as frequent_count
+        FROM
+            site_summoner_review r
+            LEFT OUTER JOIN site_summoner_review_tag t ON r.summoner_review_seq = t.summoner_review_seq
+            LEFT OUTER JOIN site_review_tag rt ON t.tag_code = rt.tag_code
+        WHERE
+            del_dt IS NULL
+            and target_puuid = #{targetPuuid}
+    </select>
+
     <select id="getRecentReviewList" parameterType="map" resultMap="reviewWithTagsMap">
         SELECT
             r.summoner_review_seq,
@@ -267,7 +294,8 @@
         SELECT
             lm.game_mode,
             lm.game_create_dt,
-            lmp.champ_name
+            lmp.champ_name,
+            lm.queue_id
         FROM
             lol_match lm
                 INNER JOIN lol_match_participant lmp on (lm.match_id = lmp.match_id)

@@ -1,5 +1,5 @@
 <template>
-  <div class="tags-wrapper" :class="{
+  <div v-if="tags[0].tagCode" class="tags-wrapper" :class="{
     'flex-wrap': isArrangeRow
   }">
     <div
@@ -46,7 +46,7 @@ import { ref } from 'vue'
 import type { ReviewTagDto } from "@/types/review"
 
 defineProps<{
-  tags: ReviewTagDto[] | null
+  tags: ReviewTagDto[]
   size: 'xSmall' | 'small' | 'medium' | 'large'
   isShowCount: boolean
   isArrangeRow?: boolean

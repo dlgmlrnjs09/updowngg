@@ -74,5 +74,13 @@ export const reviewApi = {
                 offset
             }
         }),
+
+    getReceivedReviewHistory: (limit: number, offset: number) =>
+        apiClient.get<ReviewHistoryDto[]>('/api/v1/review/history/received', {
+            params: {
+                limit,
+                offset
+            }
+        }),
 }
 

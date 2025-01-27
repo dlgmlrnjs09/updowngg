@@ -1,6 +1,7 @@
 package gg.updown.backend.main.api.review.service;
 
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
+import gg.updown.backend.external.riot.enums.MatchGameMode;
 import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoDto;
 import gg.updown.backend.main.api.lol.match.model.dto.LolMatchParticipantDto;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
@@ -26,20 +27,29 @@ public class ReviewHistoryService {
     private final LolMatchService matchService;
 
     public List<ReviewHistoryDto> getWrittenHistory(long siteCode) {
-        List<ReviewHistoryDto> historyList = new ArrayList<>();
         List<ReviewDto> writtenReviews = reviewService.getWroteReviewList(null, String.valueOf(siteCode));
-        for (ReviewDto review : writtenReviews) {
+        return this.getReviewHistories(writtenReviews);
+    }
+
+    public List<ReviewHistoryDto> getReceivedHistory(String puuid) {
+        List<ReviewDto> writtenReviews = reviewService.getReceivedReviewList(puuid);
+        return this.getReviewHistories(writtenReviews);
+    }
+
+    private List<ReviewHistoryDto> getReviewHistories(List<ReviewDto> reviews) {
+        List<ReviewHistoryDto> historyList = new ArrayList<>();
+        for (ReviewDto review : reviews) {
             ReviewHistoryDto historyDto = new ReviewHistoryDto();
             LolMatchInfoDto matchInfoDto = new LolMatchInfoDto();
             List<LolMatchParticipantDto> participantDtoList = new ArrayList<>();
             BeanUtils.copyProperties(matchService.getMatchInfo(review.getMatchId()), matchInfoDto);
-            matchInfoDto.setGameModeName(SiteMatchGameMode.findByQueueCode(matchInfoDto.getGameMode()).getQueueName());
+            matchInfoDto.setGameModeName(MatchGameMode.getQueueName(matchInfoDto.getQueueId()));
             matchService.getMatchParticipant(review.getMatchId()).forEach(lolMatchParticipantEntity -> {
-                    LolMatchParticipantDto participantDto = new LolMatchParticipantDto();
-                    BeanUtils.copyProperties(lolMatchParticipantEntity, participantDto);
-                    participantDto.setChampProfileIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, lolMatchParticipantEntity.getChampName()));
-                    participantDtoList.add(participantDto);
-                }
+                        LolMatchParticipantDto participantDto = new LolMatchParticipantDto();
+                        BeanUtils.copyProperties(lolMatchParticipantEntity, participantDto);
+                        participantDto.setChampProfileIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, lolMatchParticipantEntity.getChampName()));
+                        participantDtoList.add(participantDto);
+                    }
             );
 
             historyDto.setReviewDto(review);
@@ -47,7 +57,6 @@ public class ReviewHistoryService {
             historyDto.setParticipantDtoList(participantDtoList);
             historyList.add(historyDto);
         }
-
         return historyList;
     }
 }
