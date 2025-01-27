@@ -19,7 +19,7 @@
            :key="notificationEntity.notificationId"
            class="notification-item"
            :class="{ 'unread': !notificationEntity.readYn }"
-           @click="handleRead(notificationEntity.notificationId)">
+           @click="!notificationEntity.readYn && handleRead(notificationEntity.notificationId)">
         <div class="flex items-center gap-3">
           <img :src="notificationEntity.championIconUrl" class="w-8 h-8 rounded-full" alt=""/>
           <span class="content">
