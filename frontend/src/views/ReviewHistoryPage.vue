@@ -62,7 +62,7 @@
                 <span class="text-gray-400 text-xs">#{{ review.target?.riotIdTagline }}</span>
               </div>
               <div class="flex flex-wrap gap-2 mb-2">
-                <TagList :tags="review.reviewDto.tagDtoList" size="small" :is-show-count="false"/>
+                <TagList :tags="review.reviewDto.tagDtoList || []" size="small" :is-show-count="false"/>
               </div>
               <p class="text-gray-300 text-sm">{{ review.reviewDto.comment }}</p>
             </div>
@@ -82,44 +82,66 @@
 
       <!-- Pagination -->
       <div class="flex justify-center mt-6 gap-2">
-        <button v-for="page in totalPages"
-                :key="page"
-                @click="handlePageChange(page)"
-                :class="[
-                 'w-8 h-8 rounded-lg text-sm font-medium transition-colors',
-                 currentPage === page
-                   ? 'bg-[#2979FF] text-white'
-                   : 'bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]'
-               ]"
-        >{{ page }}</button>
+        <!-- 이전 버튼 -->
+        <button
+            v-if="paging.hasPrevious"
+            @click="handlePrevPage"
+            class="px-3 h-8 rounded-lg text-sm font-medium bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]"
+        >
+          이전
+        </button>
+
+        <!-- 페이지 번호 -->
+        <button
+            v-for="page in pageNumbers"
+            :key="page"
+            @click="handlePageChange(page)"
+            :class="[
+          'w-8 h-8 rounded-lg text-sm font-medium transition-colors',
+          paging.currentPage === page
+            ? 'bg-[#2979FF] text-white'
+            : 'bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]'
+        ]"
+        >
+          {{ page }}
+        </button>
+
+        <!-- 다음 버튼 -->
+        <button
+            v-if="paging.hasNext"
+            @click="handleNextPage"
+            class="px-3 h-8 rounded-lg text-sm font-medium bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]"
+        >
+          다음
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import type { ReviewHistoryResponse, ReviewHistoryDto } from '@/types/review'
+import {reviewApi} from "@/api/review.ts";
 import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
-import { reviewApi } from "@/api/review.ts";
-import type { ReviewHistoryDto } from "@/types/review.ts";
+import {createInitialPaging, formatTimeAgo, getPageNumbers} from "@/common.ts";
 import TagList from "@/components/common/TagList.vue";
-import { formatTimeAgo } from "@/common.ts";
 
 const activeTab = ref('written')
-const currentPage = ref(1)
-const totalPages = ref(5)
 const histories = ref<ReviewHistoryDto[]>([])
 const isLoading = ref(false)
+const paging = ref<ReviewHistoryResponse>(createInitialPaging<ReviewHistoryDto>())
+const pageNumbers = computed(() => getPageNumbers(paging.value))
 
-// 데이터 로딩 함수
 const fetchReviews = async () => {
   try {
     isLoading.value = true
-    const offset = (currentPage.value - 1) * 10
     const response = activeTab.value === 'written'
-        ? await reviewApi.getWrittenReviewHistory(10, offset)
-        : await reviewApi.getReceivedReviewHistory(10, offset)
-    histories.value = response.data
+        ? await reviewApi.getWrittenReviewHistory(paging.value.currentPage)
+        : await reviewApi.getReceivedReviewHistory(paging.value.currentPage)
+
+    paging.value = response.data
+    histories.value = response.data.items
   } catch (error) {
     console.error('Error fetching reviews:', error)
   } finally {
@@ -127,20 +149,27 @@ const fetchReviews = async () => {
   }
 }
 
-// 탭 변경 핸들러
 const handleTabChange = async (tab: string) => {
   activeTab.value = tab
-  currentPage.value = 1 // 탭 변경시 페이지 초기화
+  paging.value.currentPage = 1
   await fetchReviews()
 }
 
-// 페이지 변경 핸들러
 const handlePageChange = async (page: number) => {
-  currentPage.value = page
+  paging.value.currentPage = page
   await fetchReviews()
 }
 
-// 컴포넌트 마운트시 초기 데이터 로딩
+const handlePrevPage = () => {
+  paging.value.currentPage = paging.value.startPage - 1
+  fetchReviews()
+}
+
+const handleNextPage = () => {
+  paging.value.currentPage = paging.value.endPage + 1
+  fetchReviews()
+}
+
 onMounted(() => {
   fetchReviews()
 })

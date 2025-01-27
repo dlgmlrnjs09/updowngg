@@ -1,4 +1,6 @@
 import router from "@/router";
+import type {PagingDTO} from "@/types/common.ts";
+import {computed} from "vue";
 
 export const goSelectedSummonerProfile = (name: string, tag: string) => {
     router.push({
@@ -27,4 +29,24 @@ export const formatTimeAgo = (dateString: string) => {
         return `${days}일 전`;
     }
     return date.toLocaleDateString();
+}
+
+export const createInitialPaging = <T>(): PagingDTO<T> => ({
+    items: [],
+    currentPage: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
+    totalPages: 5,
+    displayPageCount: 5,
+    startPage: 1,
+    endPage: 1,
+    hasPrevious: false,
+    hasNext: false
+})
+
+export const getPageNumbers = (paging: PagingDTO<any>): number[] => {
+    return Array.from(
+        { length: paging.endPage - paging.startPage + 1 },
+        (_, i) => paging.startPage + i
+    )
 }

@@ -26,13 +26,13 @@ public class ReviewHistoryService {
     private final ReviewService reviewService;
     private final LolMatchService matchService;
 
-    public List<ReviewHistoryDto> getWrittenHistory(long siteCode) {
-        List<ReviewDto> writtenReviews = reviewService.getWroteReviewList(null, String.valueOf(siteCode));
+    public List<ReviewHistoryDto> getWrittenHistory(long siteCode, int page, int itemPerPage) {
+        List<ReviewDto> writtenReviews = reviewService.getWroteReviewListPaging(siteCode, page, itemPerPage);
         return this.getReviewHistories(writtenReviews);
     }
 
-    public List<ReviewHistoryDto> getReceivedHistory(String puuid) {
-        List<ReviewDto> writtenReviews = reviewService.getReceivedReviewList(puuid);
+    public List<ReviewHistoryDto> getReceivedHistory(String puuid, int page, int itemPerPage) {
+        List<ReviewDto> writtenReviews = reviewService.getReceivedReviewListPaging(puuid, page, itemPerPage);
         return this.getReviewHistories(writtenReviews);
     }
 

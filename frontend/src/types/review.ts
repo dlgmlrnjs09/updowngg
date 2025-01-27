@@ -1,4 +1,5 @@
 import type {LolMatchInfo, LolMatchParticipant} from "@/types/match.ts";
+import type {PagingDTO} from "@/types/common.ts";
 
 export interface ReviewTagDto {
     tagCode: string
@@ -74,3 +75,5 @@ export interface ReviewHistoryDto {
     matchDto: LolMatchInfo
     participantDtoList: LolMatchParticipant[]
 }
+
+export interface ReviewHistoryResponse extends PagingDTO<ReviewHistoryDto> {}

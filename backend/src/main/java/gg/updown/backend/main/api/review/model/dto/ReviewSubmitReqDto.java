@@ -13,9 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ReviewSubmitReqDto {
-    private Long summonerReviewSeq;
+    private long summonerReviewSeq;
     @NotNull(message = "reviewerSiteCode는 필수값입니다.")
-    private String reviewerSiteCode;
+    private long reviewerSiteCode;
     @NotNull(message = "reviewerPuuid는 필수값입니다.")
     private String reviewerPuuid;
     @NotNull(message = "targetPuuid는 필수값입니다.")

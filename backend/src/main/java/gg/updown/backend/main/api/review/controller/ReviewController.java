@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.review.controller;
 
+import gg.updown.backend.common.model.PagingDto;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
@@ -26,6 +27,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "review", description = "사이트 리뷰관련 API")
 public class ReviewController {
+
+    private static final int ITEMS_PER_PAGE = 10;
+    private static final int DISPLAY_PAGE_COUNT = 5;
 
     private final ReviewService reviewService;
     private final ReviewHistoryService historyService;
@@ -99,17 +103,53 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.OK).body(resultList);
     }
 
-    @Operation(summary = "작성한 리뷰내역 조회", description = "로그인한 사용자 작성한 리뷰목록 조회")
     @GetMapping("/history/written")
-    public List<ReviewHistoryDto> getReviewWrittenHistory(@Valid ReviewHistoryReqDto reviewHistoryReqDto, @AuthenticationPrincipal UserDetails userDetail) {
+    public ResponseEntity<PagingDto<ReviewHistoryDto>> getReviewWrittenHistory(
+            @Valid ReviewHistoryReqDto reviewHistoryReqDto,
+            @AuthenticationPrincipal UserDetails userDetail
+    ) {
         UserDetailImpl userDetails = (UserDetailImpl) userDetail;
-        return historyService.getWrittenHistory(userDetails.getSiteCode());
+
+        int totalItems = reviewService.getWroteReviewCount(userDetails.getSiteCode());
+        List<ReviewHistoryDto> reviews = historyService.getWrittenHistory(
+                userDetails.getSiteCode(),
+                reviewHistoryReqDto.getPage(),
+                ITEMS_PER_PAGE
+        );
+
+        PagingDto<ReviewHistoryDto> response = new PagingDto<>(
+                reviews,
+                reviewHistoryReqDto.getPage(),
+                ITEMS_PER_PAGE,
+                totalItems,
+                DISPLAY_PAGE_COUNT
+        );
+
+        return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "받은 리뷰내역 조회", description = "로그인한 사용자 받은 리뷰목록 조회")
     @GetMapping("/history/received")
-    public List<ReviewHistoryDto> getReviewReceivedHistory(@Valid ReviewHistoryReqDto reviewHistoryReqDto, @AuthenticationPrincipal UserDetails userDetail) {
+    public ResponseEntity<PagingDto<ReviewHistoryDto>> getReviewReceivedHistory(
+            @Valid ReviewHistoryReqDto reviewHistoryReqDto,
+            @AuthenticationPrincipal UserDetails userDetail
+    ) {
         UserDetailImpl userDetails = (UserDetailImpl) userDetail;
-        return historyService.getReceivedHistory(userDetails.getPuuid());
+
+        int totalItems = reviewService.getReceivedReviewCount(userDetails.getPuuid());
+        List<ReviewHistoryDto> reviews = historyService.getReceivedHistory(
+                userDetails.getPuuid(),
+                reviewHistoryReqDto.getPage(),
+                ITEMS_PER_PAGE
+        );
+
+        PagingDto<ReviewHistoryDto> response = new PagingDto<>(
+                reviews,
+                reviewHistoryReqDto.getPage(),
+                ITEMS_PER_PAGE,
+                totalItems,
+                DISPLAY_PAGE_COUNT
+        );
+
+        return ResponseEntity.ok(response);
     }
 }

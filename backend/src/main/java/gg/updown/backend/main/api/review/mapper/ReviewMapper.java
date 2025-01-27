@@ -19,8 +19,19 @@ public interface ReviewMapper {
     void insertReviewTags(@Param("reviewSeq") Long reviewSeq, @Param("tagCodeList") List<String> tagCodeList);
     void updateReview(ReviewUpdateReqDto reqDto);
     void deleteReviewTags(Long reviewSeq);
-    List<ReviewDto> getWroteReviewList(@Param("reviewerPuuid") String reviewerPuuid, @Param("reviewerSiteCode") String reviewerSiteCode);
-    List<ReviewDto> getReceivedReviewList(@Param("targetPuuid") String targetPuuid);
+    List<ReviewDto> getWroteReviewList(String reviewerPuuid);
+    List<ReviewDto> getWroteReviewListPaging(
+            @Param("reviewerSiteCode") long reviewerSiteCode,
+            @Param("itemsPerPage") int itemPerPage,
+            @Param("offset") int offset
+    );
+    int getWroteReviewCount(long reviewerSiteCode);
+    List<ReviewDto> getReceivedReviewListPaging(
+            @Param("targetPuuid") String targetPuuid,
+            @Param("itemsPerPage") int itemPerPage,
+            @Param("offset") int offset
+    );
+    int getReceivedReviewCount(String targetPuuid);
     ReviewStatsDto getReviewStatus(String targetPuuid);
     ReviewStatsDto getReviewAvgRating(String targetPuuid);
     List<ReviewTagDto> getFrequentTagCount(String targetPuuid);

@@ -66,12 +66,26 @@ public class ReviewService {
         return reviewMapper.getReviewTagCategoryList();
     }
 
-    public List<ReviewDto> getWroteReviewList(String reviewerPuuid, String reviewerSiteCode) {
-        return reviewMapper.getWroteReviewList(reviewerPuuid, reviewerSiteCode);
+    public List<ReviewDto> getWroteReviewList(String reviewerPuuid) {
+        return reviewMapper.getWroteReviewList(reviewerPuuid);
     }
 
-    public List<ReviewDto> getReceivedReviewList(String targetPuuid) {
-        return reviewMapper.getReceivedReviewList(targetPuuid);
+    public List<ReviewDto> getWroteReviewListPaging(long reviewerSiteCode, int page, int itemsPerPage) {
+        int offset = (page - 1) * itemsPerPage;
+        return reviewMapper.getWroteReviewListPaging(reviewerSiteCode, itemsPerPage, offset);
+    }
+
+    public List<ReviewDto> getReceivedReviewListPaging(String targetPuuid, int page, int itemsPerPage) {
+        int offset = (page - 1) * itemsPerPage;
+        return reviewMapper.getReceivedReviewListPaging(targetPuuid, itemsPerPage, offset);
+    }
+
+    public int getWroteReviewCount(long reviewerSiteCode) {
+        return reviewMapper.getWroteReviewCount(reviewerSiteCode);
+    }
+
+    public int getReceivedReviewCount(String targetPuuid) {
+        return reviewMapper.getReceivedReviewCount(targetPuuid);
     }
 
     public void submitReview(ReviewSubmitReqDto reqDto) {

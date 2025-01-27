@@ -87,7 +87,7 @@ public class LolMatchService {
                 String loginUserPuuid = userDetails.getPuuid();
 
                 // 로그인한 사용자 작성한 리뷰
-                List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid, null);
+                List<ReviewDto> wroteReviewList = reviewService.getWroteReviewList(loginUserPuuid);
                 Map<String, ReviewDto> reviewMap = wroteReviewList.stream()
                         .collect(Collectors.toMap(ReviewDto::getTargetPuuid, review -> review));
 

@@ -11,8 +11,6 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ReviewHistoryReqDto {
-    @Min(value = 0, message = "offset은 0 이상이어야 합니다.")
-    private Integer offset;
-    @Max(value = 50, message = "limit은 10 이상이어야 합니다.")
-    private Integer limit;
+    @Min(value = 1, message = "페이지는 1 이상이어야 합니다.")
+    private int page;
 }
