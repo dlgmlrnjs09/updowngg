@@ -40,4 +40,5 @@ public interface ReviewMapper {
     List<ReviewRatingByPositionDto> getAvgRatingByPosition(String targetPuuid);
     void insertSuggestTagList(List<ReviewTagSuggestEntity> reqDto);
     Map<String, Object> getReviewNotificationElement(@Param("matchId")String matchId, @Param("targetPuuid")String targetPuuid);
+    int findReviewIndex(Long reviewSeq);
 }

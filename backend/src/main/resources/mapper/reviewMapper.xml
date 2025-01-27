@@ -357,5 +357,15 @@
             lm.match_id = #{matchId}
           and lmp.puuid = #{targetPuuid}
     </select>
+
+    <select id="findReviewIndex" resultType="int">
+        SELECT COUNT(*)
+        FROM site_summoner_review r1
+        WHERE r1.reg_dt > (
+            SELECT reg_dt
+            FROM site_summoner_review
+            WHERE summoner_review_seq = #{reviewSeq}
+        )
+    </select>
 </mapper>
 

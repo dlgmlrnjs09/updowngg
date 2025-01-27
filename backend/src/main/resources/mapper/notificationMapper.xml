@@ -9,7 +9,8 @@
 			content,
 			champion_name,
 			game_create_dt,
-			game_mode_name
+			game_mode_name,
+			review_seq
 		) VALUES (
 			 #{notificationId},
 			 #{notificationType},
@@ -17,7 +18,8 @@
 			 #{content},
 			 #{championName},
 			 #{gameCreateDt},
-			 #{gameModeName}
+			 #{gameModeName},
+			 #{reviewSeq}
 		 )
 	</insert>
 
@@ -33,7 +35,8 @@
 			reg_dt,
 			champion_name,
 			game_create_dt,
-			game_mode_name
+			game_mode_name,
+			review_seq
 		FROM site_notification
 		WHERE target_site_code = #{targetSiteCode}
 		  AND reg_dt >= NOW() - INTERVAL '30 days'
@@ -43,11 +46,11 @@
 
 	<update id="readNotification" parameterType="map">
 		UPDATE site_notification
-		SET read_yn = true
+		SET read_yn = true,
+			read_dt = now()
 		WHERE
 		    target_site_code = #{siteCode}
 			and notification_id = #{id}
-		    and read_dt = now()
 	</update>
 
 	<update id="readNotifications" parameterType="map">

@@ -22,4 +22,5 @@ public class NotificationEntity {
     private LocalDateTime regDt;
     private LocalDateTime gameCreateDt;
     private String gameModeName;
+    private long reviewSeq;
 }

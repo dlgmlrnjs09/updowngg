@@ -67,7 +67,7 @@ public class ReviewService {
     }
 
     public List<ReviewDto> getWroteReviewList(String reviewerPuuid) {
-        return reviewMapper.getWroteReviewList(reviewerPuuid);
+    return reviewMapper.getWroteReviewList(reviewerPuuid);
     }
 
     public List<ReviewDto> getWroteReviewListPaging(long reviewerSiteCode, int page, int itemsPerPage) {
@@ -109,6 +109,7 @@ public class ReviewService {
             String gameModeName = MatchGameMode.getQueueName((Integer) matchInfo.get("queue_id"));
             notificationService.notify(NotificationDto.builder()
                     .notificationId(UUID.randomUUID().toString())
+                    .reviewSeq(reqDto.getSummonerReviewSeq())
                     .targetSiteCode(accountEntity.getMemberSiteCode())
 //                    .content(gameStartDt + " 에 플레이한 " + gameModeName + " 게임에 새로운 평가가 등록되었습니다.")
                     .championName((String) matchInfo.get("champ_name"))
@@ -165,5 +166,10 @@ public class ReviewService {
             entityList.add(entity);
         }
         reviewMapper.insertSuggestTagList(entityList);
+    }
+
+    public int findReviewPage(Long reviewSeq, int itemsPerPage) {
+        int reviewIndex = reviewMapper.findReviewIndex(reviewSeq);
+        return (reviewIndex / itemsPerPage) + 1;
     }
 }

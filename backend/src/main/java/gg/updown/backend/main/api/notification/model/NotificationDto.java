@@ -24,4 +24,5 @@ public class NotificationDto {
     private String championIconUrl;
     private LocalDateTime gameCreateDt;
     private String gameModeName;
+    private long reviewSeq;
 }

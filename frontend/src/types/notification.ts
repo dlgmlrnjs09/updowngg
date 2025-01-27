@@ -21,4 +21,5 @@ export interface ReviewNotification {
     readYn: boolean;
     readDt: string;
     regDt: string;
+    reviewSeq: number;
 }

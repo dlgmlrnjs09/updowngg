@@ -103,6 +103,7 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.OK).body(resultList);
     }
 
+    @Operation(summary = "작성한 리뷰 조회", description = "로그인한 사용자가 작성한 리뷰 조회")
     @GetMapping("/history/written")
     public ResponseEntity<PagingDto<ReviewHistoryDto>> getReviewWrittenHistory(
             @Valid ReviewHistoryReqDto reviewHistoryReqDto,
@@ -128,6 +129,7 @@ public class ReviewController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "받은 리뷰 조회", description = "로그인한 사용자가 받은 리뷰 조회")
     @GetMapping("/history/received")
     public ResponseEntity<PagingDto<ReviewHistoryDto>> getReviewReceivedHistory(
             @Valid ReviewHistoryReqDto reviewHistoryReqDto,
@@ -151,5 +153,15 @@ public class ReviewController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/find-page")
+    public ResponseEntity<Integer> findReviewPage(
+            @RequestParam Long reviewSeq,
+            @AuthenticationPrincipal UserDetails userDetail
+    ) {
+        UserDetailImpl userDetails = (UserDetailImpl) userDetail;
+        int page = reviewService.findReviewPage(reviewSeq, ITEMS_PER_PAGE);
+        return ResponseEntity.ok(page);
     }
 }

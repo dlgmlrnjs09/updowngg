@@ -30,7 +30,11 @@
       <div class="space-y-4">
         <div v-for="(review, index) in getReviewWithParticipant"
              :key="index"
-             class="bg-[#141414] rounded-xl border border-[#ffffff1a] p-4">
+             :ref="el => { if (review.reviewDto.summonerReviewSeq.toString() === route.query.reviewSeq) reviewRef = el }"
+             :class="[
+               'bg-[#141414] rounded-xl border border-[#ffffff1a] p-4 transition-all duration-1000',
+               review.reviewDto.summonerReviewSeq.toString() === route.query.reviewSeq ? 'highlight-review' : ''
+             ]">
           <div class="flex gap-6 items-center">
             <!-- Game Info -->
             <div class="min-w-[130px]">
@@ -125,18 +129,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import type { ReviewHistoryResponse, ReviewHistoryDto } from '@/types/review'
 import {reviewApi} from "@/api/review.ts";
 import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
 import {createInitialPaging, formatTimeAgo, getPageNumbers} from "@/common.ts";
 import TagList from "@/components/common/TagList.vue";
+import {useRoute, useRouter} from "vue-router";
 
 const activeTab = ref('written')
 const histories = ref<ReviewHistoryDto[]>([])
 const isLoading = ref(false)
 const paging = ref<ReviewHistoryResponse>(createInitialPaging<ReviewHistoryDto>())
 const pageNumbers = computed(() => getPageNumbers(paging.value))
+const reviewRef = ref<HTMLElement | null>(null)
+
+const route = useRoute();
+const router = useRouter();
+
+// 리뷰 하이라이트 처리 함수
+const handleReviewHighlight = () => {
+  if (reviewRef.value && route.query.reviewSeq) {
+    // 해당 리뷰로 스크롤
+    reviewRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+    // 3초 후에 하이라이트 클래스 제거
+    setTimeout(() => {
+      if (reviewRef.value) {
+        reviewRef.value.classList.remove('highlight-review')
+      }
+    }, 3000)
+  }
+}
 
 const fetchReviews = async () => {
   try {
@@ -155,15 +179,23 @@ const fetchReviews = async () => {
 }
 
 const handleTabChange = async (tab: string) => {
-  activeTab.value = tab
-  paging.value.currentPage = 1
-  await fetchReviews()
-}
+  await router.push({
+    query: {
+      ...route.query,
+      tab,
+      page: '1'
+    }
+  });
+};
 
 const handlePageChange = async (page: number) => {
-  paging.value.currentPage = page
-  await fetchReviews()
-}
+  await router.push({
+    query: {
+      ...route.query,
+      page: page.toString()
+    }
+  });
+};
 
 const handlePrevPage = () => {
   paging.value.currentPage = paging.value.startPage - 1
@@ -176,7 +208,39 @@ const handleNextPage = () => {
 }
 
 onMounted(() => {
-  fetchReviews()
+  // 초기 URL 파라미터 처리
+  if (route.query.tab) {
+    activeTab.value = route.query.tab as string
+  }
+  if (route.query.page) {
+    paging.value.currentPage = parseInt(route.query.page as string)
+  }
+
+  // 초기 데이터 로드 후 하이라이트 처리
+  fetchReviews().then(() => {
+    // nextTick을 사용하여 DOM 업데이트 후 스크롤 실행
+    nextTick(() => {
+      handleReviewHighlight()
+    })
+  })
+
+  // URL 변경 감시 설정
+  watch(
+      () => route.query,
+      (query) => {
+        if (query.tab) {
+          activeTab.value = query.tab as string
+        }
+        if (query.page) {
+          paging.value.currentPage = parseInt(query.page as string)
+        }
+        fetchReviews().then(() => {
+          nextTick(() => {
+            handleReviewHighlight()
+          })
+        })
+      }
+  )
 })
 
 const getReviewWithParticipant = computed(() => {
@@ -191,3 +255,29 @@ const getReviewWithParticipant = computed(() => {
   }))
 })
 </script>
+
+<style scoped>
+.highlight-review {
+  background-color: rgba(41, 121, 255, 0.1);
+  border-color: #2979FF;
+  box-shadow: 0 0 0 1px #2979FF;
+}
+
+@keyframes fadeOut {
+  from {
+    background-color: rgba(41, 121, 255, 0.1);
+    border-color: #2979FF;
+    box-shadow: 0 0 0 1px #2979FF;
+  }
+  to {
+    background-color: #141414;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+  }
+}
+
+.highlight-review {
+  animation: fadeOut 3s forwards;
+  animation-delay: 1s; /* 1초 동안 하이라이트 유지 후 페이드아웃 시작 */
+}
+</style>

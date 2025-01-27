@@ -19,7 +19,7 @@
            :key="notificationEntity.notificationId"
            class="notification-item"
            :class="{ 'unread': !notificationEntity.readYn }"
-           @click="!notificationEntity.readYn && handleRead(notificationEntity.notificationId)">
+           @click="handleNotificationClick(notificationEntity)">
         <div class="flex items-center gap-3">
           <img :src="notificationEntity.championIconUrl" class="w-8 h-8 rounded-full" alt=""/>
           <span class="content">
@@ -47,11 +47,16 @@ import { onMounted, ref, onUnmounted, watch } from 'vue'
 import { Bell } from 'lucide-vue-next'
 import {formatTimeAgo} from "@/common.ts";
 import { useDropdownStore } from '@/stores/dropdown'
+import type {ReviewNotification} from "@/types/notification.ts";
+import {notificationApi} from "@/api/notification.ts";
+import {reviewApi} from "@/api/review.ts";
+import {useRouter} from "vue-router";
 
 const dropdownStore = useDropdownStore()
 const store = useNotificationStore()
 const isDropdownOpen = ref(false)
 const notificationDropdown = ref<HTMLElement | null>(null)
+const router = useRouter();
 
 onMounted(() => {
   /*store.initSSE()*/
@@ -90,6 +95,28 @@ const handleRead = (id: string) => {
 const handleReadAll = (ids: string[]) => {
   store.markAsReadAll(ids)
 }
+
+const handleNotificationClick = async (notification: ReviewNotification) => {
+  try {
+    if (!notification.readYn) {
+      await store.markAsRead(notification.notificationId);
+    }
+
+    const response = await reviewApi.findReviewPage(notification.reviewSeq);
+    const page = response.data;
+
+    await router.push({
+      name: 'reviewHistory',
+      query: {
+        page: page.toString(),
+        tab: 'received',
+        reviewSeq: notification.reviewSeq.toString()
+      }
+    });
+  } catch (error) {
+    console.error('Error handling notification click:', error);
+  }
+};
 </script>
 
 <style scoped>

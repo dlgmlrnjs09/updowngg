@@ -80,5 +80,10 @@ export const reviewApi = {
                 page
             }
         }),
+
+    findReviewPage: (reviewSeq: number) =>
+        apiClient.get<number>(`/api/v1/review/find-page`, {
+            params: { reviewSeq }
+        }),
 }
 
