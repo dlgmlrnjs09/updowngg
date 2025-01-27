@@ -71,7 +71,12 @@
             <div class="grid grid-cols-2 gap-x-4 gap-y-1 w-[250px]">
               <div v-for="player in review.participantDtoList"
                    :key="player.riotIdGameName"
-                   class="flex items-center gap-1.5">
+                   class="flex items-center gap-1.5 px-2 py-1 rounded"
+                   :class="{
+                      'bg-[#4CAF504D]': player.puuid === review.reviewDto.targetPuuid,
+                      'bg-[#2979FF4D]': player.puuid === review.reviewDto.reviewerPuuid
+                    }"
+              >
                 <img :src="player.champProfileIconUrl" alt="Profile" class="w-5 h-5 rounded-full"/>
                 <div class="text-sm text-gray-400 truncate">{{ player.riotIdGameName }}</div>
               </div>
