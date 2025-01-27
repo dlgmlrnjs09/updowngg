@@ -1,5 +1,5 @@
 <template>
-  <div v-if="tags[0].tagCode" class="tags-wrapper" :class="{
+  <div v-if="tags && tags.length > 0" class="tags-wrapper" :class="{
     'flex-wrap': isArrangeRow
   }">
     <div
