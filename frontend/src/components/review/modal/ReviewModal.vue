@@ -82,6 +82,7 @@
           <button
               class="tag-button tag-suggest-button"
               @click="handleTagSuggestClick"
+              :disabled="isTagLimitReached"
           >
             +
           </button>
@@ -169,6 +170,9 @@ const selectedCategory = ref('all')
 const hoveredTag = ref<ReviewTagDto | null>(null)
 const tooltipStyle = ref({})
 const localReviewTags = ref<ReviewTagDto[]>([]);
+const isTagLimitReached = computed(() => {
+  return selectedStyleTags.value.length >= 5;
+});
 
 // 컴포넌트 마운트 시 초기화
 onMounted(() => {
@@ -741,6 +745,12 @@ const handleSubmit = async () => {
 
 .submit-btn:disabled {
   background: #1e293b;
+  cursor: not-allowed;
+}
+
+.tag-suggest-button:disabled {
+  background: rgba(185, 205, 253, 0.3);
+  color: rgba(0, 0, 0, 0.5);
   cursor: not-allowed;
 }
 

@@ -15,9 +15,9 @@
               type="text"
               class="tag-input"
               placeholder="예: 오브젝트 마스터"
-              maxlength="20"
+              maxlength="10"
           />
-          <div class="input-counter">{{ tagName.length }}/20</div>
+          <div class="input-counter">{{ tagName.length }}/10</div>
         </div>
 
         <!-- 카테고리 선택 -->
@@ -63,10 +63,10 @@
           <textarea
               v-model="description"
               class="tag-description"
-              placeholder="태그에 대한 자세한 설명을 입력해주세요"
-              maxlength="100"
+              placeholder="툴팁에 노출될 간단한 설명을 입력해주세요."
+              maxlength="20"
           ></textarea>
-          <div class="input-counter">{{ description.length }}/100</div>
+          <div class="input-counter">{{ description.length }}/20</div>
         </div>
 
         <!-- 안내 메시지 -->
@@ -97,7 +97,6 @@ import { useToast } from 'vue-toastification'
 import type {ReviewRequestDto, ReviewTagCategoryDto, ReviewTagDto, ReviewTagSuggestDto} from "@/types/review.ts";
 import {useAuthStore} from "@/stores/auth.ts";
 import type {LolMatchParticipant} from "@/types/match.ts";
-import {reviewApi} from "@/api/review.ts";
 
 const toast = useToast()
 const authStore = useAuthStore()
