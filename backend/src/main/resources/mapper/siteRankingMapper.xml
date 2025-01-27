@@ -193,7 +193,7 @@
             mpc.puuid, mpc.play_count DESC
     </select>
 
-    <select id="selectBulkTopTagsBySummoner" parameterType="list" resultType="summonerTagDto">
+    <select id="selectBulkTopTagsBySummoner" parameterType="list" resultMap="getTopTagsBySummonerResultMap">
         WITH RankedTags AS (
             SELECT
                 ssr.target_puuid as puuid,
@@ -201,7 +201,7 @@
                 srt.tag_value,
                 srt.tag_description,
                 srt.tag_updown,
-                COUNT(*) as frequentCount,
+                COUNT(*) as tag_count,
                 ROW_NUMBER() OVER (PARTITION BY ssr.target_puuid ORDER BY COUNT(*) DESC) as rn
             FROM
                 site_summoner_review ssr
@@ -217,15 +217,21 @@
         )
         SELECT
             puuid,
-            tag_code,
-            tag_value,
-            tag_description,
-            tag_updown,
-            frequentCount
+            json_agg(
+                json_build_object(
+                    'tagCode', tag_code,
+                    'tagValue', tag_value,
+                    'tagDescription', tag_description,
+                    'tagUpdown', tag_updown,
+                    'frequentCount', tag_count
+                )
+            )::text as tag_dto_list
         FROM
             RankedTags
         WHERE
             rn <![CDATA[ <= ]]> 3
+        GROUP BY
+            puuid
     </select>
 
     <select id="selectBulkTopRankerBasicInfo" parameterType="list" resultType="summonerBasicInfoDto">
