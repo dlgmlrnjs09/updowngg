@@ -123,8 +123,12 @@
                 <div class="flex justify-between h-[4.6rem]">
                   <div class="flex flex-col justify-between py-1">
                     <div class="flex items-center gap-2">
-                      <div class="text-white text-sm font-medium">
-                        {{ card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName }} #{{card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine}}
+                      <div
+                          class="text-white text-sm font-medium"
+                          @click.stop="goSelectedSummonerProfile(card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName, card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine)"
+                      >
+                        <span class="text-white text-sm summoner-name">{{ card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName }}</span>
+                        <span class="text-gray-400 text-xs">&nbsp; #{{ card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine }}</span>
                       </div>
                     </div>
                     <div class="flex items-center gap-3">
@@ -221,6 +225,7 @@ import { communityApi } from "@/api/community.ts";
 import TagList from "@/components/common/TagList.vue";
 import { useToast } from "vue-toastification";
 import type {RankingSearchFilter} from "@/types/ranking.ts";
+import {goSelectedSummonerProfile} from "@/utils/common.ts";
 
 const selectedPosition = ref('')
 const selectedGameMode = ref('')
@@ -333,5 +338,11 @@ const getGameModeName = (code: string) => {
   justify-content: center;
   align-items: center;
   height: 20px;
+}
+
+.summoner-name:hover {
+  cursor: pointer;
+  color: #2979FF;
+  text-decoration: underline;
 }
 </style>

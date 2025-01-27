@@ -56,13 +56,13 @@
 
             <!-- Review Content -->
             <div class="flex-1">
-              <div class="flex items-center gap-2 mb-2">
+              <div class="flex items-center gap-2 mb-2 cursor-pointer" @click.stop="goSelectedSummonerProfile(review.target.riotIdGameName, review.target.riotIdTagline)">
                 <component
                     :is="review.reviewDto.isUp ? ThumbsUp : ThumbsDown"
                     class="w-4 h-4"
                     :class="review.reviewDto.isUp ? 'text-[#4CAF50]' : 'text-[#FF5252]'"
                 />
-                <span class="text-white text-sm">{{ review.target?.riotIdGameName }}</span>
+                <span class="text-white text-sm summoner-name">{{ review.target?.riotIdGameName }}</span>
                 <span class="text-gray-400 text-xs">#{{ review.target?.riotIdTagline }}</span>
               </div>
               <div class="flex flex-wrap gap-2 mb-2">
@@ -82,7 +82,10 @@
                     }"
               >
                 <img :src="player.champProfileIconUrl" alt="Profile" class="w-5 h-5 rounded-full"/>
-                <div class="text-sm text-gray-400 truncate">{{ player.riotIdGameName }}</div>
+                <div
+                    class="text-sm text-gray-400 truncate summoner-name"
+                    @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)"
+                >{{ player.riotIdGameName }}</div>
               </div>
             </div>
           </div>
@@ -133,7 +136,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import type { ReviewHistoryResponse, ReviewHistoryDto } from '@/types/review'
 import {reviewApi} from "@/api/review.ts";
 import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
-import {createInitialPaging, formatTimeAgo, getPageNumbers} from "@/common.ts";
+import {createInitialPaging, formatTimeAgo, getPageNumbers, goSelectedSummonerProfile} from "@/utils/common.ts";
 import TagList from "@/components/common/TagList.vue";
 import {useRoute, useRouter} from "vue-router";
 
@@ -261,6 +264,12 @@ const getReviewWithParticipant = computed(() => {
   background-color: rgba(41, 121, 255, 0.1);
   border-color: #2979FF;
   box-shadow: 0 0 0 1px #2979FF;
+}
+
+.summoner-name:hover {
+  cursor: pointer;
+  color: #2979FF;
+  text-decoration: underline;
 }
 
 @keyframes fadeOut {

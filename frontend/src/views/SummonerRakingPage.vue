@@ -82,7 +82,7 @@ import TagList from "@/components/common/TagList.vue"
 import {rankingApi} from "@/api/ranking.ts";
 import type {RankerPlayer, RankingSearchFilter} from "@/types/ranking.ts";
 import type {SearchFilter} from "@/types/stats.ts";
-import {goSelectedSummonerProfile} from "@/common.ts";
+import {goSelectedSummonerProfile} from "@/utils/common.ts";
 
 const rankerPlayers = ref<RankerPlayer[] | null>(null)
 

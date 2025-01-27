@@ -24,7 +24,7 @@
           </div>
           <div class="review-content-wrapper">
             <div class="review-main" :class="{ 'center-content': !review.tagDtoList?.length }">
-              <div v-if="showProfile" class="review-profile">
+              <div v-if="showProfile" class="review-profile" @click.stop="goSelectedSummonerProfile(review.targetGameName, review.targetTagLine)">
                 <img
                     :src="review.targetProfileIconUrl"
                     :alt="review.targetProfileIconUrl"
@@ -57,6 +57,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { ThumbsUp } from 'lucide-vue-next';
 import type { ReviewRequestDto } from "@/types/review.ts";
 import TagList from "@/components/common/TagList.vue";
+import {goSelectedSummonerProfile} from "@/utils/common.ts";
 
 const props = defineProps<{
   reviews?: ReviewRequestDto[];
@@ -205,7 +206,13 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
   /*margin-bottom: 8px;*/
+}
+
+.summoner-name:hover {
+  color: #2979FF;
+  text-decoration: underline;
 }
 
 .profile-icon {

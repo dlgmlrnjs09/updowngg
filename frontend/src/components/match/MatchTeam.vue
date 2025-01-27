@@ -86,7 +86,7 @@ import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 import {useRouter} from "vue-router";
 import {getRatingColor} from "@/utils/ratingUtil.ts";
 import {ThumbsDown, ThumbsUp} from "lucide-vue-next";
-import {goSelectedSummonerProfile} from "@/common.ts";
+import {goSelectedSummonerProfile} from "@/utils/common.ts";
 
 
 const props = defineProps<{
@@ -130,16 +130,6 @@ const handlePlayerClick = (player:any) => {
 
   emit('reviewPlayer', player)
 }
-
-// const goSelectedSummonerProfile = (player:any) => {
-//   router.push({
-//     name: 'summoner',
-//     params: {
-//       name: player.riotIdGameName,
-//       tag: player.riotIdTagline,
-//     }
-//   })
-// }
 
 const calculateRatio = (upCount: number, total: number) => {
   if (total === 0) return 0

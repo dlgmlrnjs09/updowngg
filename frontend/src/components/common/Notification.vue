@@ -45,7 +45,7 @@
 import { useNotificationStore } from '@/stores/notification.ts'
 import { onMounted, ref, onUnmounted, watch } from 'vue'
 import { Bell } from 'lucide-vue-next'
-import {formatTimeAgo} from "@/common.ts";
+import {formatTimeAgo} from "@/utils/common.ts";
 import { useDropdownStore } from '@/stores/dropdown'
 import type {ReviewNotification} from "@/types/notification.ts";
 import {notificationApi} from "@/api/notification.ts";
