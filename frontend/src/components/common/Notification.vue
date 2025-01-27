@@ -43,10 +43,12 @@
 
 <script setup lang="ts">
 import { useNotificationStore } from '@/stores/notification.ts'
-import { onMounted, ref, onUnmounted } from 'vue'
+import { onMounted, ref, onUnmounted, watch } from 'vue'
 import { Bell } from 'lucide-vue-next'
-import {formatTimeAgo} from "../../common.ts";
+import {formatTimeAgo} from "@/common.ts";
+import { useDropdownStore } from '@/stores/dropdown'
 
+const dropdownStore = useDropdownStore()
 const store = useNotificationStore()
 const isDropdownOpen = ref(false)
 const notificationDropdown = ref<HTMLElement | null>(null)
@@ -60,6 +62,12 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
+watch(() => dropdownStore.openDropdown, (newValue) => {
+  if (newValue !== 'notification') {
+    isDropdownOpen.value = false
+  }
+})
+
 const handleClickOutside = (event: MouseEvent) => {
   if (notificationDropdown.value && !notificationDropdown.value.contains(event.target as Node)) {
     isDropdownOpen.value = false
@@ -67,6 +75,11 @@ const handleClickOutside = (event: MouseEvent) => {
 }
 
 const toggleDropdown = () => {
+  if (isDropdownOpen.value) {
+    dropdownStore.setOpenDropdown(null)
+  } else {
+    dropdownStore.setOpenDropdown('notification')
+  }
   isDropdownOpen.value = !isDropdownOpen.value
 }
 

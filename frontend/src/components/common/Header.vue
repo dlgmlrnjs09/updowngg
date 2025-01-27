@@ -50,16 +50,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuthStore } from "@/stores/auth.ts";
 import Search from "@/components/common/Search.vue";
 import Notification from "@/components/common/Notification.vue";
+import { useDropdownStore } from '@/stores/dropdown'
 
 const authStore = useAuthStore();
+const dropdownStore = useDropdownStore()
 const router = useRouter();
 const isDropdownOpen = ref(false);
 const profileDropdown = ref<HTMLElement | null>(null);
+
+watch(() => dropdownStore.openDropdown, (newValue) => {
+  if (newValue !== 'profile') {
+    isDropdownOpen.value = false
+  }
+})
 
 const handleProfile = async () => {
   isDropdownOpen.value = false;
@@ -83,8 +91,13 @@ const navigateToReviewHistory = () => {
 };
 
 const toggleDropdown = () => {
-  isDropdownOpen.value = !isDropdownOpen.value;
-};
+  if (isDropdownOpen.value) {
+    dropdownStore.setOpenDropdown(null)
+  } else {
+    dropdownStore.setOpenDropdown('profile')
+  }
+  isDropdownOpen.value = !isDropdownOpen.value
+}
 
 const handleClickOutside = (event: MouseEvent) => {
   if (profileDropdown.value && !profileDropdown.value.contains(event.target as Node)) {
@@ -196,6 +209,7 @@ onUnmounted(() => {
 }
 
 .profile-dropdown {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;

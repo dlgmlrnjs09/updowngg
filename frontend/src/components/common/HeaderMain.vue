@@ -45,12 +45,21 @@
 <script setup lang="ts">
 import {RouterLink, useRouter} from 'vue-router';
 import {useAuthStore} from "@/stores/auth.ts";
-import {onMounted, onUnmounted, ref} from "vue";
+import {onMounted, onUnmounted, ref, watch} from "vue";
 import Notification from "@/components/common/Notification.vue";
 const authStore = useAuthStore();
 const router = useRouter();
 const isDropdownOpen = ref(false);
 const profileDropdown = ref<HTMLElement | null>(null);
+import { useDropdownStore } from '@/stores/dropdown'
+
+const dropdownStore = useDropdownStore()
+
+watch(() => dropdownStore.openDropdown, (newValue) => {
+  if (newValue !== 'profile') {
+    isDropdownOpen.value = false
+  }
+})
 
 const handleProfile = async () => {
   await router.push({
@@ -78,8 +87,13 @@ const navigateToReviewHistory = () => {
 };
 
 const toggleDropdown = () => {
-  isDropdownOpen.value = !isDropdownOpen.value;
-};
+  if (isDropdownOpen.value) {
+    dropdownStore.setOpenDropdown(null)
+  } else {
+    dropdownStore.setOpenDropdown('profile')
+  }
+  isDropdownOpen.value = !isDropdownOpen.value
+}
 
 // 드롭다운 외부 클릭시 닫기
 const handleClickOutside = (event: MouseEvent) => {
