@@ -258,7 +258,7 @@
         group by target_puuid
     </select>
 
-    <select id="getFrequentTagCount" parameterType="String" resultType="reviewTagDto">
+    <select id="getFrequentTagCount" parameterType="map" resultType="reviewTagDto">
         select
             ssrt.tag_code,
             srt.tag_value,
@@ -270,10 +270,11 @@
             inner join site_summoner_review_tag ssrt on (ssr.summoner_review_seq = ssrt.summoner_review_seq)
             inner join site_review_tag srt on (ssrt.tag_code = srt.tag_code)
         where
-            target_puuid = #{puuid}
+            target_puuid = #{targetPuuid}
             and ssr.del_dt IS NULL
         group by
             ssrt.tag_code, srt.tag_value, srt.tag_description, srt.tag_updown
+        limit #{limit}
     </select>
 
     <select id="getAvgRatingByChamp" parameterType="String" resultType="reviewRatingByChampDto">

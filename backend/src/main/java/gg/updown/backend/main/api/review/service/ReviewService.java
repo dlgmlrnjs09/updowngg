@@ -134,8 +134,8 @@ public class ReviewService {
         return reviewMapper.getReviewAvgRating(targetPuuid);
     }
 
-    public List<ReviewTagDto> getFrequentTagCount(String targetPuuid) {
-        return reviewMapper.getFrequentTagCount(targetPuuid);
+    public List<ReviewTagDto> getFrequentTagCount(String targetPuuid, int limit) {
+        return reviewMapper.getFrequentTagCount(targetPuuid, limit);
     }
 
     public List<ReviewDto> getRecentReviewList(String targetPuuid, int limit) {

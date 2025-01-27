@@ -110,7 +110,7 @@ public class DuoCommunityService implements CommunityInterface {
 
         DuoSummonerInfoDto summonerInfoDto = new DuoSummonerInfoDto();
         summonerInfoDto.setSummonerBasicInfoDto(summonerDto);
-        summonerInfoDto.setFrequentTagDtoList(reviewService.getFrequentTagCount(summonerDto.getPuuid()));
+        summonerInfoDto.setFrequentTagDtoList(reviewService.getFrequentTagCount(summonerDto.getPuuid(), 3));
         summonerInfoDto.setReviewStatsDto(reviewService.getReviewStats(summonerDto.getPuuid()));
         summonerInfoDto.setMostChampionDto(lolSummonerService.getSummonerMostChampions(summonerDto.getPuuid(), 3));
 

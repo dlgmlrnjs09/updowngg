@@ -78,7 +78,7 @@ public class ReviewController {
     @Operation(summary = "최근받은태그목록 조회", description = "특정 대상의 최근받은태그목록 조회")
     @GetMapping("/tag-frequent")
     public ResponseEntity<List<ReviewTagDto>> getReviewTagFrequent(@Valid ReviewTagFrequentReqDto reqDto) {
-        List<ReviewTagDto> reviewTagDto = reviewService.getFrequentTagCount(reqDto.getPuuid());
+        List<ReviewTagDto> reviewTagDto = reviewService.getFrequentTagCount(reqDto.getPuuid(), 5);
         return ResponseEntity.status(HttpStatus.OK).body(reviewTagDto);
     }
 
