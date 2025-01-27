@@ -64,7 +64,7 @@
               <div class="flex flex-wrap gap-2 mb-2">
                 <TagList :tags="review.reviewDto.tagDtoList || []" size="small" :is-show-count="false"/>
               </div>
-              <p class="text-gray-300 text-sm">{{ review.reviewDto.comment }}</p>
+              <p class="text-gray-300 text-sm line-clamp-2">{{ review.reviewDto.comment }}</p>
             </div>
 
             <!-- Players Grid -->
@@ -88,7 +88,7 @@
             @click="handlePrevPage"
             class="px-3 h-8 rounded-lg text-sm font-medium bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]"
         >
-          이전
+          <
         </button>
 
         <!-- 페이지 번호 -->
@@ -112,7 +112,7 @@
             @click="handleNextPage"
             class="px-3 h-8 rounded-lg text-sm font-medium bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]"
         >
-          다음
+          >
         </button>
       </div>
     </div>
