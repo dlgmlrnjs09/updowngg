@@ -38,6 +38,14 @@ public class ReviewDto {
     private List<String> tagCodeList;
     @Schema(description = "리뷰 DTO 리스트")
     private List<ReviewTagDto> tagDtoList;
+    @Schema(description = "리뷰 대상 프로필아이콘 ID")
+    private String targetProfileIconId;
+    @Schema(description = "리뷰 대상 프로필아이콘 URL")
+    private String targetProfileIconUrl;
+    @Schema(description = "리뷰 대상 라이엇 닉네임")
+    private String targetGameName;
+    @Schema(description = "리뷰 대상 라이엇 배틀태그")
+    private String targetTagLine;
 
     @Schema(description = "이미작성 여부")
     private boolean reviewable;

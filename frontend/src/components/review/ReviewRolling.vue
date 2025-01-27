@@ -24,6 +24,17 @@
           </div>
           <div class="review-content-wrapper">
             <div class="review-main" :class="{ 'center-content': !review.tagDtoList?.length }">
+              <div v-if="showProfile" class="review-profile">
+                <img
+                    :src="review.targetProfileIconUrl"
+                    :alt="review.targetProfileIconUrl"
+                    class="profile-icon"
+                />
+                <div class="summoner-info">
+                  <span class="summoner-name">{{ review.targetGameName }}</span>
+                  <span class="summoner-tag">#{{ review.targetTagLine }}</span>
+                </div>
+              </div>
               <div v-if="review.tagDtoList?.length" class="review-tags">
                 <TagList :tags="review.tagDtoList" size="small" :is-show-count="false"/>
               </div>
@@ -52,6 +63,7 @@ const props = defineProps<{
   title?: string;
   rollingInterval?: number;
   wrapperHeight?: string;
+  showProfile?: boolean;
 }>();
 
 onMounted(() => {
@@ -78,6 +90,10 @@ const formatDate = (dateString: string) => {
   return `${year}.${month}.${day}`;
 };
 
+const getProfileIconUrl = (iconId: string) => {
+  return `https://ddragon.leagueoflegends.com/cdn/14.3.1/img/profileicon/${iconId}.png`;
+};
+
 const startRolling = () => {
   if (timer) {
     clearInterval(timer);
@@ -102,10 +118,6 @@ watch(
       immediate: true
     }
 );
-
-onUnmounted(() => {
-  if (timer) clearInterval(timer);
-});
 
 onUnmounted(() => {
   if (timer) clearInterval(timer);
@@ -145,7 +157,6 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 16px;
-  /*min-height: 100px;*/
 }
 
 .review-left {
@@ -188,6 +199,36 @@ onUnmounted(() => {
 
 .review-main.center-content {
   justify-content: center;
+}
+
+.review-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /*margin-bottom: 8px;*/
+}
+
+.profile-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+}
+
+.summoner-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.summoner-name {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.summoner-tag {
+  color: #9e9e9e;
+  font-size: 12px;
 }
 
 .review-tags {

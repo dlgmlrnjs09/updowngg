@@ -14,6 +14,11 @@
         <result property="updDt" column="upd_dt"/>
         <result property="delDt" column="del_dt"/>
 
+        <!-- reviewDto -->
+        <result property="targetProfileIconId" column="targetProfileIconId"/>
+        <result property="targetGameName" column="targetGameName"/>
+        <result property="targetTagLine" column="targetTagLine"/>
+
         <!-- tag_code들을 List<String>으로 매핑 -->
         <collection property="tagCodeList" ofType="string" javaType="list">
             <result column="tag_code"/>
@@ -153,11 +158,16 @@
             ssrt.tag_code,
             srt.tag_value,
             srt.tag_description,
-            srt.tag_updown
+            srt.tag_updown,
+            targetLolInfo.profile_icon_id as targetProfileIconId,
+            targetRiotInfo.game_name as targetGameName,
+            targetRiotInfo.tag_line as targetTagLine
         FROM
             site_summoner_review r
                 LEFT OUTER JOIN site_summoner_review_tag ssrt ON r.summoner_review_seq = ssrt.summoner_review_seq
                 LEFT OUTER JOIN site_review_tag srt ON ssrt.tag_code = srt.tag_code
+                LEFT OUTER JOIN riot_account targetRiotInfo ON targetRiotInfo.puuid = r.target_puuid
+                LEFT OUTER JOIN lol_summoner targetLolInfo ON targetLolInfo.puuid = r.target_puuid
         WHERE
             r.del_dt IS NULL
             <if test="targetPuuid != null and targetPuuid != ''">

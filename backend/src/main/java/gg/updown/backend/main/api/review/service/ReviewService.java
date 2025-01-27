@@ -15,6 +15,7 @@ import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
 import gg.updown.backend.main.enums.SiteMatchGameMode;
+import gg.updown.backend.main.riot.ddragon.service.DdragonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class ReviewService {
+    private final DdragonService ddragonService;
     @Value("${riot-api.latest-version}")
     private String latestVersion;
 
@@ -48,14 +50,15 @@ public class ReviewService {
             ReviewMapper reviewMapper,
             ReviewTransactionService transactionService,
             LolSummonerService summonerService,
-            @Lazy LolMatchService matchService, NotificationService notificationService, AuthService authService
-    ) {
+            @Lazy LolMatchService matchService, NotificationService notificationService, AuthService authService,
+            DdragonService ddragonService) {
         this.reviewMapper = reviewMapper;
         this.transactionService = transactionService;
         this.summonerService = summonerService;
         this.matchService = matchService;
         this.notificationService = notificationService;
         this.authService = authService;
+        this.ddragonService = ddragonService;
     }
 
     public List<ReviewTagEntity> getReviewTagList() {
@@ -139,7 +142,11 @@ public class ReviewService {
     }
 
     public List<ReviewDto> getRecentReviewList(String targetPuuid, int limit) {
-        return reviewMapper.getRecentReviewList(targetPuuid, limit);
+        List<ReviewDto> reviewList = reviewMapper.getRecentReviewList(targetPuuid, limit);
+        for (ReviewDto reviewDto : reviewList) {
+            reviewDto.setTargetProfileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, reviewDto.getTargetProfileIconId()));
+        }
+        return reviewList;
     }
 
     public List<ReviewRatingByChampDto> getAvgRatingByChamp(String targetPuuid) {

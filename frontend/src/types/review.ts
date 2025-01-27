@@ -40,6 +40,9 @@ export interface ReviewRequestDto {
     reviewable: boolean | false;
     regDt: string | null;
     matchId: string;
+    targetProfileIconUrl: string;
+    targetGameName: string;
+    targetTagLine: string;
 }
 
 export interface ReviewStatsDto {

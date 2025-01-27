@@ -12,6 +12,7 @@
           :reviews="recentReviews"
           :rolling-interval="3000"
           wrapper-height="0"
+          :show-profile="true"
       />
     </div>
   </div>
