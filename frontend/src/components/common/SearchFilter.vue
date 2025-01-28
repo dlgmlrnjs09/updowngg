@@ -1,4 +1,3 @@
-# FilterSection.vue
 <template>
   <div class="stats-card">
     <div class="filter-options">
@@ -33,7 +32,7 @@
       </div>
 
       <!-- 기간 필터 -->
-      <div class="filter-row">
+      <div class="filter-row" v-if="!isNotShowPeriod">
         <div class="filter-label">기간</div>
         <div class="filter-content">
           <button
@@ -70,12 +69,18 @@ import { ref, watch } from 'vue'
 import { MatchGameMode, MatchPosition } from "@/types/match.ts"
 import type { SearchFilter } from "@/types/stats.ts"
 import type { Tier } from "@/types/league.ts"
+import {Period} from "@/types/match.ts";
+import type {ReviewTagDto} from "@/types/review.ts";
 
 // 필터 상태
 const selectedQueue = ref('솔로랭크')
 const selectedTier = ref('전체')
 const selectedPeriod = ref('전체')
 const selectedPosition = ref('전체')
+
+defineProps<{
+  isNotShowPeriod?: boolean;
+}>()
 
 // 이벤트 emit 정의
 const emit = defineEmits<{
@@ -97,6 +102,14 @@ const positionMapping: Record<string, MatchPosition> = {
   '미드': MatchPosition.MIDDLE,
   '바텀': MatchPosition.BOTTOM,
   '서포터': MatchPosition.UTILITY,
+}
+
+// 기간 매핑
+const periodMapping: Record<string, Period> = {
+  '전체': Period.ALL,
+  '최근 1달': Period.MONTH,
+  '최근 7일': Period.WEEK,
+  '오늘': Period.TODAY
 }
 
 // 업데이트 함수들
@@ -122,7 +135,6 @@ watch(
     () => {
       const filter: SearchFilter = {}
 
-      // 솔로랭크는 기본값이므로 항상 포함
       filter.queueType = queueMapping[selectedQueue.value]
 
       if (selectedTier.value !== '전체') {
@@ -133,13 +145,14 @@ watch(
         filter.position = positionMapping[selectedPosition.value]
       }
 
+      // 기간 필터 수정
       if (selectedPeriod.value !== '전체') {
-        filter.period = selectedPeriod.value
+        filter.period = periodMapping[selectedPeriod.value]
       }
 
       emit('update:filter', filter)
     },
-    { immediate: true } // 즉시 실행 옵션 추가
+    { immediate: true }
 )
 </script>
 

@@ -3,6 +3,7 @@ package gg.updown.backend.main.api.stats.model.dto;
 import gg.updown.backend.external.riot.enums.Tier;
 import gg.updown.backend.external.riot.enums.MatchPosition;
 import gg.updown.backend.external.riot.enums.MatchGameMode;
+import gg.updown.backend.main.enums.SiteSearchPeriod;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -18,4 +19,6 @@ public class SortTypeReqDto {
     private MatchPosition matchPosition;
     @Schema(description = "검색할 티어")
     private Tier tier;
+    @Schema(description = "검색할 기간")
+    private SiteSearchPeriod period;
 }

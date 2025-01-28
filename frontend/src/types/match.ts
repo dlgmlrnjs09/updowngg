@@ -82,3 +82,10 @@ export const MatchPositionDetails: Record<MatchPosition, { nameKr: string }> = {
     [MatchPosition.BOTTOM]: { nameKr: '원딜' },
     [MatchPosition.UTILITY]: { nameKr: '서폿' }
 };
+
+export enum Period {
+    ALL = 'ALL',
+    MONTH = 'MONTH',
+    WEEK = 'WEEK',
+    TODAY = 'TODAY'
+}

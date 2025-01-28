@@ -100,8 +100,8 @@ import TagList from "@/components/common/TagList.vue"
 import {MatchGameMode} from "@/types/match.ts";
 
 const championStats = ref<ChampionResDto[] | null>(null)
-const sortColumn = ref<string>('')
-const sortDirection = ref<'asc' | 'desc' | null>(null)
+const sortColumn = ref<string>('upRatio')
+const sortDirection = ref<'asc' | 'desc' | null>('desc')
 
 // 정렬 토글 함수
 const toggleSort = (column: string) => {
@@ -144,6 +144,7 @@ const fetchChampionStats = async (filter: SearchFilter) => {
 }
 
 const onFilterUpdate = (filter: SearchFilter) => {
+  console.log('필터 == ' + JSON.stringify(filter))
   fetchChampionStats(filter)
 }
 

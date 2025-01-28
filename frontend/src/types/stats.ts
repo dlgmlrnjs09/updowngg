@@ -1,4 +1,4 @@
-import type {MatchGameMode} from "@/types/match.ts";
+import {type MatchGameMode, Period} from "@/types/match.ts";
 import type {Tier} from "@/types/league.ts";
 import {MatchPosition} from "@/types/match.ts";
 import type {ReviewTagDto} from "@/types/review.ts";
@@ -18,5 +18,5 @@ export interface SearchFilter {
     queueType?: MatchGameMode;
     tier?: Tier;
     position?: MatchPosition;
-    period?: string;
+    period?: Period;
 }
