@@ -125,7 +125,7 @@ public class AuthController {
 
         try {
             JwtToken jwtToken = authService.refreshAccessToken(refreshToken);
-            if (!jwtToken.getAccessToken().isEmpty()) {
+            if (jwtToken != null && !jwtToken.getAccessToken().isEmpty()) {
                 return ResponseEntity.ok(jwtToken);
             } else {
                 throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorMessage.INVALID_TOKEN.getMessage());
