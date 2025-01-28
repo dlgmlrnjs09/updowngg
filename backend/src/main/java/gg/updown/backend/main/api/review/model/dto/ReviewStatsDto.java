@@ -27,6 +27,8 @@ public class ReviewStatsDto {
     private long totalReviewCnt;
     @Schema(description = "치룬 경기 수")
     private long playCount;
+    @Schema(description = "최근30일 받은리뷰 수")
+    private long last30DayReviewCnt;
     @Schema(description = "추천점수")
     private double score;
 }

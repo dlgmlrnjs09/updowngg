@@ -286,6 +286,17 @@ const isExpanded = ref(true)
   background: rgba(255, 255, 255, 0.03);
   padding: 16px;
   border-radius: 6px;
+  position: relative;
+}
+
+.stats-grid::after {
+  content: '';
+  position: absolute;
+  top: 16px; /* Match padding */
+  bottom: 16px;
+  left: 50%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .stats-column {
@@ -296,16 +307,11 @@ const isExpanded = ref(true)
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.champion-stats {
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-}
-
-.position-stats {
+.champion-stats, .position-stats {
   display: flex;
   justify-content: space-between;
   width: 100%;
+  padding: 0 24px; /* Add horizontal padding for spacing */
 }
 
 .champion-item, .position-item {
@@ -457,13 +463,17 @@ const isExpanded = ref(true)
     gap: 24px;
   }
 
+  .stats-grid::after {
+    display: none;
+  }
+
   .stats-column:first-child {
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 24px;
   }
 
-  .position-stats {
+  .champion-stats, .position-stats {
     padding: 0 12px;
   }
 
