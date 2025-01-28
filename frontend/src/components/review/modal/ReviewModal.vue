@@ -140,10 +140,14 @@
         ></textarea>
         <button
             class="submit-btn"
-            :disabled="isUp === null"
+            :class="{ 'loading': isSubmitting }"
+            :disabled="isUp === null || isSubmitting"
             @click="handleSubmit"
         >
-          평가 제출하기
+          <div class="button-content">
+            <span v-if="!isSubmitting">평가 제출하기</span>
+            <div v-else class="spinner"></div>
+          </div>
         </button>
       </div>
     </div>
@@ -190,6 +194,7 @@ const isTagLimitReached = computed(() => {
   return selectedStyleTags.value.length >= 5;
 });
 const isAnonymous = ref(false)
+const isSubmitting = ref(false)
 
 // 컴포넌트 마운트 시 초기화
 onMounted(() => {
@@ -328,36 +333,38 @@ const handleSubmit = async () => {
     return
   }
 
-  // 임시 태그를 제외한 태그 코드 목록 생성
-  const filteredTagCodes = selectedStyleTags.value.filter(
-      tagCode => !tagCode.startsWith('temp_')
-  )
-
-  // 임시 태그를 제외한 태그 DTO 목록 생성
-  const filteredTagDtos = props.reviewTags
-      .filter(tag =>
-          filteredTagCodes.includes(tag.tagCode) &&
-          !tag.tagCode.startsWith('temp_')
-      )
-      .map(tag => ({ ...tag }))
-
-  // 리뷰 객체 생성
-  const review: ReviewRequestDto = {
-    summonerReviewSeq: props.player?.reviewDto?.summonerReviewSeq,
-    reviewerSiteCode: authStore.user.memberSiteCode.toString(),
-    reviewerPuuid: authStore.user.puuid,
-    targetPuuid: props.player.puuid,
-    isUp: isUp.value,
-    comment: comment.value,
-    tagCodeList: filteredTagCodes,
-    matchId: props.player.matchId,
-    tagDtoList: filteredTagDtos,
-    reviewable: false,
-    regDt: null,
-    isAnonymous: isAnonymous.value
-  }
+  isSubmitting.value = true // 제출 시작
 
   try {
+    // 임시 태그를 제외한 태그 코드 목록 생성
+    const filteredTagCodes = selectedStyleTags.value.filter(
+        tagCode => !tagCode.startsWith('temp_')
+    )
+
+    // 임시 태그를 제외한 태그 DTO 목록 생성
+    const filteredTagDtos = props.reviewTags
+        .filter(tag =>
+            filteredTagCodes.includes(tag.tagCode) &&
+            !tag.tagCode.startsWith('temp_')
+        )
+        .map(tag => ({ ...tag }))
+
+    // 리뷰 객체 생성
+    const review: ReviewRequestDto = {
+      summonerReviewSeq: props.player?.reviewDto?.summonerReviewSeq,
+      reviewerSiteCode: authStore.user.memberSiteCode.toString(),
+      reviewerPuuid: authStore.user.puuid,
+      targetPuuid: props.player.puuid,
+      isUp: isUp.value,
+      comment: comment.value,
+      tagCodeList: filteredTagCodes,
+      matchId: props.player.matchId,
+      tagDtoList: filteredTagDtos,
+      reviewable: false,
+      regDt: null,
+      isAnonymous: isAnonymous.value
+    }
+
     // 기존 리뷰가 있으면 업데이트, 없으면 새로 생성
     if (props.player.reviewDto?.summonerReviewSeq) {
       await reviewApi.updateReview(review)
@@ -371,6 +378,8 @@ const handleSubmit = async () => {
     emit('close')
   } catch (error) {
     toast.error('평가 제출 중 오류가 발생했습니다')
+  } finally {
+    isSubmitting.value = false // 제출 완료
   }
 }
 </script>
@@ -476,6 +485,27 @@ const handleSubmit = async () => {
   width: 32px;
   height: 32px;
   fill: currentColor;
+}
+
+.button-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20px;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 태그 선택 섹션 스타일 */
@@ -768,6 +798,11 @@ const handleSubmit = async () => {
 }
 
 .submit-btn:disabled {
+  background: #1e293b;
+  cursor: not-allowed;
+}
+
+.submit-btn.loading {
   background: #1e293b;
   cursor: not-allowed;
 }

@@ -10,10 +10,12 @@ import {createPinia} from "pinia";
 
 const app = createApp(App)
 const pinia = createPinia()
+import { throttleClick } from '@/plugin/throttleClick'
 
 app.use(pinia)
 app.use(router)
 app.mount('#app')
+app.use(throttleClick)
 app.use(Toast, {
     // 옵션 설정
     position: "bottom-right",

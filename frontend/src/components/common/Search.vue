@@ -8,7 +8,7 @@
         v-model="searchQuery"
         @keyup.enter="handleSearch"
     >
-    <div class="search-icon" @click="handleSearch">
+    <div class="search-icon" v-throttle-click:1000="handleSearch">
       <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
