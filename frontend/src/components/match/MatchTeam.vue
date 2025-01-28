@@ -1,7 +1,8 @@
 <template>
   <div class="team">
-    <div class="team-title" :class="teamType">
+    <div class="team-title" :class="[teamType, participants[0]?.isWin ? 'win' : 'lose']">
       {{ teamType === 'blue' ? '블루팀' : '레드팀' }}
+      <span class="result-text">{{ participants[0]?.isWin ? '승리' : '패배' }}</span>
     </div>
     <div class="team-members">
       <div v-for="player in participants"
@@ -144,11 +145,22 @@ const calculateRatio = (upCount: number, total: number) => {
 }
 
 .team-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
   font-size: 14px;
   margin-bottom: 12px;
   padding-left: 8px;
   letter-spacing: 0.5px;
+}
+
+.team-title.win {
+  color: #4CAF50;
+}
+
+.team-title.lose {
+  color: #FF5252;
 }
 
 .team-title.blue {
@@ -157,6 +169,22 @@ const calculateRatio = (upCount: number, total: number) => {
 
 .team-title.red {
   color: #FF5252;
+}
+
+.result-text {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.win .result-text {
+  background: rgba(76, 175, 80, 0.2);
+}
+
+.lose .result-text {
+  background: rgba(255, 82, 82, 0.2);
 }
 
 .team-members {

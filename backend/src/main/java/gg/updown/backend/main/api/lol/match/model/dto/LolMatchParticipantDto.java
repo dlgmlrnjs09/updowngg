@@ -44,6 +44,8 @@ public class LolMatchParticipantDto {
     private int totalDamageToChampion;
     @Schema(description = "챔피언에게 받은 피해량")
     private int totalDamageTaken;
+    @Schema(description = "승리 여부")
+    private Boolean isWin;
 
     // 리뷰정보 객체
     private ReviewDto reviewDto;

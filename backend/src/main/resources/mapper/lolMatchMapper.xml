@@ -75,7 +75,8 @@
            total_damage_to_champion,
            total_damage_taken,
             champ_id,
-            champ_name
+            champ_name,
+            is_win
         FROM
             lol_match_participant
         WHERE

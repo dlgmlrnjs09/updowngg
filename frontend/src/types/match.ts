@@ -30,6 +30,7 @@ export interface LolMatchParticipant {
     isReviewable: boolean;
     reviewDto: ReviewRequestDto
     reviewStatsDto: ReviewStatsDto
+    isWin: boolean
 }
 
 export interface LolMatchInfoRes {
