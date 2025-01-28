@@ -10,7 +10,7 @@
           <tr class="text-left border-b border-[#ffffff1a]">
             <th class="py-2 px-4 text-gray-300 w-12">#</th>
             <th class="py-2 px-4 text-gray-300 w-52">소환사</th>
-            <th class="py-2 px-4 text-gray-300 w-24">플레이수</th>
+            <th class="py-2 px-4 text-gray-300 w-24">평가수</th>
             <th class="py-2 px-4 text-gray-300 w-24">평가점수</th>
             <th class="py-2 px-4 text-gray-300 w-48">평가비율</th>
             <th class="py-2 px-4 text-gray-300 w-52">모스트 챔피언별 평가</th>
@@ -29,7 +29,7 @@
                 <div class="player-tag">#{{ player.summonerBasicInfoDto.tagLine }}</div>
               </div>
             </td>
-            <td class="py-2 px-4 text-sm text-gray-400">{{player.reviewStatsDto.playCount}} </td>
+            <td class="py-2 px-4 text-sm text-gray-400">{{player.reviewStatsDto.totalReviewCnt}} </td>
             <td class="py-2 px-4 text-sm text-gray-400">{{ player.reviewStatsDto.score }}</td>
             <td class="py-2 px-4 text-gray-400">
               <div class="flex items-center justify-between">
