@@ -46,7 +46,13 @@ public class ReviewDto {
     private String targetGameName;
     @Schema(description = "리뷰 대상 라이엇 배틀태그")
     private String targetTagLine;
-
+    @Schema(description = "리뷰 익명 여부")
+    private Boolean isAnonymous = false;
     @Schema(description = "이미작성 여부")
     private boolean reviewable;
+
+    public void anonymizeReviewerInfo() {
+        this.reviewerSiteCode = "";
+        this.reviewerPuuid = "";
+    }
 }

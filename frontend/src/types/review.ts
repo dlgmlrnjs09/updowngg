@@ -43,6 +43,7 @@ export interface ReviewRequestDto {
     targetProfileIconUrl: string;
     targetGameName: string;
     targetTagLine: string;
+    isAnonymous: boolean
 }
 
 export interface ReviewStatsDto {

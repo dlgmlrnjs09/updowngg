@@ -26,4 +26,6 @@ public class ReviewUpdateReqDto {
     private List<String> tagCodeList;
     @NotNull(message = "matchId는 필수값입니다.")
     private String matchId;
+    @NotNull(message = "isAnonymous는 필수값입니다.")
+    private Boolean isAnonymous;
 }

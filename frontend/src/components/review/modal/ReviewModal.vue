@@ -1,6 +1,6 @@
 <template>
-  <div class="modal-overlay">
-    <div class="modal-content">
+  <div class="modal-overlay" @click="handleClose">
+    <div class="modal-content" @click.stop>
       <button class="modal-close" @click="handleClose">×</button>
 
       <div class="modal-header">
@@ -108,11 +108,27 @@
             </div>
           </button>
         </div>
-
         <!-- 선택 개수 표시 -->
         <div class="tag-count">
           {{ selectedStyleTags.length }}/5 태그 선택됨
         </div>
+      </div>
+
+      <!-- 익명 설정 섹션 -->
+      <div class="anonymous-section">
+        <div class="anonymous-toggle">
+          <span class="anonymous-label">익명으로 평가하기</span>
+          <button
+              class="toggle-button"
+              :class="{ 'toggle-on': isAnonymous }"
+              @click="toggleAnonymous"
+          >
+            <div class="toggle-slider"></div>
+          </button>
+        </div>
+        <p class="anonymous-description">
+          {{ isAnonymous ? '다른 소환사에게 평가자의 닉네임이 표시되지 않습니다.' : '다른 소환사에게 평가자의 닉네임이 표시됩니다.' }}
+        </p>
       </div>
 
       <!-- 코멘트 섹션 -->
@@ -173,6 +189,7 @@ const localReviewTags = ref<ReviewTagDto[]>([]);
 const isTagLimitReached = computed(() => {
   return selectedStyleTags.value.length >= 5;
 });
+const isAnonymous = ref(false)
 
 // 컴포넌트 마운트 시 초기화
 onMounted(() => {
@@ -245,6 +262,10 @@ const getTagLabel = (tagCode: string) => {
   return tag ? tag.tagValue : tagCode
 }
 
+const toggleAnonymous = () => {
+  isAnonymous.value = !isAnonymous.value
+}
+
 // 초기화
 const init = () => {
   if (props.player.reviewDto) {
@@ -252,11 +273,13 @@ const init = () => {
     selectedStyleTags.value = props.player.reviewDto.tagCodeList || []
     comment.value = props.player.reviewDto.comment || ''
     isUp.value = props.player.reviewDto.isUp
+    isAnonymous.value = props.player.reviewDto.isAnonymous
   } else {
     reviewSeq.value = 0
     selectedStyleTags.value = []
     comment.value = ''
     isUp.value = null
+    isAnonymous.value = false
   }
 }
 
@@ -330,7 +353,8 @@ const handleSubmit = async () => {
     matchId: props.player.matchId,
     tagDtoList: filteredTagDtos,
     reviewable: false,
-    regDt: null
+    regDt: null,
+    isAnonymous: isAnonymous.value
   }
 
   try {
@@ -584,8 +608,8 @@ const handleSubmit = async () => {
   flex-wrap: wrap;
   align-content: flex-start;
   gap: 8px;
-  min-height: 200px;
-  max-height: 200px;
+  min-height: 140px;
+  max-height: 140px;
   overflow-y: auto;
   padding: 4px;
 }
@@ -753,6 +777,60 @@ const handleSubmit = async () => {
   color: rgba(0, 0, 0, 0.5);
   cursor: not-allowed;
 }
+
+.anonymous-section {
+  padding: 24px 24px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.anonymous-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.anonymous-label {
+  font-size: 15px;
+  color: #fff;
+}
+
+.toggle-button {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-button.toggle-on {
+  background: #2979FF;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.toggle-button.toggle-on .toggle-slider {
+  transform: translateX(24px);
+}
+
+.anonymous-description {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+}
+
 
 @media (max-width: 480px) {
   .modal-content {

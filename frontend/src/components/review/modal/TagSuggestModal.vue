@@ -1,6 +1,6 @@
 <template>
-  <div class="modal-overlay">
-    <div class="modal-content">
+  <div class="modal-overlay" @click="$emit('close')">
+    <div class="modal-content" @click.stop>
       <button class="modal-close" @click="$emit('close')">×</button>
 
       <div class="modal-header">

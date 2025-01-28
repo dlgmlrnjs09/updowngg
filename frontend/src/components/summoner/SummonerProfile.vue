@@ -299,6 +299,7 @@ const isExpanded = ref(true)
 .champion-stats {
   display: flex;
   gap: 16px;
+  justify-content: space-between;
 }
 
 .position-stats {

@@ -10,6 +10,7 @@
         <result property="targetPuuid" column="target_puuid"/>
         <result property="comment" column="comment"/>
         <result property="isUp" column="is_up"/>
+        <result property="isAnonymous" column="is_anonymous"/>
         <result property="regDt" column="reg_dt"/>
         <result property="updDt" column="upd_dt"/>
         <result property="delDt" column="del_dt"/>
@@ -123,6 +124,7 @@
             is_up,
             comment,
             is_up,
+            is_anonymous,
             r.reg_dt,
             upd_dt,
             del_dt,
@@ -209,14 +211,16 @@
             target_puuid,
             is_up,
             comment,
-            match_id
+            match_id,
+            is_anonymous
         ) VALUES (
              #{reviewerSiteCode},
              #{reviewerPuuid},
              #{targetPuuid},
              #{isUp},
              #{comment},
-             #{matchId}
+             #{matchId},
+             #{isAnonymous}
          )
     </insert>
 
@@ -240,6 +244,7 @@
         SET is_up = #{isUp}
             , comment = #{comment}
             , match_id = #{matchId}
+            , is_anonymous = #{isAnonymous}
         WHERE
             summoner_review_seq = #{summonerReviewSeq}
     </update>

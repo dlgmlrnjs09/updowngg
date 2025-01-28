@@ -52,6 +52,11 @@ public class ReviewHistoryService {
                     }
             );
 
+            // 익명인 경우 작성자 정보 숨기기
+            if (review.getIsAnonymous()) {
+                review.anonymizeReviewerInfo();
+            }
+
             historyDto.setReviewDto(review);
             historyDto.setMatchDto(matchInfoDto);
             historyDto.setParticipantDtoList(participantDtoList);

@@ -1,7 +1,7 @@
 <!-- src/components/summoner/modal/PreviousReviewModal.vue -->
 <template>
-  <div class="modal-overlay">
-    <div class="modal-content">
+  <div class="modal-overlay" @click="$emit('close')">
+    <div class="modal-content" @click.stop>
       <button class="modal-close" @click="$emit('close')">×</button>
 
       <div class="modal-body">
@@ -38,7 +38,7 @@
 
           <!-- Tags -->
           <div class="tags-section">
-            <TagList :tags="player.reviewDto.tagDtoList" size="medium"></TagList>
+            <TagList :tags="player.reviewDto.tagDtoList || []" size="medium" :is-show-count="false"/>
 <!--            <div v-for="tag in player.reviewDto.tagDtoList"-->
 <!--                 :key="tag.tagCode"-->
 <!--                 class="tag">-->
