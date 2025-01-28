@@ -81,7 +81,7 @@
             <div class="flex gap-x-4 w-[250px]">
               <div class="flex flex-col gap-y-1 flex-1 min-w-0">
                 <div v-for="player in review.participantDtoList.filter(r => r.teamId == 100)"
-                     :key="player.riotIdGameName"
+                     :key="`${player.riotIdGameName}_${player.puuid}`"
                      class="flex items-center gap-1.5 px-2 py-1 rounded min-w-0"
                      :class="{
                         'bg-[#4CAF504D]': player.puuid === review.reviewDto.targetPuuid,
