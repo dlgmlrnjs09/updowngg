@@ -3,7 +3,10 @@
 <mapper namespace="gg.updown.backend.main.api.ranking.mapper.SiteRankingMapper">
 
     <sql id="rankingFilterCondition">
-        lm.queue_id = #{matchGameMode.queueId}
+        1=1
+        <if test="matchGameMode != null and matchGameMode.queueId != null">
+            AND lm.queue_id = #{matchGameMode.queueId}
+        </if>
         <if test="matchPosition != null">
             AND lmp.position = #{matchPosition}
         </if>
