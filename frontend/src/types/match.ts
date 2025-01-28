@@ -40,6 +40,7 @@ export interface LolMatchInfoRes {
 
 
 export enum MatchGameMode {
+    ALL = "ALL",
     ARAM = 'ARAM',
     NORMAL = 'NORMAL',
     SOLO_RANK = 'SOLO_RANK',
@@ -52,6 +53,7 @@ export interface GameModeInfo {
 }
 
 export const MatchGameModeDetails: Record<MatchGameMode, GameModeInfo> = {
+    [MatchGameMode.ALL]: {queueId: 0, queueName: '전체'},
     [MatchGameMode.ARAM]: { queueId: 450, queueName: '칼바람나락' },
     [MatchGameMode.NORMAL]: { queueId: 430, queueName: '일반게임' },
     [MatchGameMode.SOLO_RANK]: { queueId: 420, queueName: '개인랭크' },

@@ -6,7 +6,7 @@
         <div class="filter-label">큐 타입</div>
         <div class="filter-content">
           <button
-              v-for="queue in ['솔로랭크', '자유랭크', '무작위 총력전']"
+              v-for="queue in ['전체', '솔로랭크', '자유랭크', '무작위 총력전']"
               :key="queue"
               :class="['filter-chip', { active: selectedQueue === queue }]"
               @click="updateQueue(queue)"
@@ -65,15 +65,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { MatchGameMode, MatchPosition } from "@/types/match.ts"
-import type { SearchFilter } from "@/types/stats.ts"
-import type { Tier } from "@/types/league.ts"
-import {Period} from "@/types/match.ts";
-import type {ReviewTagDto} from "@/types/review.ts";
+import {ref, watch} from 'vue'
+import {MatchGameMode, MatchPosition, Period} from "@/types/match.ts"
+import type {SearchFilter} from "@/types/stats.ts"
+import type {Tier} from "@/types/league.ts"
 
 // 필터 상태
-const selectedQueue = ref('솔로랭크')
+const selectedQueue = ref('전체')
 const selectedTier = ref('전체')
 const selectedPeriod = ref('전체')
 const selectedPosition = ref('전체')
@@ -89,6 +87,7 @@ const emit = defineEmits<{
 
 // 큐 타입 매핑
 const queueMapping: Record<string, MatchGameMode> = {
+  '전체' : MatchGameMode.ALL,
   '솔로랭크': MatchGameMode.SOLO_RANK,
   '자유랭크': MatchGameMode.FLEX_RANK,
   '무작위 총력전': MatchGameMode.ARAM,
@@ -135,7 +134,9 @@ watch(
     () => {
       const filter: SearchFilter = {}
 
-      filter.queueType = queueMapping[selectedQueue.value]
+      if (selectedQueue.value !== '전체') {
+        filter.queueType = queueMapping[selectedQueue.value]
+      }
 
       if (selectedTier.value !== '전체') {
         filter.tier = selectedTier.value.toUpperCase() as Tier
