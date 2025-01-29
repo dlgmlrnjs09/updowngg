@@ -242,10 +242,19 @@ onMounted(async () => {
 
 const handleDuoSubmit = async (formData: CommunityPostDto) => {
   await communityApi.insertPost('duo', formData);
-  showWriteModal.value = false
+  showWriteModal.value = false;
   const toast = useToast();
-  toast.success('게시글 등록에 성공했습니다!')
-  await fetchPosts({});
+  toast.success('게시글 등록에 성공했습니다!');
+
+  // 현재 적용된 필터 상태를 유지하면서 새로고침
+  const currentFilter: SearchFilter = {
+    gameMode: selectedGameMode.value,
+    tier: selectedTier.value,
+    positionSelf: selectedPosition.value,
+    offset: 0, // 페이지는 처음으로 돌아가기
+    limit: 15
+  };
+  await fetchPosts(currentFilter);
 }
 
 const fetchPosts = async (filter: SearchFilter) => {
