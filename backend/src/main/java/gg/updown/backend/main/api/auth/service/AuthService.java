@@ -4,10 +4,15 @@ import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
 import gg.updown.backend.main.api.auth.mapper.AuthMapper;
 import gg.updown.backend.main.api.auth.model.*;
+import gg.updown.backend.main.enums.TokenStatus;
+import gg.updown.backend.main.exception.SiteCommonException;
+import gg.updown.backend.main.exception.SiteErrorMessage;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -65,31 +70,55 @@ public class AuthService {
     }
 
     public JwtToken refreshAccessToken(String refreshToken) {
-        // Refresh Token에서 사용자 정보 추출
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(Base64.getEncoder().encodeToString(secretKey.getBytes()))
-                .build()
-                .parseClaimsJws(refreshToken)
-                .getBody();
+        try {
+            // Refresh Token에서 사용자 정보 추출
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(Base64.getEncoder().encodeToString(secretKey.getBytes()))
+                    .build()
+                    .parseClaimsJws(refreshToken)
+                    .getBody();
 
-        String username = claims.getSubject();
+            String username = claims.getSubject();
 
-        // Refresh Token 유효성 검증
-        if (jwtTokenProvider.validateRefreshToken(username, refreshToken)) {
-            UserDetails userDetails = userDetailService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+            // Refresh Token 유효성 검증
+            TokenStatus tokenStatus = jwtTokenProvider.validateRefreshToken(username, refreshToken);
 
-            // 새로운 Access Token 발급
-            String newAccessToken = jwtTokenProvider.createAccessToken(authentication);
+            switch (tokenStatus) {
+                case VALID:
+                    UserDetails userDetails = userDetailService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
 
-            JwtToken tokens = JwtToken.builder()
-                    .accessToken(newAccessToken)
-                    .build();
+                    // 새로운 Access Token 발급
+                    String newAccessToken = jwtTokenProvider.createAccessToken(authentication);
 
-            return tokens;
-        } else {
-            return new JwtToken();
+                    return JwtToken.builder()
+                            .accessToken(newAccessToken)
+                            .build();
+
+                case EXPIRED:
+                    throw new SiteCommonException(HttpStatus.UNAUTHORIZED,
+                            SiteErrorMessage.INVALID_TOKEN.getMessage(),
+                            SiteErrorMessage.INVALID_TOKEN.getMessage(),
+                            "인증이 만료되었습니다. 다시 로그인해주세요.");
+
+                case BLACKLISTED:
+                    throw new SiteCommonException(HttpStatus.UNAUTHORIZED,
+                            SiteErrorMessage.INVALID_TOKEN.getMessage(),
+                            SiteErrorMessage.INVALID_TOKEN.getMessage(),
+                            "유효하지 않은 인증입니다. 다시 로그인해주세요.");
+
+                default:
+                    throw new SiteCommonException(HttpStatus.UNAUTHORIZED,
+                            "Invalid refresh token",
+                            "Invalid token",
+                            "유효하지 않은 인증입니다. 다시 로그인해주세요.");
+            }
+        } catch (JwtException e) {
+            throw new SiteCommonException(HttpStatus.UNAUTHORIZED,
+                    "Failed to parse refresh token",
+                    "Token parsing failed",
+                    "유효하지 않은 인증입니다. 다시 로그인해주세요.");
         }
     }
 

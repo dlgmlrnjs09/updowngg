@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import org.springframework.security.access.AccessDeniedException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,16 @@ public class SiteCommonExceptionHandler {
                         .devMessage(SiteErrorMessage.INTERNAL_SERVER_ERROR.getMessage())
                         .userMessage(SiteErrorMessage.INTERNAL_SERVER_ERROR.getMessage())
                 .build());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<CommonErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(CommonErrorResponse.builder()
+                        .devMessage("로그인이 필요한 서비스입니다.")
+                        .userMessage("로그인이 필요한 서비스입니다.")
+                        .build());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

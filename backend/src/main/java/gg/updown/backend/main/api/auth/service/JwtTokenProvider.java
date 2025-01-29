@@ -2,10 +2,8 @@ package gg.updown.backend.main.api.auth.service;
 
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import gg.updown.backend.main.enums.TokenStatus;
+import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -129,21 +127,26 @@ public class JwtTokenProvider {
      * @param token JWT 토큰
      * @return 유효성 여부
      */
-    public boolean validateToken(String token) {
+    public TokenStatus validateToken(String token) {
         try {
-            // 블랙리스트 체크 추가
+            // 블랙리스트 체크
             Boolean isBlacklisted = redisTemplate.hasKey("BL:" + token);
             if (Boolean.TRUE.equals(isBlacklisted)) {
-                return false;
+                return TokenStatus.BLACKLISTED;
             }
 
-            Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
+            // 토큰 검증 및 만료 체크
+            try {
+                Jwts.parserBuilder()
+                        .setSigningKey(secretKey)
+                        .build()
+                        .parseClaimsJws(token);
+                return TokenStatus.VALID;
+            } catch (ExpiredJwtException e) {
+                return TokenStatus.EXPIRED;
+            }
         } catch (JwtException | IllegalArgumentException e) {
-            return false;
+            return TokenStatus.INVALID;
         }
     }
 
@@ -151,19 +154,25 @@ public class JwtTokenProvider {
      * Refresh Token 유효성 검증
      * Redis에 저장된 토큰과 비교
      */
-    public boolean validateRefreshToken(String username, String refreshToken) {
+    public TokenStatus validateRefreshToken(String username, String refreshToken) {
         String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + username);
 
         log.info("username: {}", username);
         log.info("Received refreshToken: {}", refreshToken);
         log.info("Stored refreshToken in Redis: {}", storedRefreshToken);
 
-        // 토큰 동일성 체크
-        boolean isTokenEqual = refreshToken.equals(storedRefreshToken);
-        // 토큰 유효성 체크
-        boolean isTokenValid = validateToken(refreshToken);
+        // Redis에 저장된 토큰이 없는 경우
+        if (storedRefreshToken == null) {
+            return TokenStatus.INVALID;
+        }
 
-        return isTokenEqual && isTokenValid;
+        // Redis에 저장된 토큰과 다른 경우
+        if (!refreshToken.equals(storedRefreshToken)) {
+            return TokenStatus.INVALID;
+        }
+
+        // 토큰 자체의 유효성 검증
+        return validateToken(refreshToken);
     }
 
     /**

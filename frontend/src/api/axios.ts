@@ -92,56 +92,52 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const originalRequest = error.config;
-        const authStore = useAuthStore();
+        if (error.response?.status === 401) {
+            const tokenStatus = error.response.headers['token_status'];
+            const authStore = useAuthStore();
 
-        // 401 에러이고 아직 재시도하지 않은 경우에만 처리
-        if (error.response.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
+            switch(tokenStatus) {
+                case 'EXPIRED':
+                    // 토큰 갱신 시도
+                    try {
+                        const refreshToken = localStorage.getItem('refreshToken');
+                        if (!refreshToken) {
+                            throw new Error('No refresh token');
+                        }
 
-            try {
-                const refreshToken = localStorage.getItem('refreshToken');
-                if (!refreshToken) {
-                    throw new Error('No refresh token available');
-                }
+                        const response = await apiClient.post('/api/v1/auth/refresh', {refreshToken});
 
-                // 리프레시 토큰으로 새로운 액세스 토큰 요청
-                const response = await apiClient.post('/api/v1/auth/refresh', {
-                    refreshToken: refreshToken
-                });
+                        localStorage.setItem('accessToken', response.data.accessToken);
 
-                const newAccessToken = response.data.accessToken;
-                localStorage.setItem('accessToken', newAccessToken);
-                authStore.initializeAuth();
+                        // 원래 요청 재시도
+                        const originalRequest = error.config;
+                        originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
+                        return apiClient(originalRequest);
+                    } catch (refreshError) {
+                        // 갱신 실패 시
+                        localStorage.removeItem('accessToken');
+                        localStorage.removeItem('refreshToken');
+                        authStore.isAuthenticated = false;
+                        router.push('/login');
+                        toast.error('인증이 만료되었습니다. 다시 로그인해주세요.');
+                    }
+                    break;
 
-                // 새로운 토큰으로 원래 요청 재시도
-                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                return apiClient(originalRequest);
-            } catch (refreshError) {
-                // 리프레시 토큰도 만료된 경우 로그아웃 처리
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                router.push('/login')
-                return Promise.reject(refreshError);
+                case 'BLACKLISTED':
+                    // 로그아웃 처리
+                    await authStore.logout();
+                    router.push('/login');
+                    toast.error('유효하지 않은 인증입니다. 다시 로그인해주세요.');
+                    break;
+
+                default:
+                    // 일반적인 인증 필요 상황
+                    if (!error.config.url?.includes('/auth/')) {
+                        // auth 관련 요청이 아닐 경우에만 알림
+                        toast.error('로그인이 필요한 서비스입니다.');
+                    }
             }
         }
-
-        const errorResponse = error.response?.data as CommonErrorResponse;
-
-        if (errorResponse.userMessage) {
-            toast.error(errorResponse.userMessage);
-        }
-
-        // 개발 환경에서는 개발자 메시지도 콘솔에 출력
-        if (process.env.NODE_ENV === 'development') {
-            console.error('API Error:', {
-                status: error.response?.status,
-                devMessage: errorResponse?.devMessage,
-                userMessage: errorResponse?.userMessage,
-                timestamp: errorResponse?.timestamp
-            });
-        }
-
         return Promise.reject(error);
     }
 );
