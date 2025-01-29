@@ -7,6 +7,7 @@ import gg.updown.backend.main.api.notification.model.NotificationEntity;
 import gg.updown.backend.main.api.notification.service.NotificationService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;

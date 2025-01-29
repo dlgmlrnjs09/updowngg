@@ -8,6 +8,7 @@ import gg.updown.backend.main.api.community.common.service.CommunityInterface;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,7 @@ public class CommunityController {
     }
 
     @PostMapping("/{communityCode}/submit")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Boolean> submitPost(
             @PathVariable String communityCode,
             @RequestBody CommunityPostSubmitReqDto paramEntity,

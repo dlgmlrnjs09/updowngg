@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -76,22 +77,26 @@ public class AuthController {
     }
 
     @GetMapping("/discord/connect")
+    @PreAuthorize("isAuthenticated()")
     public void connectDiscord(HttpSession session, Authentication auth) {
         session.setAttribute("CONNECTING_USER_ID", ((UserDetailImpl) auth.getPrincipal()).getSiteCode());
     }
 
     @PostMapping("/discord/disconnect")
+    @PreAuthorize("isAuthenticated()")
     public void connectDiscord(@AuthenticationPrincipal UserDetails userDetails) {
         authService.disconnectDiscordAccount(((UserDetailImpl) userDetails).getSiteCode());
     }
 
     @GetMapping("/discord/account")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DiscordAccountEntity> getConnectStatus(@AuthenticationPrincipal UserDetails userDetails) {
         DiscordAccountEntity entity = authService.getDiscordAccountInfoBySiteCode(((UserDetailImpl) userDetails).getSiteCode());
         return ResponseEntity.ok(entity);
     }
 
     @Operation(summary = "소셜계정 연동", description = "디스코드 연동")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/discord/callback")
     public void discordCallback(HttpSession session, HttpServletResponse response) {
         long siteCode = Long.parseLong(session.getAttribute("CONNECTING_USER_ID").toString());
@@ -139,6 +144,7 @@ public class AuthController {
     }
 
     @Operation(summary = "회원정보 조회", description = "사이트 회원정보 조회")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/member-info")
     public ResponseEntity<SiteAccountResEntity> getMemberInfo(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails.getUsername() == null) {

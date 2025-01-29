@@ -29,7 +29,7 @@ export const useNotificationStore = defineStore('notification', {
 
             this.eventSource.onerror = () => {
                 this.eventSource?.close()
-                setTimeout(() => this.initSSE(), 3000)
+                setTimeout(() => this.initSSE(), 10000)
             }
 
             this.fetchNotifications()

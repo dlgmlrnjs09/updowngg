@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +48,7 @@ public class ReviewController {
     }
 
     @Operation(summary = "리뷰 등록", description = "소환사 리뷰 등록")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/submit")
     public ResponseEntity<Long> submitReview(@RequestBody @Valid ReviewSubmitReqDto reviewSubmitReqDto) {
         reviewService.submitReview(reviewSubmitReqDto);
@@ -54,6 +56,7 @@ public class ReviewController {
     }
 
     @Operation(summary = "리뷰 수정", description = "소환사 리뷰 수정")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/update")
     public ResponseEntity<Long> updateReview(@RequestBody @Valid ReviewUpdateReqDto reviewUpdateReqDto) {
         reviewService.updateReview(reviewUpdateReqDto);
@@ -61,6 +64,7 @@ public class ReviewController {
     }
 
     @Operation(summary = "태그 신청", description = "신규태그 신청")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/tag-suggest")
     public ResponseEntity<Long> insertSuggestedTag(@RequestBody List<ReviewTagSuggestReqDto> reqDto) {
         reviewService.insertSuggestTagList(reqDto);
