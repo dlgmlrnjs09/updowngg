@@ -8,6 +8,7 @@ import { useToast } from "vue-toastification";
 import type {LolSummonerProfileResDto, RiotAccountInfoEntity} from "@/types/summoner.ts";
 import {summonerApi} from "@/api/summoner.ts";
 import {useNotificationStore} from "@/stores/notification.ts";
+import {useRouter} from "vue-router";
 
 export const useAuthStore = defineStore('auth', () => {
     const user: Ref<SiteAccount | null> = ref(null);
@@ -16,6 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
     const isInitialized: Ref<boolean> = ref(false);  // 초기화 상태 추가
     const toast = useToast();
     const notificationStore = useNotificationStore();
+    const router = useRouter();
 
     async function login(credentials: LoginCredentials): Promise<boolean> {
         try {
@@ -44,10 +46,11 @@ export const useAuthStore = defineStore('auth', () => {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
                 user.value = null;
+                riotUser.value = null;
                 isAuthenticated.value = false;
+                isInitialized.value = false;
                 notificationStore.clearEventSource();
-            } else {
-                toast.error('로그아웃에 실패했습니다.')
+                router.push('/');
             }
         } catch (error) {
             console.error('Logout failed:', error);

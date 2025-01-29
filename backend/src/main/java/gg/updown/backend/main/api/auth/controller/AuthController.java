@@ -104,9 +104,12 @@ public class AuthController {
 
     @Operation(summary = "로그아웃", description = "로그아웃")
     @PostMapping("/logout")
-    public ResponseEntity<Boolean> logout(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Boolean> logout(@AuthenticationPrincipal UserDetails userDetails, @RequestHeader("Authorization") String bearerToken) {
         try {
             jwtTokenProvider.deleteRefreshToken(userDetails.getUsername());
+            String token = bearerToken.substring(7); // "Bearer " 제거
+            jwtTokenProvider.addToBlacklist(token);
+            SecurityContextHolder.clearContext();
             return ResponseEntity.ok(true);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

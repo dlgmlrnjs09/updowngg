@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.auth.service;
 
+import com.nimbusds.oauth2.sdk.token.AccessToken;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -130,9 +131,14 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
+            // 블랙리스트 체크 추가
+            Boolean isBlacklisted = redisTemplate.hasKey("BL:" + token);
+            if (Boolean.TRUE.equals(isBlacklisted)) {
+                return false;
+            }
+
             Jwts.parserBuilder()
                     .setSigningKey(secretKey)
-//                    .setSigningKey(Base64.getEncoder().encodeToString(secretKey.getBytes()))
                     .build()
                     .parseClaimsJws(token);
             return true;
@@ -158,5 +164,28 @@ public class JwtTokenProvider {
         boolean isTokenValid = validateToken(refreshToken);
 
         return isTokenEqual && isTokenValid;
+    }
+
+    /**
+     * AccessToken 블랙리스트 추가
+     */
+    public void addToBlacklist(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        // 토큰의 남은 유효시간 계산
+        Date expiration = claims.getExpiration();
+        long remainingTime = expiration.getTime() - System.currentTimeMillis();
+
+        // 블랙리스트에 추가 (토큰의 남은 유효기간만큼만 저장)
+        redisTemplate.opsForValue().set(
+                "BL:" + token,
+                "blacklisted",
+                remainingTime,
+                TimeUnit.MILLISECONDS
+        );
     }
 }
