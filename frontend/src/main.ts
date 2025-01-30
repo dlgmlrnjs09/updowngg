@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router'
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
+import VueGtag from 'vue-gtag-next'
 
 import './assets/main.css'
 import {createPinia} from "pinia";
@@ -11,7 +12,11 @@ import {createPinia} from "pinia";
 const app = createApp(App)
 const pinia = createPinia()
 import { throttleClick } from '@/plugin/throttleClick'
-
+if (import.meta.env.PROD) {
+    app.use(VueGtag, {
+        property: { id: 'G-DVK79DXH8T' }, router
+    });
+}
 app.use(pinia)
 app.use(router)
 app.mount('#app')

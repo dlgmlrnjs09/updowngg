@@ -93,4 +93,12 @@ router.beforeEach((to, from, next) => {
     }
 });
 
+// 페이지 뷰 추적을 위한 네비게이션 가드
+router.afterEach((to) => {
+    const title = to.meta.title
+    if (title) {
+        document.title = String(title)
+    }
+})
+
 export default router;
