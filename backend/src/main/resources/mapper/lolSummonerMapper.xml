@@ -200,10 +200,13 @@
             lmp.champ_name,
             lc.name_kr,
             COUNT(*) as play_count,
+            COUNT(CASE WHEN is_up = true THEN 1 END) as upCount,
+            COUNT(CASE WHEN is_up = false THEN 1 END) as downCount,
             COUNT(CASE WHEN is_win = true THEN 1 END) as win_count,
             ROW_NUMBER() OVER (PARTITION BY lmp.puuid ORDER BY COUNT(*) DESC) as rn
             FROM
             lol_match_participant lmp
+                left outer join site_summoner_review ssr on (lmp.match_id = ssr.match_id and lmp.puuid = ssr.target_puuid)
                 left outer join lol_champion lc on (lmp.champ_name = lc.name_us)
             WHERE
             lmp.puuid = #{puuid}
@@ -217,13 +220,15 @@
             mpc.name_kr,
             mpc.play_count,
             mpc.win_count,
+            mpc.upCount,
+            mpc.downCount,
             ROUND(mpc.win_count * 100.0 / mpc.play_count, 0) as win_rate
             FROM
             MostPlayedChamp mpc
             WHERE
             mpc.rn <![CDATA[ <= ]]> #{limit}
             GROUP BY
-            mpc.puuid, mpc.champ_name, mpc.name_kr, mpc.play_count, mpc.win_count, mpc.rn
+            mpc.puuid, mpc.champ_name, mpc.name_kr, mpc.play_count, mpc.win_count, mpc.upCount, mpc.downCount, mpc.rn
             ORDER BY
             mpc.puuid, mpc.play_count DESC
     </select>

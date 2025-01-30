@@ -13,5 +13,7 @@ public class LolSummonerMostChampionDto {
     private int playCount;
     private int winCount;
     private int winRate;
+    private int upCount;
+    private int downCount;
     private String iconUrl;
 }

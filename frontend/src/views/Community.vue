@@ -146,7 +146,7 @@
                     </div>
                   </div>
                   <!-- 버튼 영역 -->
-<!--                  <div class="flex flex-col gap-1 ml-2 justify-center">
+                  <div class="flex flex-col gap-1 ml-2 justify-center">
                     <button class="bg-[#5865F2] hover:bg-[#3d61df] text-white text-xs px-3 py-1 rounded-lg transition-colors flex items-center justify-center">
                       <img class="w-5 h-5" src="@/assets/icon/discord_logo.svg" alt="discord"/>
                     </button>
@@ -156,7 +156,7 @@
                         <circle cx="12" cy="7" r="4"></circle>
                       </svg>
                     </button>
-                  </div>-->
+                  </div>
                 </div>
               </div>
             </div>
@@ -187,9 +187,9 @@
                       </div>
                       <div class="flex items-center gap-1 mt-0.5">
                         <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
-                        <span class="text-[#4CAF50] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.upCount }}</span>
+                        <span class="text-[#4CAF50] text-xs">{{ champion.upCount }}</span>
                         <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
-                        <span class="text-[#FF5252] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.downCount }}</span>
+                        <span class="text-[#FF5252] text-xs">{{ champion.downCount }}</span>
                       </div>
                     </div>
                   </div>

@@ -29,5 +29,7 @@ export interface LolSummonerMostChampionDto {
     playCount: number
     winCount: number
     winRate: number
+    upCount: number
+    downCount: number
     iconUrl: string
 }
