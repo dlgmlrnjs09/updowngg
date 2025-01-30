@@ -27,98 +27,111 @@
       </div>
 
       <!-- Reviews List -->
-      <div class="space-y-4">
-        <div v-for="(review, index) in getReviewWithParticipant"
-             :key="index"
-             :ref="el => { if (review.reviewDto.summonerReviewSeq.toString() === route.query.reviewSeq) reviewRef = el }"
-             :class="[
-               'bg-[#141414] rounded-xl border border-[#ffffff1a] p-4 transition-all duration-1000',
-               review.reviewDto.summonerReviewSeq.toString() === route.query.reviewSeq ? 'highlight-review' : ''
-             ]">
-          <div class="flex gap-6 items-center">
-            <!-- Game Info -->
-            <div class="min-w-[130px]">
-              <div class="text-white text-sm font-medium">{{ review.matchDto.gameModeName}}</div>
-              <div class="text-gray-400 text-xs mt-1 flex gap-1">
-                <span>{{ formatTimeAgo(review.matchDto.gameStartDt) }}</span>
-              </div>
-            </div>
-
-            <!-- Champion Icon & Level -->
-            <div class="relative flex-shrink-0  mr-[20px]">
-              <div class="w-12 h-12 bg-[#1a1a1a] rounded-lg overflow-hidden">
-                <img v-if="activeTab === 'received' && review.reviewDto.isAnonymous" src="/src/assets/icon/anonymous_profile.png" alt="anonymous">
-                <img v-else :src="review.displayedUser?.champProfileIconUrl" :alt="review.displayedUser?.champName" class="w-full h-full"/>
-              </div>
-              <div v-if="!(activeTab === 'received' && review.reviewDto.isAnonymous)" class="absolute -bottom-1 -right-1 bg-[#1a1a1a] w-5 h-5 rounded-full flex items-center justify-center text-xs text-gray-300">
-                {{ review.displayedUser?.champLevel }}
-              </div>
-            </div>
-
-            <!-- Review Content -->
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-2 cursor-pointer" @click.stop="goSelectedSummonerProfile(review.displayedUser.riotIdGameName, review.displayedUser.riotIdTagline)">
-                <component
-                    :is="review.reviewDto.isUp ? ThumbsUp : ThumbsDown"
-                    class="w-4 h-4"
-                    :class="review.reviewDto.isUp ? 'text-[#4CAF50]' : 'text-[#FF5252]'"
-                />
-                <template v-if="activeTab === 'received' && review.reviewDto.isAnonymous">
-                  <span class="text-gray-400 text-sm italic">익명의 소환사</span>
-                </template>
-                <template v-else>
-                  <span class="text-white text-sm summoner-name">{{ review.displayedUser?.riotIdGameName }}</span>
-                  <span class="text-gray-400 text-xs">#{{ review.displayedUser?.riotIdTagline }}</span>
-                </template>
-              </div>
-              <div class="flex flex-wrap gap-2 mb-2">
-                <TagList :tags="review.reviewDto.tagDtoList || []" size="small" :is-show-count="false"/>
-              </div>
-              <p class="text-gray-300 text-sm line-clamp-2">{{ review.reviewDto.comment }}</p>
-            </div>
-
-            <!-- Players Grid -->
-            <div class="flex gap-x-4 w-[250px]">
-              <div class="flex flex-col gap-y-1 flex-1 min-w-0">
-                <div v-for="player in review.participantDtoList.filter(r => r.teamId == 100)"
-                     :key="`${player.riotIdGameName}_${player.puuid}`"
-                     class="flex items-center gap-1.5 px-2 py-1 rounded min-w-0"
-                     :class="{
-                        'bg-[#4CAF504D]': player.puuid === review.reviewDto.targetPuuid,
-                        'bg-[#2979FF4D]': player.puuid === review.reviewDto.reviewerPuuid
-                      }"
-                >
-                  <img :src="player.champProfileIconUrl" alt="Profile" class="w-5 h-5 rounded-full flex-shrink-0"/>
-                  <div
-                      class="text-sm text-gray-400 truncate summoner-name w-full"
-                      @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)"
-                  >
-                    {{ player.riotIdGameName }}
-                  </div>
+      <div class="space-y-4 min-h-[600px] flex flex-col">
+        <template v-if="histories.length > 0">
+          <div v-for="(review, index) in getReviewWithParticipant"
+               :key="index"
+               :ref="el => { if (review.reviewDto.summonerReviewSeq.toString() === route.query.reviewSeq) reviewRef = el }"
+               :class="[
+           'bg-[#141414] rounded-xl border border-[#ffffff1a] p-4 transition-all duration-1000',
+           review.reviewDto.summonerReviewSeq.toString() === route.query.reviewSeq ? 'highlight-review' : ''
+         ]">
+            <div class="flex gap-6 items-center">
+              <!-- Game Info -->
+              <div class="min-w-[130px]">
+                <div class="text-white text-sm font-medium">{{ review.matchDto.gameModeName}}</div>
+                <div class="text-gray-400 text-xs mt-1 flex gap-1">
+                  <span>{{ formatTimeAgo(review.matchDto.gameStartDt) }}</span>
                 </div>
               </div>
 
-              <div class="flex flex-col gap-y-1 flex-1 min-w-0">
-                <div v-for="player in review.participantDtoList.filter(r => r.teamId == 200)"
-                     :key="player.riotIdGameName"
-                     class="flex items-center gap-1.5 px-2 py-1 rounded min-w-0"
-                     :class="{
-                        'bg-[#4CAF504D]': player.puuid === review.reviewDto.targetPuuid,
-                        'bg-[#2979FF4D]': player.puuid === review.reviewDto.reviewerPuuid
-                      }"
-                >
-                  <img :src="player.champProfileIconUrl" alt="Profile" class="w-5 h-5 rounded-full flex-shrink-0"/>
-                  <div
-                      class="text-sm text-gray-400 truncate summoner-name w-full"
-                      @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)"
+              <!-- Champion Icon & Level -->
+              <div class="relative flex-shrink-0  mr-[20px]">
+                <div class="w-12 h-12 bg-[#1a1a1a] rounded-lg overflow-hidden">
+                  <img v-if="activeTab === 'received' && review.reviewDto.isAnonymous" src="/src/assets/icon/anonymous_profile.png" alt="anonymous">
+                  <img v-else :src="review.displayedUser?.champProfileIconUrl" :alt="review.displayedUser?.champName" class="w-full h-full"/>
+                </div>
+                <div v-if="!(activeTab === 'received' && review.reviewDto.isAnonymous)" class="absolute -bottom-1 -right-1 bg-[#1a1a1a] w-5 h-5 rounded-full flex items-center justify-center text-xs text-gray-300">
+                  {{ review.displayedUser?.champLevel }}
+                </div>
+              </div>
+
+              <!-- Review Content -->
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2 cursor-pointer" @click.stop="goSelectedSummonerProfile(review.displayedUser.riotIdGameName, review.displayedUser.riotIdTagline)">
+                  <component
+                      :is="review.reviewDto.isUp ? ThumbsUp : ThumbsDown"
+                      class="w-4 h-4"
+                      :class="review.reviewDto.isUp ? 'text-[#4CAF50]' : 'text-[#FF5252]'"
+                  />
+                  <template v-if="activeTab === 'received' && review.reviewDto.isAnonymous">
+                    <span class="text-gray-400 text-sm italic">익명의 소환사</span>
+                  </template>
+                  <template v-else>
+                    <span class="text-white text-sm summoner-name">{{ review.displayedUser?.riotIdGameName }}</span>
+                    <span class="text-gray-400 text-xs">#{{ review.displayedUser?.riotIdTagline }}</span>
+                  </template>
+                </div>
+                <div class="flex flex-wrap gap-2 mb-2">
+                  <TagList :tags="review.reviewDto.tagDtoList || []" size="small" :is-show-count="false"/>
+                </div>
+                <p class="text-gray-300 text-sm line-clamp-2">{{ review.reviewDto.comment }}</p>
+              </div>
+
+              <!-- Players Grid -->
+              <div class="flex gap-x-4 w-[250px]">
+                <div class="flex flex-col gap-y-1 flex-1 min-w-0">
+                  <div v-for="player in review.participantDtoList.filter(r => r.teamId == 100)"
+                       :key="`${player.riotIdGameName}_${player.puuid}`"
+                       class="flex items-center gap-1.5 px-2 py-1 rounded min-w-0"
+                       :class="{
+                    'bg-[#4CAF504D]': player.puuid === review.reviewDto.targetPuuid,
+                    'bg-[#2979FF4D]': player.puuid === review.reviewDto.reviewerPuuid
+                  }"
                   >
-                    {{ player.riotIdGameName }}
+                    <img :src="player.champProfileIconUrl" alt="Profile" class="w-5 h-5 rounded-full flex-shrink-0"/>
+                    <div
+                        class="text-sm text-gray-400 truncate summoner-name w-full"
+                        @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)"
+                    >
+                      {{ player.riotIdGameName }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-y-1 flex-1 min-w-0">
+                  <div v-for="player in review.participantDtoList.filter(r => r.teamId == 200)"
+                       :key="player.riotIdGameName"
+                       class="flex items-center gap-1.5 px-2 py-1 rounded min-w-0"
+                       :class="{
+                    'bg-[#4CAF504D]': player.puuid === review.reviewDto.targetPuuid,
+                    'bg-[#2979FF4D]': player.puuid === review.reviewDto.reviewerPuuid
+                  }"
+                  >
+                    <img :src="player.champProfileIconUrl" alt="Profile" class="w-5 h-5 rounded-full flex-shrink-0"/>
+                    <div
+                        class="text-sm text-gray-400 truncate summoner-name w-full"
+                        @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)"
+                    >
+                      {{ player.riotIdGameName }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </template>
+        <template v-else>
+          <div class="flex-1 flex flex-col items-center justify-center">
+            <img class="w-28 h-28 text-gray-600 mb-4" src="@/assets/icon/emoji/crying_bee.png" alt="crying_bee">
+            <h3 class="text-lg font-medium text-gray-200 mb-2">
+              {{ activeTab === 'written' ? '작성한 리뷰가 없습니다' : '받은 리뷰가 없습니다' }}
+            </h3>
+            <p class="text-gray-400 text-sm">
+              {{ activeTab === 'written' ? '함께 게임을 한 소환사를 평가해보세요!' : '먼저 함께한 소환사를 평가해보세요!' }}
+            </p>
+          </div>
+        </template>
       </div>
 
       <!-- Pagination -->
@@ -164,7 +177,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import type { ReviewHistoryResponse, ReviewHistoryDto } from '@/types/review'
 import {reviewApi} from "@/api/review.ts";
-import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
+import { ThumbsUp, ThumbsDown, MessageCircleX  } from 'lucide-vue-next'
 import {createInitialPaging, formatTimeAgo, getPageNumbers, goSelectedSummonerProfile} from "@/utils/common.ts";
 import TagList from "@/components/common/TagList.vue";
 import {useRoute, useRouter} from "vue-router";
@@ -317,6 +330,6 @@ const getReviewWithParticipant = computed(() => {
 
 .highlight-review {
   animation: fadeOut 3s forwards;
-  animation-delay: 1s; /* 1초 동안 하이라이트 유지 후 페이드아웃 시작 */
+  animation-delay: 1s;
 }
 </style>

@@ -34,8 +34,8 @@
           <span class="time">{{ formatTimeAgo(notificationEntity.regDt) }}</span>
         </div>
       </div>
-      <div v-if="!store.notifications" class="empty-state">
-        알림이 없습니다
+      <div v-if="store.notifications.length == 0" class="empty-state">
+        받은 알림이 없습니다.
       </div>
     </div>
   </div>
@@ -267,6 +267,7 @@ const handleNotificationClick = async (notification: ReviewNotification) => {
   text-align: center;
   color: #666;
   font-size: 14px;
+  border: 1px solid #333
 }
 
 @media (max-width: 1024px) {
