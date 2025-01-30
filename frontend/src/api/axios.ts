@@ -119,7 +119,6 @@ apiClient.interceptors.response.use(
                         localStorage.removeItem('refreshToken');
                         authStore.isAuthenticated = false;
                         router.push('/login');
-                        toast.error('인증이 만료되었습니다. 다시 로그인해주세요.');
                     }
                     break;
 
@@ -127,16 +126,16 @@ apiClient.interceptors.response.use(
                     // 로그아웃 처리
                     await authStore.logout();
                     router.push('/login');
-                    toast.error('유효하지 않은 인증입니다. 다시 로그인해주세요.');
                     break;
 
                 default:
-                    // 일반적인 인증 필요 상황
-                    if (!error.config.url?.includes('/auth/')) {
-                        // auth 관련 요청이 아닐 경우에만 알림
-                        toast.error('로그인이 필요한 서비스입니다.');
-                    }
             }
+        }
+
+        const errorResponse = error.response?.data as CommonErrorResponse;
+
+        if (errorResponse.userMessage) {
+            toast.error(errorResponse.userMessage);
         }
         return Promise.reject(error);
     }

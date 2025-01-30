@@ -11,8 +11,10 @@
     "deploy": "node deploy"
   },
   "dependencies": {
+    "@types/lodash": "^4.17.15",
     "axios": "^1.7.9",
     "echarts": "^5.5.1",
+    "lodash": "^4.17.21",
     "lucide-vue-next": "^0.469.0",
     "pinia": "^2.3.0",
     "vue": "^3.5.13",
