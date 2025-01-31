@@ -42,7 +42,7 @@
       >
         <div class="flex items-center gap-3">
           <img
-              :src="`https://ddragon.leagueoflegends.com/cdn/14.3.1/img/profileicon/${summoner.profileIconId}.png`"
+              :src="summoner.profileIconUrl"
               :alt="summoner.gameName"
               class="w-8 h-8 rounded-full"
           />
