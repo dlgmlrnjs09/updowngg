@@ -41,4 +41,6 @@ public interface ReviewMapper {
     void insertSuggestTagList(List<ReviewTagSuggestEntity> reqDto);
     Map<String, Object> getReviewNotificationElement(@Param("matchId")String matchId, @Param("targetPuuid")String targetPuuid);
     int findReviewIndex(Long reviewSeq);
+    int checkExist(@Param("reviewerPuuid")String reviewerPuuid, @Param("targetPuuid") String targetPuuid);
+    ReviewDto getWrittenToTarget(@Param("reviewerPuuid")String reviewerPuuid, @Param("targetPuuid") String targetPuuid);
 }

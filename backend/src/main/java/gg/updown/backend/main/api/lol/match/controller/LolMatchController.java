@@ -24,8 +24,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -42,7 +44,7 @@ public class LolMatchController {
 
     private final LolMatchService lolMatchService;
 
-    @Operation(summary = "LOL 경기목록 조회", description = "라이엇 계정정보, LOL 소환사 정보 조회")
+    @Operation(summary = "LOL 경기목록 조회", description = "LOL 경기목록 및 리뷰작성내역 조회")
     @GetMapping("/list")
     public ResponseEntity<List<LolMatchInfoResDto>> getMatchList(
             @Valid @ParameterObject LolMatchInfoReqDto reqDto,
@@ -50,6 +52,12 @@ public class LolMatchController {
     ) {
         List<LolMatchInfoResDto> responseDto = lolMatchService.getAndInsertMatchList(reqDto.getPuuid(), reqDto.getStartIndex(), reqDto.getCount(), userDetail);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    @Operation(summary = "LOL 경기 단건조회", description = "LOL 경기 및 리뷰작성내역 조회")
+    @GetMapping("/{matchId}")
+    public ResponseEntity<LolMatchInfoResDto> getMatchInfo(@PathVariable String matchId, @AuthenticationPrincipal UserDetailImpl userDetail) {
+        return ResponseEntity.status(HttpStatus.OK).body(lolMatchService.getMatchResDto(matchId, userDetail));
     }
 
     @Operation(summary = "LOL 경기목록 갱신", description = "라이엇 계정정보, LOL 소환사 정보 조회")

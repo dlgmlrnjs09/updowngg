@@ -59,7 +59,7 @@ public class LolMatchService {
     }
 
     /**
-     * 갱신으로 인해 새로불러온 matchId 조회 후 상세정보 불러오기(DB or API)
+     * 갱신으로 인해 새로불러온 matchId 조회 후 상세정보 및 리뷰 불러오기(DB or API)
      * 초기 진입시, 더보기버튼 클릭시
      * @param puuid
      * @param startIndex
@@ -122,6 +122,23 @@ public class LolMatchService {
         return resultList;
     }
 
+    /**
+     * matchId로 매치 상세 정보 및 리뷰 조회
+     * @param matchId
+     * @return
+     */
+    public LolMatchInfoResDto getMatchResDto(String matchId, UserDetailImpl userDetails) {
+        LolMatchInfoResDto resDto = this.getMatchResDtoAndInsertConditional(matchId);
+
+        resDto.getParticipantList().forEach(player -> {
+            player.setReviewDto(new ReviewDto());
+            player.setReviewStatsDto(reviewService.getReviewAvgRating(player.getPuuid()));
+            player.setReviewDto(reviewService.getWrittenToTarget(userDetails.getPuuid(), player.getPuuid()));
+        });
+
+        return resDto;
+    }
+
 
     /**
      * 이미 이미 DB에 존재하면 DB에서 get, 없으면 API에서 get 및 DB 저장
@@ -154,23 +171,14 @@ public class LolMatchService {
 //            lolSummonerService.getAndConflictSummonerLeagueInfo(participantEntity.getSummonerId());
 //        }
 
-        LolMatchInfoDto infoDto = new LolMatchInfoDto();
-        BeanUtils.copyProperties(matchInfoEntity, infoDto);
-        // gameMode명 세팅
-        infoDto.setGameModeName(MatchGameMode.getQueueName(infoDto.getQueueId()));
-        List<LolMatchParticipantDto> participantDtoList = participantList.stream()
-                .map(participant -> {
-                    LolMatchParticipantDto entity = new LolMatchParticipantDto();
-                    BeanUtils.copyProperties(participant, entity);
-                    entity.setChampProfileIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, participant.getChampName()));
-                    return entity;
-                })
-                .toList();
+        return this.makeMatchInfoResDto(matchInfoEntity, participantList);
+    }
 
-        return LolMatchInfoResDto.builder()
-            .matchInfo(infoDto)
-            .participantList(participantDtoList)
-        .build();
+    public LolMatchInfoResDto getMatchInfoAndParticipantList(String matchId) {
+        LolMatchEntity matchInfoEntity = this.getMatchInfo(matchId);
+        List<LolMatchParticipantEntity> participantList = this.getMatchParticipant(matchId);
+
+        return this.makeMatchInfoResDto(matchInfoEntity, participantList);
     }
 
     public LolMatchEntity getMatchInfo(String matchId) {
@@ -231,5 +239,25 @@ public class LolMatchService {
         Collections.reverse(returnList);
 
         return returnList;
+    }
+
+    private LolMatchInfoResDto makeMatchInfoResDto(LolMatchEntity matchEntity, List<LolMatchParticipantEntity> participantEntityList) {
+        LolMatchInfoDto infoDto = new LolMatchInfoDto();
+        BeanUtils.copyProperties(matchEntity, infoDto);
+        infoDto.setGameModeName(MatchGameMode.getQueueName(infoDto.getQueueId()));
+
+        List<LolMatchParticipantDto> participantDtoList = participantEntityList.stream()
+                .map(participant -> {
+                    LolMatchParticipantDto entity = new LolMatchParticipantDto();
+                    BeanUtils.copyProperties(participant, entity);
+                    entity.setChampProfileIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, participant.getChampName()));
+                    return entity;
+                })
+                .toList();
+
+        return LolMatchInfoResDto.builder()
+                .matchInfo(infoDto)
+                .participantList(participantDtoList)
+                .build();
     }
 }

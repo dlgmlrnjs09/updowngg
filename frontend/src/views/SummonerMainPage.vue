@@ -15,8 +15,10 @@
           :is-updated-match-list="isUpdatedMatchList"
           :rating-by-position="ratingByPosition"
           :rating-by-champ="ratingByChamp"
+          :written-review="writtenReview || null"
           @show-detail="showDetailModal = true"
           @update-matches="updateMatchList"
+          @open-previous-modal="openPreviousModal"
       />
 
       <MatchList
@@ -65,6 +67,7 @@
     </template>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import {onMounted, ref, watchEffect} from 'vue'
@@ -117,6 +120,7 @@ const showTagSuggestModal = ref(false)
 const showPreviousReviewModal = ref(false)
 const selectedPlayer = ref(<LolMatchParticipant>({}));
 const suggestTag = ref<ReviewTagSuggestDto[]>([])
+const writtenReview = ref<ReviewRequestDto | null>(null)
 
 const fetchSummonerInfo = async () => {
   try {
@@ -266,6 +270,17 @@ const openReviewModal = (player: any) => {
   }
 }
 
+const openPreviousModal = async () => {
+  /*selectedPlayer.value = player;*/
+  if (authStore.isAuthenticated && writtenReview.value) {
+    const response = await matchApi.getMatchInfo(writtenReview.value?.matchId);
+    reviewedMatch.value = response.data;
+    showPreviousReviewModal.value = true;
+  }
+
+  selectedPlayer.value = reviewedMatch.value.participantList.filter(p => p.puuid == writtenReview.value?.targetPuuid)[0];
+}
+
 const handleReviewModify = () => {
   showPreviousReviewModal.value = false;
   showReviewModal.value = true;
@@ -305,6 +320,17 @@ const fetchRatingByPosition = async () => {
   ratingByPosition.value = response.data;
 }
 
+const fetchWrittenReview = async() => {
+  if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
+  if (authStore.isAuthenticated) {
+    const response = await reviewApi.checkExistWritten(summonerInfo.value.riotAccountInfoEntity.puuid)
+    if (response.data === true) {
+      const response = await reviewApi.getWrittenReviewToTarget(summonerInfo.value.riotAccountInfoEntity.puuid);
+      writtenReview.value = response.data;
+    }
+  }
+}
+
 watchEffect(async () => {
   const name = route.params.name;
   const tag = route.params.tag;
@@ -312,6 +338,7 @@ watchEffect(async () => {
     isLoading.value = true;
     currentStartIndex.value = 0;
     noMoreMatches.value = false;
+    writtenReview.value = null;
     try {
       await fetchSummonerInfo();
       await fetchSummonerReviewStats();
@@ -322,6 +349,7 @@ watchEffect(async () => {
       await fetchRecentReviews();
       await fetchRatingByChamp();
       await fetchRatingByPosition();
+      await fetchWrittenReview();
     } finally {
       isLoading.value = false;
     }
@@ -331,9 +359,9 @@ watchEffect(async () => {
 onMounted(async () => {
   await fetchReviewTags()
   await fetchReviewTagCategories();
+  writtenReview.value = null;
 })
 </script>
-
 <style scoped>
 .container {
   max-width: 1000px;

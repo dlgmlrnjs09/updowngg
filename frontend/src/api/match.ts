@@ -1,5 +1,6 @@
 import  apiClient  from './axios'
 import type { LolMatchInfoRes } from '@/types/match'
+import type {ReviewRequestDto} from "@/types/review.ts";
 
 export const matchApi = {
     getMatchList: (puuid: string, startIndex: number, count: number) =>
@@ -16,4 +17,7 @@ export const matchApi = {
                 puuid,
             }
         }),
+
+    getMatchInfo: (matchId: string) =>
+        apiClient.get<LolMatchInfoRes>(`/api/v1/match/${matchId}`)
 }

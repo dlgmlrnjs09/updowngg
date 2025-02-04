@@ -91,10 +91,6 @@ const formatDate = (dateString: string) => {
   return `${year}.${month}.${day}`;
 };
 
-const getProfileIconUrl = (iconId: string) => {
-  return `https://ddragon.leagueoflegends.com/cdn/14.3.1/img/profileicon/${iconId}.png`;
-};
-
 const startRolling = () => {
   if (timer) {
     clearInterval(timer);

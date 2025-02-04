@@ -85,5 +85,15 @@ export const reviewApi = {
         apiClient.get<number>(`/api/v1/review/find-page`, {
             params: { reviewSeq }
         }),
+
+    checkExistWritten: (targetPuuid: string) =>
+        apiClient.get<boolean>(`/api/v1/review/my/exist`, {
+            params: {
+                targetPuuid
+            }
+        }),
+
+    getWrittenReviewToTarget: (targetPuuid: string) =>
+        apiClient.get<ReviewRequestDto>(`/api/v1/review/my/${targetPuuid}`)
 }
 

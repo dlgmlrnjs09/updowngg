@@ -179,4 +179,12 @@ public class ReviewService {
         int reviewIndex = reviewMapper.findReviewIndex(reviewSeq);
         return (reviewIndex / itemsPerPage) + 1;
     }
+
+    public boolean checkExist(String reviewerPuuid, String targetPuuid) {
+        return reviewMapper.checkExist(reviewerPuuid, targetPuuid) > 0;
+    }
+
+    public ReviewDto getWrittenToTarget(String reviewerPuuid, String targetPuuid) {
+        return reviewMapper.getWrittenToTarget(reviewerPuuid, targetPuuid);
+    }
 }

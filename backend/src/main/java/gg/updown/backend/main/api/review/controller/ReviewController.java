@@ -159,13 +159,30 @@ public class ReviewController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "특정 리뷰 페이지번호 조회", description = "특정 리뷰가 존재하는 페이지번호 조회")
     @GetMapping("/find-page")
     public ResponseEntity<Integer> findReviewPage(
-            @RequestParam Long reviewSeq,
-            @AuthenticationPrincipal UserDetails userDetail
+            @RequestParam Long reviewSeq
     ) {
-        UserDetailImpl userDetails = (UserDetailImpl) userDetail;
         int page = reviewService.findReviewPage(reviewSeq, ITEMS_PER_PAGE);
         return ResponseEntity.ok(page);
+    }
+
+    @Operation(summary = "특정 대상에게 작성한 리뷰가 존재하는지 여부 확인", description = "로그인 사용자가 특정 대상에게 작성한 리뷰가 존재하는지에 대한 여부 확인")
+    @GetMapping("/my/exist")
+    public ResponseEntity<Boolean> checkExistWritten(
+            String targetPuuid,
+            @AuthenticationPrincipal UserDetails userDetail
+    ) {
+        return ResponseEntity.ok(reviewService.checkExist(((UserDetailImpl) userDetail).getPuuid(), targetPuuid));
+    }
+
+    @Operation(summary = "특정 대상에게 작성한 리뷰 조회", description = "로그인 사용자가 특정 대상에게 작성한 리뷰 조회")
+    @GetMapping("/my/{targetPuuid}")
+    public ResponseEntity<ReviewDto> getWrittenReviewToTarget(
+            @AuthenticationPrincipal UserDetails userDetail,
+            @PathVariable String targetPuuid
+    ) {
+        return ResponseEntity.ok(reviewService.getWrittenToTarget(((UserDetailImpl) userDetail).getPuuid(), targetPuuid));
     }
 }

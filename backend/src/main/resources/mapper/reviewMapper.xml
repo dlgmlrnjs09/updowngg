@@ -383,5 +383,42 @@
             WHERE summoner_review_seq = #{reviewSeq}
         )
     </select>
+
+    <select id="checkExist" parameterType="map" resultType="int">
+        select count(*)
+        from site_summoner_review ssrreviewWithTagsMap
+        where
+            reviewer_puuid = #{reviewerPuuid}
+            and target_puuid = #{targetPuuid}
+            and del_dt is null
+    </select>
+
+    <select id="getWrittenToTarget" parameterType="map" resultMap="reviewWithTagsMap">
+        SELECT
+            r.summoner_review_seq,
+            r.match_id,
+            reviewer_site_code,
+            reviewer_puuid,
+            target_puuid,
+            is_up,
+            comment,
+            is_up,
+            r.reg_dt,
+            upd_dt,
+            del_dt,
+            t.tag_code,
+            rt.tag_value,
+            rt.tag_description,
+            rt.tag_updown,
+            COUNT(rt.*) OVER (PARTITION BY r.summoner_review_seq) as frequent_count
+        FROM
+            site_summoner_review r
+                LEFT OUTER JOIN site_summoner_review_tag t ON r.summoner_review_seq = t.summoner_review_seq
+                LEFT OUTER JOIN site_review_tag rt ON t.tag_code = rt.tag_code
+        WHERE
+            reviewer_puuid = #{reviewerPuuid}
+            and target_puuid = #{targetPuuid}
+            and del_dt is null
+    </select>
 </mapper>
 
