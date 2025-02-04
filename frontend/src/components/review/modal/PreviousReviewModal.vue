@@ -39,11 +39,6 @@
           <!-- Tags -->
           <div class="tags-section">
             <TagList :tags="player.reviewDto.tagDtoList || []" size="medium" :is-show-count="false"/>
-<!--            <div v-for="tag in player.reviewDto.tagDtoList"-->
-<!--                 :key="tag.tagCode"-->
-<!--                 class="tag">-->
-<!--              {{ tag.tagValue }}-->
-<!--            </div>-->
           </div>
 
           <!-- Comment -->
@@ -56,7 +51,6 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-<!--          <button class="btn-cancel" @click="$emit('close')">취소</button>-->
           <button class="btn-rewrite" @click="$emit('rewrite')">리뷰 수정</button>
         </div>
       </div>
@@ -71,113 +65,30 @@
       </button>
 
       <!-- Game Details Section -->
-      <div class="game-details" :class="{ 'open': isDetailsOpen }">
-        <div class="game-info">
-          <div class="game-meta">
-            <div class="game-type">{{ reviewedMatch.matchInfo.gameModeName }}</div>
-            <div class="game-date">
-              {{ formatDate(reviewedMatch.matchInfo.gameStartDt) }}
-              <span class="bullet">•</span>
-              {{ formatDuration(reviewedMatch.matchInfo.gameDuration) }}
-            </div>
-          </div>
-        </div>
-
-        <div class="teams-container">
-          <!-- Blue Team -->
-          <div class="team blue-team">
-            <div class="team-header">블루팀</div>
-            <div class="team-players">
-              <div v-for="player in blueTeam"
-                   :key="player.puuid"
-                   class="player-card"
-                   :class="{
-                      'reviewed': player.puuid === props.player.puuid,
-                      'me': player.puuid === authStore.user?.puuid
-                   }"
-              >
-                <div class="player-champion">
-                  <div class="champion-portrait">
-                    <img :src="player.champProfileIconUrl" :alt="player.champName">
-                    <div class="champion-level">{{ player.champLevel }}</div>
-                  </div>
-                </div>
-                <div class="player-info">
-                  <div class="player-identity">
-                    <span class="name">{{ player.riotIdGameName }}</span>
-                    <span class="tagline">#{{ player.riotIdTagline }}</span>
-                  </div>
-                  <div class="player-stats">
-                    <div class="kda">
-                      <span :class="{ 'highlight': player.kills > 0 }">{{ player.kills }}</span> /
-                      <span :class="{ 'highlight-death': player.deaths > 0 }">{{ player.deaths }}</span> /
-                      <span :class="{ 'highlight': player.assists > 0 }">{{ player.assists }}</span>
-                    </div>
-                    <div v-if="calculateKDA(player) > 0" class="kda-ratio">
-                      {{ calculateKDA(player).toFixed(2) }} KDA
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Red Team -->
-          <div class="team red-team">
-            <div class="team-header">레드팀</div>
-            <div class="team-players">
-              <div v-for="player in redTeam"
-                   :key="player.puuid"
-                   class="player-card"
-                   :class="{
-                      'reviewed': player.puuid === props.player.puuid,
-                      'me': player.puuid === authStore.user?.puuid
-                   }"
-              >
-                <div class="player-champion">
-                  <div class="champion-portrait">
-                    <img :src="player.champProfileIconUrl" :alt="player.champName">
-                    <div class="champion-level">{{ player.champLevel }}</div>
-                  </div>
-                </div>
-                <div class="player-info">
-                  <div class="player-identity">
-                    <span class="name">{{ player.riotIdGameName }}</span>
-                    <span class="tagline">#{{ player.riotIdTagline }}</span>
-                  </div>
-                  <div class="player-stats">
-                    <div class="kda">
-                      <span :class="{ 'highlight': player.kills > 0 }">{{ player.kills }}</span> /
-                      <span :class="{ 'highlight-death': player.deaths > 0 }">{{ player.deaths }}</span> /
-                      <span :class="{ 'highlight': player.assists > 0 }">{{ player.assists }}</span>
-                    </div>
-                    <div v-if="calculateKDA(player) > 0" class="kda-ratio">
-                      {{ calculateKDA(player).toFixed(2) }} KDA
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <GameDetailSection
+          :match="reviewedMatch"
+          :is-open="isDetailsOpen"
+          :reviewed-puuid="player.puuid"
+          :current-user-puuid="authStore.user?.puuid"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { ChevronDown, ThumbsUp, ThumbsDown } from 'lucide-vue-next'
 import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match.ts'
-import TagList from "@/components/common/TagList.vue";
-import {useAuthStore} from "@/stores/auth.ts";
+import TagList from "@/components/common/TagList.vue"
+import GameDetailSection from '@/components/match/GameDetailSection.vue'
+import { useAuthStore } from "@/stores/auth.ts"
 
 const props = defineProps<{
   reviewedMatch: LolMatchInfoRes
   player: LolMatchParticipant
 }>()
 
-const authStore = useAuthStore();
+const authStore = useAuthStore()
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -185,30 +96,6 @@ const emit = defineEmits<{
 }>()
 
 const isDetailsOpen = ref(false)
-
-const blueTeam = computed(() =>
-    props.reviewedMatch?.participantList.filter(p => p.teamId === 100)
-)
-
-const redTeam = computed(() =>
-    props.reviewedMatch?.participantList.filter(p => p.teamId === 200)
-)
-
-const calculateKDA = (player: LolMatchParticipant) => {
-  return player.deaths === 0
-      ? player.kills + player.assists
-      : (player.kills + player.assists) / player.deaths
-}
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString()
-}
-
-const formatDuration = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${minutes}:${secs.toString().padStart(2, '0')}`
-}
 </script>
 
 <style scoped>
@@ -232,12 +119,11 @@ const formatDuration = (seconds: number) => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  margin: 20px 0; /* 상하 여백 추가 */
+  margin: 20px 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(41, 121, 255, 0.3) transparent;
 }
 
-/* Webkit 스크롤바 스타일링 */
 .modal-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -282,39 +168,6 @@ const formatDuration = (seconds: number) => {
   padding: 24px;
 }
 
-/* Game Info Section */
-.game-info-section {
-  margin-bottom: 24px;
-}
-
-.game-meta {
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.game-type {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-}
-
-.game-date {
-  color: #888;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bullet {
-  color: #444;
-}
-
 .notice-banner {
   background: #1B2838;
   border: 1px solid #2979FF;
@@ -348,7 +201,6 @@ const formatDuration = (seconds: number) => {
   flex: 1;
 }
 
-/* Review Section */
 .review-section {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
@@ -424,7 +276,6 @@ const formatDuration = (seconds: number) => {
   opacity: 0.9;
 }
 
-/* Tags Section */
 .tags-section {
   display: flex;
   flex-wrap: wrap;
@@ -432,16 +283,6 @@ const formatDuration = (seconds: number) => {
   margin-bottom: 16px;
 }
 
-.tag {
-  background: rgba(41, 121, 255, 0.1);
-  color: #2979FF;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  border: 1px solid rgba(41, 121, 255, 0.2);
-}
-
-/* Comment Section */
 .comment-section {
   background: rgba(255, 255, 255, 0.02);
   border-radius: 12px;
@@ -455,7 +296,6 @@ const formatDuration = (seconds: number) => {
   white-space: pre-wrap;
 }
 
-/* Action Buttons */
 .action-buttons {
   display: flex;
   gap: 12px;
@@ -471,16 +311,6 @@ const formatDuration = (seconds: number) => {
   transition: all 0.2s;
 }
 
-.btn-cancel {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-
-.btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
 .btn-rewrite {
   background: #2979FF;
   border: none;
@@ -491,191 +321,6 @@ const formatDuration = (seconds: number) => {
   background: #2262CC;
 }
 
-.game-details {
-  max-height: none; /* max-height 제거 */
-  height: auto; /* 자동 높이 */
-  overflow: visible; /* overflow 제거 */
-  background: rgba(255, 255, 255, 0.02);
-  display: none; /* 초기에는 숨김 */
-}
-
-.game-info {
-  padding: 24px 24px 0;
-}
-
-.game-meta {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.game-type {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 6px 12px;
-  border-radius: 6px;
-}
-
-.game-date {
-  color: #888;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.game-details.open {
-  display: block; /* 열릴 때 보이게 */
-}
-
-.teams-container {
-  padding: 24px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  height: auto; /* 자동 높이 */
-}
-
-.team {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
-  padding: 20px;
-}
-
-.team-header {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  padding-left: 8px;
-}
-
-.blue-team .team-header {
-  color: #2979FF;
-}
-
-.red-team .team-header {
-  color: #FF5252;
-}
-
-.team-players {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.player-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  background: rgba(30, 30, 30, 0.95);
-  transition: all 0.2s ease;
-}
-
-.player-card.reviewed {
-  background: rgba(76, 175, 80, 0.1);
-  border: 1px solid rgba(76, 175, 80, 0.2);
-}
-
-.player-card.me {
-  background: rgba(41, 121, 255, 0.1);
-  border: 1px solid rgba(41, 121, 255, 0.2);
-}
-
-.player-champion {
-  position: relative;
-}
-
-.champion-portrait {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #000;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.champion-portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.champion-level {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  background: #000;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  padding: 1px 4px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.player-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.player-identity {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 4px;
-}
-
-.player-identity .name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #fff;
-}
-
-.player-identity .tagline {
-  font-size: 12px;
-  color: #666;
-}
-
-.player-stats {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  justify-content: space-between;
-}
-
-.kda {
-  font-size: 14px;
-  color: #888;
-  white-space: nowrap;
-}
-
-.kda .highlight {
-  color: #4CAF50;
-}
-
-.kda .highlight-death {
-  color: #FF5252;
-}
-
-.kda-ratio {
-  font-size: 12px;
-  color: #666;
-  white-space: nowrap;
-}
-
-@media (min-width: 768px) {
-  .teams-container {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-/* Details Toggle */
 .details-toggle {
   width: 100%;
   padding: 16px;
@@ -741,5 +386,4 @@ const formatDuration = (seconds: number) => {
     background: #141414;
   }
 }
-
 </style>
