@@ -43,7 +43,7 @@
       <div class="written-review-content">
         <div class="written-review-text"><InfoIcon/> 해당 소환사에게 작성한 리뷰가 있습니다.</div>
         <button @click="$emit('openPreviousModal')" class="edit-button">
-          내역확인
+          확인
         </button>
       </div>
     </div>
@@ -148,7 +148,7 @@ defineEmits<{
   (e: 'openPreviousModal'): void
 }>()
 
-const isExpanded = ref(false)
+const isExpanded = ref(true)
 
 const toggleExpanded = () => {
   isExpanded.value = !isExpanded.value

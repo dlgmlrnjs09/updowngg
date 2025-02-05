@@ -23,6 +23,6 @@ public class LolMatchInfoReqDto {
 
     @Schema(description = "조회할 Match 수", example = "10", minimum = "1", defaultValue = "5")
     @Min(value = 1, message = "count는 1 이상이어야 합니다.")
-    @Max(value = 5, message = "count는 100 이하여야 합니다.")
+    @Max(value = 100, message = "count는 100 이하여야 합니다.")
     Integer count;
 }

@@ -95,6 +95,7 @@ import {useToast} from "vue-toastification";
 import {useAuthStore} from "@/stores/auth.ts";
 import TagSuggestModal from "@/components/review/modal/TagSuggestModal.vue";
 
+const pageCount = 10;
 const toast = useToast();
 const authStore = useAuthStore();
 const route = useRoute();
@@ -147,7 +148,7 @@ const fetchSummonerReviewStats = async () => {
 const fetchMatchList = async (startIndex: number = 0) => {
   try {
     if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
-    const response = await matchApi.getMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, startIndex, 5);
+    const response = await matchApi.getMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, startIndex, pageCount);
 
     if (startIndex === 0) {
       matches.value = response.data
@@ -156,7 +157,7 @@ const fetchMatchList = async (startIndex: number = 0) => {
     }
 
     // 더 이상 불러올 데이터가 없는 경우
-    if (response.data.length < 5) {
+    if (response.data.length < pageCount) {
       noMoreMatches.value = true
     }
 
@@ -227,7 +228,7 @@ const loadMoreMatches = async () => {
 
   isLoadingMore.value = true
   try {
-    await fetchMatchList(currentStartIndex.value + 5)
+    await fetchMatchList(currentStartIndex.value + pageCount)
   } finally {
     isLoadingMore.value = false
   }
