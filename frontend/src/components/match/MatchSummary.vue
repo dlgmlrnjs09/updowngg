@@ -1,4 +1,3 @@
-<!-- src/components/match/MatchSummary.vue -->
 <template>
   <div
       class="match-container"
@@ -64,23 +63,23 @@
               </div>
             </div>
 
-            <!-- 기존 좋아요/싫어요 카운트 -->
+            <!-- 좋아요/싫어요 카운트 -->
             <div class="flex items-center gap-4 mb-2">
               <div class="flex items-center gap-2">
                 <ThumbsUp class="w-[20px] h-[20px] text-[#4CAF50]" />
                 <span class="text-[#4CAF50] font-semibold text-sm">
-          {{ match.reviewByMatchSummaryDto?.upCount || 0 }}
-        </span>
+                  {{ match.reviewByMatchSummaryDto?.upCount || 0 }}
+                </span>
               </div>
               <div class="flex items-center gap-2">
                 <ThumbsDown class="w-[20px] h-[20px] text-[#FF5252]" />
                 <span class="text-[#FF5252] font-semibold text-sm">
-          {{ match.reviewByMatchSummaryDto?.downCount || 0 }}
-        </span>
+                  {{ match.reviewByMatchSummaryDto?.downCount || 0 }}
+                </span>
               </div>
             </div>
 
-            <!-- 기존 태그 리스트 -->
+            <!-- 태그 리스트 -->
             <TagList :tags="match.reviewByMatchSummaryDto?.tagDtoList?.slice(0, 3)" size="small" is-show-count/>
           </template>
           <template v-else>
@@ -97,32 +96,68 @@
             <div class="team-column">
               <div v-for="player in team1"
                    :key="player.puuid"
-                   class="flex items-center gap-1 mb-1">
-                <img
-                    :src="player.champProfileIconUrl"
-                    :alt="player.champName"
-                    class="w-4 h-4 rounded-sm"
-                >
-                <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
-                      @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
-                  {{ player.riotIdGameName }}
-                </span>
+                   class="participant-row">
+                <div class="flex items-center gap-1 min-w-0 flex-1">
+                  <img
+                      :src="player.champProfileIconUrl"
+                      :alt="player.champName"
+                      class="w-4 h-4 rounded-sm flex-shrink-0"
+                  >
+                  <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
+                        @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
+                    {{ player.riotIdGameName }}
+                  </span>
+                </div>
+                <div class="flex items-center">
+                  <FileEdit
+                      v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                            && player.puuid !== auth.user?.puuid
+                            && !player.reviewDto.reviewable"
+                      class="w-4 h-4 text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0 ml-2"
+                      @click.stop="$emit('reviewPlayer', player)"
+                  />
+                  <PencilIcon
+                      v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                            && player.puuid !== auth.user?.puuid
+                            && player.reviewDto.reviewable"
+                      class="w-[16px] h-[16px] text-gray-600 hover:text-gray-400 cursor-pointer flex-shrink-0 ml-2"
+                      @click.stop="$emit('reviewPlayer', player)"
+                  />
+                </div>
               </div>
             </div>
             <!-- 레드팀 -->
             <div class="team-column">
               <div v-for="player in team2"
                    :key="player.puuid"
-                   class="flex items-center gap-1 mb-1">
-                <img
-                    :src="player.champProfileIconUrl"
-                    :alt="player.champName"
-                    class="w-4 h-4 rounded-sm"
-                >
-                <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
-                      @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
-                  {{ player.riotIdGameName }}
-                </span>
+                   class="participant-row">
+                <div class="flex items-center gap-1 min-w-0 flex-1">
+                  <img
+                      :src="player.champProfileIconUrl"
+                      :alt="player.champName"
+                      class="w-4 h-4 rounded-sm flex-shrink-0"
+                  >
+                  <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
+                        @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
+                    {{ player.riotIdGameName }}
+                  </span>
+                </div>
+                <div class="flex items-center">
+                  <FileEdit
+                      v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                            && player.puuid !== auth.user?.puuid
+                            && !player.reviewDto.reviewable"
+                      class="w-4 h-4 text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0 ml-2"
+                      @click.stop="$emit('reviewPlayer', player)"
+                  />
+                  <PencilIcon
+                      v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                            && player.puuid !== auth.user?.puuid
+                            && player.reviewDto.reviewable"
+                      class="w-[16px] h-[16px] text-gray-600 hover:text-gray-400 cursor-pointer flex-shrink-0 ml-2"
+                      @click.stop="$emit('reviewPlayer', player)"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -163,11 +198,14 @@
 import { ref, computed } from 'vue';
 import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match';
 import type { LolSummonerProfileResDto } from '@/types/summoner';
-import { ThumbsUp, ThumbsDown, ChevronDown, ChevronUp } from 'lucide-vue-next';
+import { ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, PenLine, FileEdit, PencilIcon } from 'lucide-vue-next';
 import MatchTeam from './MatchTeam.vue';
 import {goSelectedSummonerProfile} from "@/utils/common.ts";
 import TagList from "@/components/common/TagList.vue";
 import type {ReviewByMatchSummaryDto} from "@/types/review.ts";
+import {useAuthStore} from "@/stores/auth.ts";
+
+const auth = useAuthStore();
 
 const props = defineProps<{
   match: LolMatchInfoRes;
@@ -244,7 +282,11 @@ const formatDuration = (seconds: number) => {
 
 .team-column {
   @apply flex flex-col;
-  width: 100px;
+  width: 140px;
+}
+
+.participant-row {
+  @apply flex items-center mb-1 pr-1 w-[120px];
 }
 
 .game-item {
