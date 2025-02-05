@@ -5,15 +5,12 @@ import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
-import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
 import gg.updown.backend.main.api.review.service.ReviewHistoryService;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -92,6 +89,19 @@ public class ReviewController {
         List<ReviewDto> reviewList = reviewService.getRecentReviewList(reqDto.getPuuid(), reqDto.getLimit());
         return ResponseEntity.status(HttpStatus.OK).body(reviewList);
     }
+
+    @Operation(summary = "경기별 평가자 및 태그정보 조회", description = "로그인한 사용자의 특정 경기에서 받은 리뷰의 평가자 및 태그정보 조회")
+    @GetMapping("/match/{matchId}")
+    public ResponseEntity<ReviewByMatchSummaryDto> getReviewerAndTagsByMatch(
+            @PathVariable String matchId,
+            @AuthenticationPrincipal UserDetails userDetail
+    ) {
+        UserDetailImpl userDetails = (UserDetailImpl) userDetail;
+        ReviewByMatchSummaryDto result = reviewService.getReviewerAndTagsByMatch(userDetails.getPuuid(), matchId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
 
     @GetMapping("/rating-avg/champ")
     @Operation(summary = "챔피언별 리뷰 통계조회", description = "특정 대상의 챔피언별 리뷰 통계조회")

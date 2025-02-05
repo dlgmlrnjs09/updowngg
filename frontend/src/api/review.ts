@@ -1,5 +1,6 @@
 import apiClient from './axios'
 import type {
+    ReviewByMatchDto, ReviewByMatchSummaryDto,
     ReviewHistoryDto, ReviewHistoryResponse,
     ReviewRatingByChampDto,
     ReviewRatingByPositionDto,
@@ -94,6 +95,9 @@ export const reviewApi = {
         }),
 
     getWrittenReviewToTarget: (targetPuuid: string) =>
-        apiClient.get<ReviewRequestDto>(`/api/v1/review/my/${targetPuuid}`)
+        apiClient.get<ReviewRequestDto>(`/api/v1/review/my/${targetPuuid}`),
+
+    getReviewByMatch: (matchId: string) =>
+        apiClient.get<ReviewByMatchSummaryDto>(`/api/v1/review/match/${matchId}`)
 }
 

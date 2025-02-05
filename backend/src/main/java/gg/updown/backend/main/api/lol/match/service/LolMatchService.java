@@ -73,10 +73,14 @@ public class LolMatchService {
         List<String> requestedMatchList = matchMapper.selectMatchRequestList(puuid, startIndex, count);
         for (String matchId : requestedMatchList) {
             // 이미 DB에 존재하면 DB에서 get, 없으면 API에서 get 및 DB 저장
+            // 1. 경기정보 저장
             LolMatchInfoResDto resDto = this.getMatchResDtoAndInsertConditional(matchId);
 
+            // 2. 프로필 대상자의 해당 경기 받은 리뷰 작성자, 태그정보 조회
+            resDto.setReviewByMatchSummaryDto(reviewService.getReviewerAndTagsByMatch(puuid, matchId));
+
             if (userDetails == null) {
-                // 2. 로그인하지 않은 경우 모든 플레이어를 리뷰 불가능으로 처리
+                // 3. 로그인하지 않은 경우 모든 플레이어를 리뷰 불가능으로 처리
                 resDto.getParticipantList().forEach(player -> {
                     player.setReviewDto(new ReviewDto());
                     player.getReviewDto().setReviewable(false);

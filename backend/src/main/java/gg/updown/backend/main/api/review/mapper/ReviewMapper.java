@@ -9,7 +9,6 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Mapper
 public interface ReviewMapper {
@@ -43,4 +42,5 @@ public interface ReviewMapper {
     int findReviewIndex(Long reviewSeq);
     int checkExist(@Param("reviewerPuuid")String reviewerPuuid, @Param("targetPuuid") String targetPuuid);
     ReviewDto getWrittenToTarget(@Param("reviewerPuuid")String reviewerPuuid, @Param("targetPuuid") String targetPuuid);
+    ReviewByMatchSummaryDto getReviewerAndTagsByMatch(@Param("targetPuuid") String targetPuuid, @Param("matchId") String matchId);
 }

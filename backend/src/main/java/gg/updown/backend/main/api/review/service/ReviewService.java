@@ -14,7 +14,6 @@ import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
-import gg.updown.backend.main.enums.SiteMatchGameMode;
 import gg.updown.backend.main.riot.ddragon.service.DdragonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -28,11 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class ReviewService {
-    private final DdragonService ddragonService;
     @Value("${riot-api.latest-version}")
     private String latestVersion;
 
@@ -58,7 +57,6 @@ public class ReviewService {
         this.matchService = matchService;
         this.notificationService = notificationService;
         this.authService = authService;
-        this.ddragonService = ddragonService;
     }
 
     public List<ReviewTagEntity> getReviewTagList() {
@@ -70,7 +68,7 @@ public class ReviewService {
     }
 
     public List<ReviewDto> getWroteReviewList(String reviewerPuuid) {
-    return reviewMapper.getWroteReviewList(reviewerPuuid);
+        return reviewMapper.getWroteReviewList(reviewerPuuid);
     }
 
     public List<ReviewDto> getWroteReviewListPaging(long reviewerSiteCode, int page, int itemsPerPage) {
@@ -186,5 +184,18 @@ public class ReviewService {
 
     public ReviewDto getWrittenToTarget(String reviewerPuuid, String targetPuuid) {
         return reviewMapper.getWrittenToTarget(reviewerPuuid, targetPuuid);
+    }
+
+    public ReviewByMatchSummaryDto getReviewerAndTagsByMatch(String targetPuuid, String matchId) {
+        ReviewByMatchSummaryDto dto = reviewMapper.getReviewerAndTagsByMatch(targetPuuid, matchId);
+        if (dto == null) {
+            return null;
+        }
+
+        dto.getReviewerInfoList().forEach(reviewerInfo -> {
+            String champIconUrl = RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, String.valueOf(reviewerInfo.getReviewerChampName()));
+            reviewerInfo.setReviewerChampIconUrl(champIconUrl);
+        });
+        return dto;
     }
 }

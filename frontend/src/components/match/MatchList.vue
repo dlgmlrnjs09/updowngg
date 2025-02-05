@@ -2,7 +2,7 @@
 <template>
   <div class="games-section">
     <div v-for="match in matches" :key="match.matchInfo.matchId" class="mb-4 mt-4">
-      <match-summary
+      <MatchSummary
           :match="match"
           :profile-data="profileData"
           @review-player="openReview"
@@ -33,7 +33,7 @@
 import { computed } from 'vue';
 import type { LolMatchInfoRes } from '@/types/match';
 import type { LolSummonerProfileResDto } from '@/types/summoner';
-import MatchSummary from './MatchSummary.vue';
+import MatchSummary from '@/components/match/MatchSummary.vue';
 
 defineProps<{
   matches: LolMatchInfoRes[];

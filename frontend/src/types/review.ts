@@ -81,3 +81,16 @@ export interface ReviewHistoryDto {
 }
 
 export interface ReviewHistoryResponse extends PagingDTO<ReviewHistoryDto> {}
+
+export interface ReviewByMatchSummaryDto {
+    upCount: number;
+    downCount: number;
+    reviewerInfoList: ReviewerInfo[] | null
+    tagDtoList: ReviewTagDto[] | null
+}
+
+interface ReviewerInfo {
+    reviewerChampId: number;
+    reviewerChampName: string;
+    reviewerChampIconUrl: string;
+}

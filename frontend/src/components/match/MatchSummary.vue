@@ -2,18 +2,18 @@
 <template>
   <div
       class="match-container"
-      :class="
-        [
-            isWin && !showDetails ? 'bg-blue-950/30' : '',
-            !isWin && !showDetails ?  'bg-red-950/30' : '',
-            showDetails ? 'bg-[#141414]' : ''
-        ]">
+      :class="[
+        isWin && !showDetails ? 'bg-blue-950/30' : '',
+        !isWin && !showDetails ? 'bg-red-950/30' : '',
+        showDetails ? 'bg-[#141414]' : ''
+      ]">
     <div class="summary-section" @click="toggleDetails">
       <div class="match-summary flex items-center">
         <!-- 왼쪽: 게임 정보 -->
-        <div class="game-info-section w-48 px-4">
+        <div class="game-info-section w-36 px-4 flex flex-col">
           <div class="text-sm font-medium">{{ match.matchInfo.gameModeName }}</div>
           <div class="text-xs text-gray-400">{{ formatDate(match.matchInfo.gameStartDt) }}</div>
+          <div class="divider my-2 border-t border-gray-700 w-[60%]"></div>
           <div class="text-xs" :class="isWin ? 'text-blue-400' : 'text-red-400'">
             {{ isWin ? '승리' : '패배' }}
           </div>
@@ -21,7 +21,7 @@
         </div>
 
         <!-- 중앙: 챔피언/KDA 정보 -->
-        <div class="champion-kda-section flex items-center gap-4 w-64">
+        <div class="champion-kda-section flex items-center gap-4 w-48">
           <div class="champion-info">
             <div class="relative">
               <img
@@ -45,6 +45,49 @@
               {{ calculateKDA(currentPlayer) }} 평점
             </div>
           </div>
+        </div>
+
+        <!-- 평가 정보 섹션 -->
+        <div class="review-info-section px-4 border-l border-r border-gray-700 w-96">
+          <template v-if="match.reviewByMatchSummaryDto">
+            <!-- 평가한 소환사들의 챔피언 초상화 -->
+            <div class="reviewers-champions mb-2">
+              <div class="flex gap-1 overflow-hidden">
+                <img
+                    v-for="reviewer in match.reviewByMatchSummaryDto?.reviewerInfoList"
+                    :key="reviewer.reviewerChampId"
+                    :src="reviewer.reviewerChampIconUrl"
+                    :alt="reviewer.reviewerChampId.toString()"
+                    class="w-6 h-6 rounded-sm border border-gray-700/50"
+                    :title="reviewer.reviewerChampId.toString()"
+                >
+              </div>
+            </div>
+
+            <!-- 기존 좋아요/싫어요 카운트 -->
+            <div class="flex items-center gap-4 mb-2">
+              <div class="flex items-center gap-2">
+                <ThumbsUp class="w-[20px] h-[20px] text-[#4CAF50]" />
+                <span class="text-[#4CAF50] font-semibold text-sm">
+          {{ match.reviewByMatchSummaryDto?.upCount || 0 }}
+        </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <ThumbsDown class="w-[20px] h-[20px] text-[#FF5252]" />
+                <span class="text-[#FF5252] font-semibold text-sm">
+          {{ match.reviewByMatchSummaryDto?.downCount || 0 }}
+        </span>
+              </div>
+            </div>
+
+            <!-- 기존 태그 리스트 -->
+            <TagList :tags="match.reviewByMatchSummaryDto?.tagDtoList?.slice(0, 3)" size="small" is-show-count/>
+          </template>
+          <template v-else>
+            <div class="flex items-center justify-center h-full text-sm text-gray-400">
+              해당 게임에서 받은 평가가 없습니다.
+            </div>
+          </template>
         </div>
 
         <!-- 오른쪽: 참가자 목록 -->
@@ -95,16 +138,6 @@
 
     <!-- 매치 상세 정보 -->
     <div v-show="showDetails" class="game-item">
-<!--      <div class="game-header">
-        <div class="game-info">
-          <div class="game-type">{{ match.matchInfo.gameModeName }}</div>
-          <div class="game-meta">
-            <span class="game-date">{{ formatDate(match.matchInfo.gameStartDt) }}</span>
-            <span class="separator">•</span>
-            <span class="game-duration">{{ formatDuration(match.matchInfo.gameDuration) }}</span>
-          </div>
-        </div>
-      </div>-->
       <div class="teams-container">
         <match-team
             :participants="team1"
@@ -128,12 +161,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
 import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match';
 import type { LolSummonerProfileResDto } from '@/types/summoner';
 import { ThumbsUp, ThumbsDown, ChevronDown, ChevronUp } from 'lucide-vue-next';
 import MatchTeam from './MatchTeam.vue';
 import {goSelectedSummonerProfile} from "@/utils/common.ts";
+import TagList from "@/components/common/TagList.vue";
+import type {ReviewByMatchSummaryDto} from "@/types/review.ts";
 
 const props = defineProps<{
   match: LolMatchInfoRes;
@@ -192,11 +226,15 @@ const formatDuration = (seconds: number) => {
 }
 
 .summary-section {
-  @apply p-4 cursor-pointer /*hover:bg-gray-800/30;*/
+  @apply p-4 cursor-pointer;
+}
+
+.review-info-section {
+  @apply flex flex-col justify-center min-w-[160px];
 }
 
 .participants-section {
-  @apply flex-1 pl-4 ml-auto;
+  @apply flex-1 pl-4;
   max-width: min-content;
 }
 
@@ -211,7 +249,6 @@ const formatDuration = (seconds: number) => {
 
 .game-item {
   background: #141414;
-  /*border-radius: 12px;*/
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -283,8 +320,13 @@ const formatDuration = (seconds: number) => {
 
   .game-info-section,
   .champion-kda-section,
+  .review-info-section,
   .participants-section {
     @apply w-full mb-2;
+  }
+
+  .review-info-section {
+    @apply border-l-0 border-r-0 border-t border-b py-2;
   }
 
   .participants-section {

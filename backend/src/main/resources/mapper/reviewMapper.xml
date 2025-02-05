@@ -33,6 +33,27 @@
         </collection>
     </resultMap>
 
+    <resultMap id="reviewByMatchMap" type="ReviewByMatchSummaryDto">
+        <!-- 기본 정보 매핑 -->
+        <result property="upCount" column="up_count"/>
+        <result property="downCount" column="down_count"/>
+
+        <!-- 리뷰어 정보 리스트 매핑 -->
+        <collection property="reviewerInfoList" ofType="gg.updown.backend.main.api.review.model.dto.ReviewerInfo">
+            <result property="reviewerChampId" column="reviewer_champ_id"/>
+            <result property="reviewerChampName" column="reviewer_champ_name"/>
+        </collection>
+
+        <!-- 태그 집계 정보 매핑 -->
+        <collection property="tagDtoList" ofType="gg.updown.backend.main.api.review.model.dto.ReviewTagDto">
+            <id property="tagCode" column="tag_code"/>
+            <result property="tagValue" column="tag_value"/>
+            <result property="tagDescription" column="tag_description"/>
+            <result property="tagUpdown" column="tag_updown"/>
+            <result property="frequentCount" column="frequent_count"/>
+        </collection>
+    </resultMap>
+
     <select id="getWroteReviewList" parameterType="String" resultMap="reviewWithTagsMap">
         SELECT
             r.summoner_review_seq,
@@ -419,6 +440,37 @@
             reviewer_puuid = #{reviewerPuuid}
             and target_puuid = #{targetPuuid}
             and del_dt is null
+    </select>
+
+    <select id="getReviewerAndTagsByMatch" parameterType="map" resultMap="reviewByMatchMap">
+        WITH total_counts AS (
+            SELECT
+                SUM(CASE WHEN is_up = true THEN 1 ELSE 0 END) as up_count,
+                SUM(CASE WHEN is_up = false THEN 1 ELSE 0 END) as down_count
+            FROM site_summoner_review
+            WHERE target_puuid = #{targetPuuid} AND match_id = #{matchId}
+        )
+        SELECT
+            tc.up_count,
+            tc.down_count,
+            lmp.champ_id as reviewer_champ_id,
+            lmp.champ_name as reviewer_champ_name,
+            srt.tag_code,
+            srt.tag_value,
+            srt.tag_description,
+            srt.tag_updown,
+            COUNT(*) OVER (PARTITION BY srt.tag_code) as frequent_count
+        FROM
+            site_summoner_review ssr
+                JOIN site_summoner_review_tag ssrt ON ssr.summoner_review_seq = ssrt.summoner_review_seq
+                JOIN site_review_tag srt ON ssrt.tag_code = srt.tag_code
+                JOIN lol_match_participant lmp ON (ssr.match_id = lmp.match_id and ssr.reviewer_puuid = lmp.puuid)
+                CROSS JOIN total_counts tc
+        WHERE
+            ssr.target_puuid = #{targetPuuid}
+          AND lmp.match_id = #{matchId}
+        ORDER BY
+            frequent_count desc
     </select>
 </mapper>
 
