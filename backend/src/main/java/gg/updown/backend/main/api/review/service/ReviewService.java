@@ -193,6 +193,11 @@ public class ReviewService {
         }
 
         dto.getReviewerInfoList().forEach(reviewerInfo -> {
+            if (reviewerInfo.getIsAnonymous()) {
+                reviewerInfo.anonymizeReviewerInfo();
+                return;
+            }
+
             String champIconUrl = RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, String.valueOf(reviewerInfo.getReviewerChampName()));
             reviewerInfo.setReviewerChampIconUrl(champIconUrl);
         });

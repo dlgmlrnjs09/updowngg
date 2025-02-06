@@ -93,4 +93,5 @@ interface ReviewerInfo {
     reviewerChampId: number;
     reviewerChampName: string;
     reviewerChampIconUrl: string;
+    isAnonymous: boolean;
 }

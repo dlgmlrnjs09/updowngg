@@ -20,7 +20,7 @@
         </div>
 
         <!-- 중앙: 챔피언/KDA 정보 -->
-        <div class="champion-kda-section flex items-center gap-4 w-48">
+        <div class="champion-kda-section flex items-center gap-4 w-60">
           <div class="champion-info">
             <div class="relative">
               <img
@@ -47,7 +47,7 @@
         </div>
 
         <!-- 평가 정보 섹션 -->
-        <div class="review-info-section px-4 border-l border-r border-gray-700 w-96">
+        <div class="review-info-section px-4 border-l border-r border-gray-700 w-[28.5rem]">
           <template v-if="match.reviewByMatchSummaryDto">
             <!-- 평가한 소환사들의 챔피언 초상화 -->
             <div class="reviewers-champions mb-2">
@@ -55,10 +55,10 @@
                 <img
                     v-for="reviewer in match.reviewByMatchSummaryDto?.reviewerInfoList"
                     :key="reviewer.reviewerChampId"
-                    :src="reviewer.reviewerChampIconUrl"
+                    :src="reviewer.isAnonymous ? '/src/assets/icon/anonymous_profile.png' : reviewer.reviewerChampIconUrl"
                     :alt="reviewer.reviewerChampId.toString()"
-                    class="w-6 h-6 rounded-sm border border-gray-700/50"
-                    :title="reviewer.reviewerChampId.toString()"
+                    class="w-7 h-7 rounded-sm border border-gray-700/50"
+                    :title="reviewer.isAnonymous ? '익명의 소환사' : reviewer.reviewerChampName.toString()"
                 >
               </div>
             </div>
@@ -282,7 +282,7 @@ const formatDuration = (seconds: number) => {
 
 .team-column {
   @apply flex flex-col;
-  width: 140px;
+  width: 120px;
 }
 
 .participant-row {

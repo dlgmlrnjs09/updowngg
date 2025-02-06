@@ -2,12 +2,17 @@ package gg.updown.backend.main.api.notification.controller;
 
 
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
+import gg.updown.backend.main.api.auth.service.JwtTokenProvider;
 import gg.updown.backend.main.api.notification.model.NotificationDto;
 import gg.updown.backend.main.api.notification.model.NotificationEntity;
 import gg.updown.backend.main.api.notification.service.NotificationService;
+import gg.updown.backend.main.enums.TokenStatus;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -22,14 +27,34 @@ import java.util.UUID;
 @RequestMapping("/api/v1/notification")
 public class NotificationController {
     private final NotificationService notificationService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    @GetMapping(path = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@AuthenticationPrincipal UserDetails user) {
-        if (user != null) {
-            return notificationService.subscribe(((UserDetailImpl) user).getSiteCode());
+    @GetMapping("/subscribe")
+    public ResponseEntity<SseEmitter> subscribe(@RequestParam String token) {
+        // 토큰 유효성 검증
+        TokenStatus tokenStatus = jwtTokenProvider.validateToken(token);
+        if (tokenStatus != TokenStatus.VALID) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        return null;
+        // 토큰에서 Authentication 정보 추출
+        Authentication authentication = jwtTokenProvider.getAuthentication(token);
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetailImpl userDetail)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // UserDetailImpl에서 siteCode 가져오기
+        long siteCode = userDetail.getSiteCode();
+
+        // SSE Emitter 생성
+        SseEmitter emitter = notificationService.subscribe(siteCode);
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.TEXT_EVENT_STREAM)
+                .header("Cache-Control", "no-cache")
+                .header("Connection", "keep-alive")
+                .body(emitter);
     }
 
     @GetMapping("/list")

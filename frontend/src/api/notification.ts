@@ -15,12 +15,10 @@ export const notificationApi = {
 
     // 실시간 알림 구독
     subscribe: () => {
-        /*const token = localStorage.getItem('accessToken')*/
-        return new EventSource(`${import.meta.env.VITE_API_URL}/api/v1/notification/subscribe`, {
-            withCredentials: true,
-            /*headers: {
-                'Authorization': `Bearer ${token}`
-            }*/
-        })
+        const token = localStorage.getItem('accessToken')
+        return new EventSource(
+            `${import.meta.env.VITE_API_URL}/api/v1/notification/subscribe?token=${token}`,
+            { withCredentials: true }
+        )
     },
 }

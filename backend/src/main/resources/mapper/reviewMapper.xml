@@ -42,6 +42,7 @@
         <collection property="reviewerInfoList" ofType="gg.updown.backend.main.api.review.model.dto.ReviewerInfo">
             <result property="reviewerChampId" column="reviewer_champ_id"/>
             <result property="reviewerChampName" column="reviewer_champ_name"/>
+            <result property="isAnonymous" column="is_anonymous"/>
         </collection>
 
         <!-- 태그 집계 정보 매핑 -->
@@ -453,6 +454,7 @@
         SELECT
             tc.up_count,
             tc.down_count,
+            ssr.is_anonymous,
             lmp.champ_id as reviewer_champ_id,
             lmp.champ_name as reviewer_champ_name,
             srt.tag_code,
