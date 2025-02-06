@@ -41,7 +41,7 @@
               <svg class="button-icon" viewBox="0 0 24 24">
                 <path d="M14.6 8H21a2 2 0 0 1 2 2v2.104a2 2 0 0 1-.15.762l-3.095 7.515a1 1 0 0 1-.925.619H2a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1h3.482a1 1 0 0 0 .817-.423L11.752.85a.5.5 0 0 1 .632-.159l1.814.907a2.5 2.5 0 0 1 1.305 2.853L14.6 8zM7 10.588V19h11.16L21 12.104V10h-6.4a2 2 0 0 1-1.938-2.493l.903-3.548a.5.5 0 0 0-.261-.571l-.661-.33-4.71 6.672c-.25.354-.57.644-.933.858zM5 11H3v8h2v-8z"/>
               </svg>
-              <span>긍정적</span>
+<!--              <span>긍정적</span>-->
             </button>
             <button
                 class="review-button dislike"
@@ -51,7 +51,7 @@
               <svg class="button-icon" viewBox="0 0 24 24">
                 <path d="M9.4 16H3a2 2 0 0 1-2-2v-2.104a2 2 0 0 1 .15-.762L4.246 3.62A1 1 0 0 1 5.17 3H22a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-3.482a1 1 0 0 0-.817.423l-5.453 7.726a.5.5 0 0 1-.632.159L9.802 21.4A2.5 2.5 0 0 1 8.496 18.55L9.4 16zM17 14.586V6H5.84L3 12.896V14h6.4a2 2 0 0 1 1.938 2.493l-.903 3.548a.5.5 0 0 0 .261.571l.661.33 4.71-6.672c.25-.354.57-.644.933-.858zM19 13h2V5h-2v8z"/>
               </svg>
-              <span>부정적</span>
+<!--              <span>부정적</span>-->
             </button>
           </div>
         </div>
@@ -149,8 +149,10 @@
       <textarea
           v-model="comment"
           class="comment-input"
-          placeholder="이 소환사와의 게임은 어땠나요? (선택사항)"
-      ></textarea>
+          placeholder="이 소환사와의 게임은 어땠나요? (선택사항, 최대 100자)"
+          maxlength="100"
+      />
+      <div class="comment-count">{{ comment.length }}/100</div>
 
           <!-- 익명 설정을 코멘트 아래로 이동 -->
           <div class="anonymous-section">
@@ -260,6 +262,28 @@ const isTagLimitReached = computed(() => {
   return selectedStyleTags.value.length >= 5
 })
 
+// 정렬된 카테고리 목록
+const sortedCategories = computed(() => {
+  if (!props.reviewTagCategories) return []
+
+  return [...props.reviewTagCategories].sort((a, b) => {
+    // 선택된 up/down에 따라 카테고리 정렬
+    const tagA = localReviewTags.value.find(tag => tag.tagCategory === a.categoryKey)
+    const tagB = localReviewTags.value.find(tag => tag.tagCategory === b.categoryKey)
+
+    if (isUp.value === true) {
+      // UP이 선택된 경우 긍정적인 태그(tagUpdown: true)를 위로
+      if (tagA?.tagUpdown && !tagB?.tagUpdown) return -1
+      if (!tagA?.tagUpdown && tagB?.tagUpdown) return 1
+    } else if (isUp.value === false) {
+      // DOWN이 선택된 경우 부정적인 태그(tagUpdown: false)를 위로
+      if (!tagA?.tagUpdown && tagB?.tagUpdown) return -1
+      if (tagA?.tagUpdown && !tagB?.tagUpdown) return 1
+    }
+    return 0
+  })
+})
+
 // 필터링된 태그
 const filteredTags = computed(() => {
   let filtered = localReviewTags.value
@@ -281,7 +305,19 @@ const filteredTags = computed(() => {
     filtered = filtered.filter(tag => tag.tagCategory === selectedCategory.value)
   }
 
-  return filtered
+  // Step 1의 선택에 따라 태그 정렬
+  return filtered.sort((a, b) => {
+    if (isUp.value === true) {
+      // UP이 선택된 경우 긍정적인 태그를 위로
+      if (a.tagUpdown && !b.tagUpdown) return -1
+      if (!a.tagUpdown && b.tagUpdown) return 1
+    } else if (isUp.value === false) {
+      // DOWN이 선택된 경우 부정적인 태그를 위로
+      if (!a.tagUpdown && b.tagUpdown) return -1
+      if (a.tagUpdown && !b.tagUpdown) return 1
+    }
+    return 0
+  })
 })
 
 // suggestTag 관련 watch
@@ -540,9 +576,12 @@ const handleSubmit = async () => {
   border-radius: 2px;
 }
 
-/* 스텝 컨테이너 */
+/* Step Container - 모든 스텝의 기본 컨테이너 */
 .step-container {
+  min-height: 380px;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
 }
 
 .section-title {
@@ -559,15 +598,20 @@ const handleSubmit = async () => {
   margin-bottom: 24px;
 }
 
-/* 리뷰 버튼 */
+/* Step 1 - Review Section */
 .review-section {
-  padding: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
 }
 
 .review-buttons {
   display: flex;
   gap: 16px;
   width: 100%;
+  justify-content: center;
 }
 
 .review-button {
@@ -582,6 +626,8 @@ const handleSubmit = async () => {
   gap: 12px;
   transition: all 0.2s ease;
   background: rgba(255, 255, 255, 0.05);
+  height: 200px;
+  justify-content: center;
 }
 
 .review-button.like {
@@ -613,15 +659,17 @@ const handleSubmit = async () => {
 }
 
 .button-icon {
-  width: 32px;
-  height: 32px;
+  width: 70px;
+  height: 70px;
   fill: currentColor;
 }
 
 /* 태그 섹션 */
+/* Step 2 - Tags Section */
 .tags-section {
-  padding: 0 24px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .search-container {
@@ -676,7 +724,6 @@ const handleSubmit = async () => {
 .tag-container {
   display: flex;
   flex-wrap: wrap;
-  align-content: flex-start;
   gap: 8px;
   min-height: 140px;
   max-height: 140px;
@@ -869,13 +916,16 @@ const handleSubmit = async () => {
   margin-top: 8px;
 }
 
-/* 코멘트 섹션 */
+/* Step 3 - Comment Section */
 .comment-section {
-  padding: 0 24px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .comment-input {
-  width: 100%;
+  flex: 1;
+  min-height: 120px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -883,8 +933,8 @@ const handleSubmit = async () => {
   color: white;
   font-size: 14px;
   resize: vertical;
-  min-height: 120px;
   font-family: inherit;
+  margin-bottom: 8px;
 }
 
 .comment-input:focus {
@@ -892,7 +942,14 @@ const handleSubmit = async () => {
   border-color: #2979FF;
 }
 
-/* 네비게이션 버튼 */
+/* 새로 추가된 글자수 카운터 스타일 */
+.comment-count {
+  text-align: right;
+  color: #888;
+  font-size: 13px;
+}
+
+/* Navigation Buttons */
 .navigation-buttons {
   display: flex;
   justify-content: space-between;
@@ -981,8 +1038,8 @@ const handleSubmit = async () => {
   }
 
   .button-icon {
-    width: 28px;
-    height: 28px;
+    width: 80px;
+    height: 80px;
   }
 
   .navigation-buttons {
