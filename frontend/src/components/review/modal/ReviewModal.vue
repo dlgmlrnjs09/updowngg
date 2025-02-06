@@ -142,35 +142,32 @@
         </div>
       </div>
 
-      <!-- Step 3: 익명 설정 -->
-      <div v-if="currentStep === 3" class="step-container">
-        <h3 class="step-title">익명으로 평가하시겠어요?</h3>
-        <div class="anonymous-section">
-          <div class="anonymous-toggle">
-            <span class="anonymous-label">익명으로 평가하기</span>
-            <button
-                class="toggle-button"
-                :class="{ 'toggle-on': isAnonymous }"
-                @click="toggleAnonymous"
-            >
-              <div class="toggle-slider"></div>
-            </button>
-          </div>
-          <p class="anonymous-description">
-            {{ isAnonymous ? '다른 소환사에게 평가자의 닉네임이 표시되지 않습니다.' : '다른 소환사에게 평가자의 닉네임이 표시됩니다.' }}
-          </p>
-        </div>
-      </div>
-
       <!-- Step 4: 코멘트 작성 -->
-      <div v-if="currentStep === 4" class="step-container">
+      <div v-if="currentStep === 3" class="step-container">
         <h3 class="step-title">추가로 남기고 싶은 말이 있나요?</h3>
         <div class="comment-section">
-          <textarea
-              v-model="comment"
-              class="comment-input"
-              placeholder="이 소환사와의 게임은 어땠나요? (선택사항)"
-          ></textarea>
+      <textarea
+          v-model="comment"
+          class="comment-input"
+          placeholder="이 소환사와의 게임은 어땠나요? (선택사항)"
+      ></textarea>
+
+          <!-- 익명 설정을 코멘트 아래로 이동 -->
+          <div class="anonymous-section">
+            <div class="anonymous-toggle">
+              <span class="anonymous-label">익명으로 평가하기</span>
+              <button
+                  class="toggle-button"
+                  :class="{ 'toggle-on': isAnonymous }"
+                  @click="toggleAnonymous"
+              >
+                <div class="toggle-slider"></div>
+              </button>
+            </div>
+            <p class="anonymous-description">
+              {{ isAnonymous ? '다른 소환사에게 평가자의 닉네임이 표시되지 않습니다.' : '다른 소환사에게 평가자의 닉네임이 표시됩니다.' }}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -221,7 +218,7 @@ const toast = useToast()
 
 // 스텝퍼 관련 상태
 const currentStep = ref(1)
-const totalSteps = 4
+const totalSteps = 3
 
 // 상태 관리
 const isUp = ref<boolean | null>(null)
@@ -806,7 +803,10 @@ const handleSubmit = async () => {
 
 /* 익명 섹션 */
 .anonymous-section {
-  padding: 24px;
+  margin-top: 24px;
+  padding: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 24px;
 }
 
 .anonymous-toggle {
@@ -862,7 +862,7 @@ const handleSubmit = async () => {
 
 /* 코멘트 섹션 */
 .comment-section {
-  padding: 24px;
+  padding: 0 24px 24px;
 }
 
 .comment-input {
