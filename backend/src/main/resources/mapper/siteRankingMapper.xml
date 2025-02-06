@@ -56,6 +56,8 @@
             )
         GROUP BY
             ls.puuid
+        HAVING
+            COUNT(DISTINCT CASE WHEN <include refid="rankingFilterCondition"/> THEN ssr.summoner_review_seq END) > 0
         ORDER BY
             totalReviewCnt DESC
         LIMIT #{limit} OFFSET #{offset}
