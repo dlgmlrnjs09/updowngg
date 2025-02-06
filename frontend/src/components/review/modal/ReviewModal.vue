@@ -198,6 +198,7 @@ import { useToast } from 'vue-toastification'
 import type { ReviewRequestDto, ReviewTagDto, ReviewTagCategoryDto, ReviewTagSuggestDto } from '@/types/review'
 import { useAuthStore } from '@/stores/auth'
 import type { LolMatchParticipant } from '@/types/match'
+import {reviewApi} from "@/api/review.ts";
 
 const props = defineProps<{
   player: LolMatchParticipant
@@ -418,6 +419,14 @@ const handleSubmit = async () => {
       reviewable: false,
       regDt: null,
       isAnonymous: isAnonymous.value
+    }
+
+    // 기존 리뷰가 있으면 업데이트, 없으면 새로 생성
+    if (props.player.reviewDto?.summonerReviewSeq) {
+      await reviewApi.updateReview(review)
+    } else {
+      const reviewSeq = await reviewApi.submitReview(review)
+      review.summonerReviewSeq = reviewSeq.data
     }
 
     emit('submit', review)
