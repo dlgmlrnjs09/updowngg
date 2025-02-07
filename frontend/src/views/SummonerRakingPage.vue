@@ -1,11 +1,11 @@
-# SummonerRankingPage.vue
 <template>
-  <div class="stats-page max-w-[1200px] mx-auto px-6 mt-[20px]">
+  <div class="stats-page max-w-[1200px] mx-auto px-4 mt-[20px]">
     <FilterSection @update:filter="onFilterUpdate" is-not-show-period/>
 
     <div class="stats-card">
-      <div class="champion-table" style="min-width: 0;">
-        <table class="w-full">
+      <div class="champion-table">
+        <!-- PC 테이블 (데스크톱에서만 보임) -->
+        <table class="w-full desktop-table">
           <thead>
           <tr class="text-left border-b border-[#ffffff1a]">
             <th class="py-2 px-4 text-gray-300 w-12">#</th>
@@ -18,9 +18,13 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(player, index) in rankerPlayers"
+          <tr
+              v-for="(player, index) in rankerPlayers"
               :key="player.summonerBasicInfoDto.puuid"
-              class="border-b border-[#ffffff1a] hover:bg-[#ffffff0a]">
+              class="border-b border-[#ffffff1a] hover:bg-[#ffffff0a] cursor-pointer"
+              @click="selectPlayer(player)"
+              :class="{ 'bg-[#ffffff0a]': selectedPlayer === player }"
+          >
             <td class="py-2 px-4 text-gray-300 text-sm">{{ index + 1 }}</td>
             <td class="py-2 px-4 text-gray-400">
               <div class="flex items-center gap-3 player-name-wrapper">
@@ -69,13 +73,140 @@
           </tr>
           </tbody>
         </table>
+
+        <!-- 선택된 소환사 상세 정보 (PC에서만 보임) -->
+        <div
+            v-if="selectedPlayer && !isMobile"
+            class="selected-summoner-details desktop-details"
+        >
+          <div class="selected-summoner-header">
+            <img
+                :src="selectedPlayer.summonerBasicInfoDto.profileIconUrl"
+                :alt="selectedPlayer.summonerBasicInfoDto.gameName"
+                class="selected-summoner-image"
+            >
+            <div class="selected-summoner-info">
+              <div class="selected-summoner-name">
+                {{ selectedPlayer.summonerBasicInfoDto.gameName }}
+                <span class="selected-summoner-tag">
+                  #{{ selectedPlayer.summonerBasicInfoDto.tagLine }}
+                </span>
+              </div>
+              <div class="selected-summoner-stats">
+                <div class="stat-item">
+                  <span class="stat-label">평가수</span>
+                  <span class="stat-value">{{ selectedPlayer.reviewStatsDto.totalReviewCnt }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">평가점수</span>
+                  <span class="stat-value">{{ selectedPlayer.reviewStatsDto.score }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="selected-summoner-rating">
+            <div class="rating-bar">
+              <div class="bar-background">
+                <div
+                    class="bar-positive"
+                    :style="{ width: `${selectedPlayer.reviewStatsDto.upRatio}%` }"
+                ></div>
+                <div
+                    class="bar-negative"
+                    :style="{ width: `${selectedPlayer.reviewStatsDto.downRatio}%` }"
+                ></div>
+              </div>
+              <div class="rating-labels">
+                <span class="label-positive">{{ selectedPlayer.reviewStatsDto.upRatio }}%</span>
+                <span class="label-negative">{{ selectedPlayer.reviewStatsDto.downRatio }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="selected-summoner-bottom">
+            <div class="most-champions">
+              <h3>모스트 챔피언별 평가</h3>
+              <div class="champions-grid">
+                <div
+                    v-for="champion in selectedPlayer.championStatsDtoList"
+                    :key="champion.nameUs"
+                    class="champion-item"
+                >
+                  <img
+                      :src="champion.iconUrl"
+                      :alt="champion.nameKr"
+                      class="champion-image"
+                  >
+                  <div class="champion-rating-bar">
+                    <div
+                        class="rating-positive"
+                        :style="{ width: `${champion.upRatio}%` }"
+                    ></div>
+                    <div
+                        class="rating-negative"
+                        :style="{ width: `${champion.downRatio}%` }"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="most-tags">
+              <h3>자주 받은 태그</h3>
+              <TagList
+                  :tags="selectedPlayer.reviewTagDtoList"
+                  size="small"
+                  is-show-count
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- 모바일 리스트 (모바일에서만 보임) -->
+        <div v-if="isMobile" class="mobile-table">
+          <div class="mobile-table-header">
+            <div class="mobile-header-rank">#</div>
+            <div class="mobile-header-summoner">소환사</div>
+            <div class="mobile-header-review-count">평가수</div>
+            <div class="mobile-header-score">평가점수</div>
+          </div>
+          <div
+              v-for="(player, index) in rankerPlayers"
+              :key="player.summonerBasicInfoDto.puuid"
+              class="mobile-ranking-item"
+          >
+            <div class="mobile-ranking-content">
+              <div class="mobile-ranking-number">{{ index + 1 }}</div>
+              <div class="mobile-summoner-info">
+                <img
+                    :src="player.summonerBasicInfoDto.profileIconUrl"
+                    :alt="player.summonerBasicInfoDto.gameName"
+                    class="mobile-summoner-image"
+                >
+                <div class="mobile-summoner-details">
+                  <div class="mobile-summoner-name">
+                    {{ player.summonerBasicInfoDto.gameName }}
+                    <span class="mobile-summoner-tag">#{{ player.summonerBasicInfoDto.tagLine }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mobile-summoner-review-count">
+                {{ player.reviewStatsDto.totalReviewCnt }}
+              </div>
+              <div class="mobile-summoner-score">
+                {{ player.reviewStatsDto.score }}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed, onUnmounted } from 'vue'
 import { statsApi } from "@/api/stats.ts"
 import FilterSection from '@/components/common/SearchFilter.vue'
 import TagList from "@/components/common/TagList.vue"
@@ -85,9 +216,17 @@ import type {SearchFilter} from "@/types/stats.ts";
 import {goSelectedSummonerProfile} from "@/utils/common.ts";
 
 const rankerPlayers = ref<RankerPlayer[] | null>(null)
+const selectedPlayer = ref<RankerPlayer | null>(null)
+
+// 모바일 여부 판단
+const isMobile = ref(window.innerWidth <= 640)
+
+// 반응형 처리를 위한 윈도우 리사이즈 이벤트 핸들러
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 640
+}
 
 const fetchSummonerStats = async (filter: SearchFilter) => {
-  // TODO : 추후 페이징처리 필요
   const reqDto: RankingSearchFilter = {
     sortTypeReqDto: filter,
     limit: 100,
@@ -102,12 +241,24 @@ const onFilterUpdate = (filter: SearchFilter) => {
   fetchSummonerStats(filter)
 }
 
+const selectPlayer = (player: RankerPlayer) => {
+  if (!isMobile.value) {
+    selectedPlayer.value = player;
+  }
+}
+
 onMounted(() => {
   fetchSummonerStats({})
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
 <style scoped>
+/* PC 테이블 스타일 */
 .stats-card {
   @apply bg-[#141414] rounded-xl border border-[#ffffff1a] mb-6;
 }
@@ -130,7 +281,6 @@ onMounted(() => {
 
 table {
   table-layout: fixed;
-  /*min-width: 1200px;*/
 }
 
 .player-tag {
@@ -157,5 +307,191 @@ table {
 .player-name:hover {
   color: #2979FF;
   text-decoration: underline;
+}
+
+/* 선택된 소환사 상세 정보 스타일 */
+@media (min-width: 641px) {
+  .selected-summoner-details {
+    @apply bg-[#1a1a1a] rounded-b-xl p-6;
+  }
+
+  .selected-summoner-header {
+    @apply flex items-center mb-6;
+  }
+
+  .selected-summoner-image {
+    @apply w-20 h-20 rounded-full mr-6;
+  }
+
+  .selected-summoner-name {
+    @apply text-2xl font-bold text-white mb-2 flex items-center;
+  }
+
+  .selected-summoner-tag {
+    @apply text-sm text-gray-400 ml-2;
+  }
+
+  .selected-summoner-stats {
+    @apply flex space-x-4 mt-2;
+  }
+
+  .stat-item {
+    @apply flex flex-col;
+  }
+
+  .stat-label {
+    @apply text-xs text-gray-400 mb-1;
+  }
+
+  .stat-value {
+    @apply text-base text-white font-semibold;
+  }
+
+  .selected-summoner-rating {
+    @apply mb-6;
+  }
+
+  .rating-bar {
+    @apply space-y-2;
+  }
+
+  .bar-background {
+    @apply h-3 bg-[#333] rounded-full overflow-hidden flex;
+  }
+
+  .bar-positive {
+    @apply bg-[#4CAF50] h-full;
+  }
+
+  .bar-negative {
+    @apply bg-[#FF5252] h-full;
+  }
+
+  .rating-labels {
+    @apply flex justify-between text-sm px-1;
+  }
+
+  .label-positive {
+    @apply text-[#4CAF50];
+  }
+
+  .label-negative {
+    @apply text-[#FF5252];
+  }
+
+  .selected-summoner-bottom {
+    @apply flex space-x-6;
+  }
+
+  .most-champions {
+    @apply flex-grow;
+  }
+
+  .most-champions h3 {
+    @apply text-lg font-semibold text-white mb-4;
+  }
+
+  .champions-grid {
+    @apply grid grid-cols-3 gap-4;
+  }
+
+  .champion-item {
+    @apply flex flex-col items-center;
+  }
+
+  .champion-image {
+    @apply w-12 h-12 rounded-full mb-2;
+  }
+
+  .champion-rating-bar {
+    @apply w-full h-1.5 bg-[#333] rounded-full overflow-hidden flex;
+  }
+
+  .rating-positive {
+    @apply bg-[#4CAF50] h-full;
+  }
+
+  .rating-negative {
+    @apply bg-[#FF5252] h-full;
+  }
+
+  .most-tags h3 {
+    @apply text-lg font-semibold text-white mb-4;
+  }
+}
+
+/* 모바일 전용 스타일 */
+@media (max-width: 640px) {
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-table {
+    @apply bg-[#0A0A0A];
+  }
+
+  .mobile-table-header {
+    @apply flex items-center px-4 py-2 border-b border-[#ffffff1a] bg-[#1A1A1A];
+  }
+
+  .mobile-table-header > div {
+    @apply text-xs text-gray-300 font-semibold;
+  }
+
+  .mobile-header-rank {
+    @apply w-6 text-center mr-2;
+  }
+
+  .mobile-header-summoner {
+    @apply flex-grow mr-2;
+  }
+
+  .mobile-header-review-count {
+    @apply w-12 text-right mr-2;
+  }
+
+  .mobile-header-score {
+    @apply w-12 text-right;
+  }
+
+  .mobile-ranking-item {
+    @apply border-b border-[#1A1A1A] px-4 py-2;
+  }
+
+  .mobile-ranking-content {
+    @apply flex items-center;
+  }
+
+  .mobile-ranking-number {
+    @apply text-base font-bold text-gray-300 w-6 text-center mr-2;
+  }
+
+  .mobile-summoner-info {
+    @apply flex items-center flex-grow mr-2;
+  }
+
+  .mobile-summoner-image {
+    @apply w-8 h-8 rounded-full mr-2;
+  }
+
+  .mobile-summoner-details {
+    @apply flex-grow;
+  }
+
+  .mobile-summoner-name {
+    @apply text-white font-semibold text-xs flex items-center;
+  }
+
+  .mobile-summoner-tag {
+    @apply text-[10px] text-gray-400 ml-1;
+  }
+
+  .mobile-summoner-review-count {
+    @apply text-sm text-gray-400 w-12 text-right mr-2;
+  }
+
+  .mobile-summoner-score {
+    @apply text-sm text-white font-semibold w-12 text-right;
+  }
 }
 </style>
