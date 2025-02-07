@@ -1,6 +1,6 @@
 <template>
-  <div class="search-container relative">
-    <div class="search-box">
+  <div class="search-container relative" data-v-inspector="src/components/common/Search.vue:2:3">
+    <div class="search-box" data-v-inspector="src/components/common/Search.vue:3:5">
       <input
           type="text"
           class="search-input"
@@ -10,8 +10,9 @@
           @input="handleInput"
           @keydown.down="handleKeyNavigation(1)"
           @keydown.up="handleKeyNavigation(-1)"
+          data-v-inspector="src/components/common/Search.vue:4:7"
       >
-      <div class="search-icon" v-throttle-click:1000="handleSearch">
+      <div class="search-icon" v-throttle-click:1000="handleSearch" data-v-inspector="src/components/common/Search.vue:14:7">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -20,9 +21,10 @@
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
+            data-v-inspector="src/components/common/Search.vue:15:9"
         >
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <circle cx="11" cy="11" r="8" data-v-inspector="src/components/common/Search.vue:24:11"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65" data-v-inspector="src/components/common/Search.vue:25:11"></line>
         </svg>
       </div>
     </div>
@@ -30,7 +32,9 @@
     <!-- 자동완성 목록 -->
     <div
         v-if="suggestions.length > 0"
-        class="suggestions-container" ref="searchContainerRef"
+        class="suggestions-container"
+        ref="searchContainerRef"
+        data-v-inspector="src/components/common/Search.vue:31:5"
     >
       <div
           v-for="(summoner, index) in suggestions"
@@ -39,26 +43,28 @@
           :class="{ 'selected': selectedIndex === index }"
           @click="selectSuggestion(summoner)"
           @mouseenter="selectedIndex = index"
+          data-v-inspector="src/components/common/Search.vue:35:7"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-v-inspector="src/components/common/Search.vue:43:9">
           <img
               :src="summoner.profileIconUrl"
               :alt="summoner.gameName"
               class="w-8 h-8 rounded-full"
+              data-v-inspector="src/components/common/Search.vue:44:11"
           />
-          <div class="flex flex-col">
-            <div class="flex items-center gap-1">
-              <span class="font-medium">{{ summoner.gameName }}</span>
-              <span class="text-gray-400 text-sm">#{{ summoner.tagLine }}</span>
+          <div class="flex flex-col" data-v-inspector="src/components/common/Search.vue:49:11">
+            <div class="flex items-center gap-1" data-v-inspector="src/components/common/Search.vue:50:13">
+              <span class="font-medium" data-v-inspector="src/components/common/Search.vue:51:15">{{ summoner.gameName }}</span>
+              <span class="text-gray-400 text-sm" data-v-inspector="src/components/common/Search.vue:52:15">#{{ summoner.tagLine }}</span>
             </div>
-            <div class="flex items-center gap-3 text-sm">
-              <div class="flex items-center gap-1">
-                <ThumbsUp class="w-4 h-4 text-green-500" />
-                <span class="text-green-500">{{ summoner.upCount }}</span>
+            <div class="flex items-center gap-3 text-sm" data-v-inspector="src/components/common/Search.vue:54:13">
+              <div class="flex items-center gap-1" data-v-inspector="src/components/common/Search.vue:55:15">
+                <ThumbsUp class="w-4 h-4 text-green-500" data-v-inspector="src/components/common/Search.vue:56:17" />
+                <span class="text-green-500" data-v-inspector="src/components/common/Search.vue:57:17">{{ summoner.upCount }}</span>
               </div>
-              <div class="flex items-center gap-1">
-                <ThumbsDown class="w-4 h-4 text-red-500" />
-                <span class="text-red-500">{{ summoner.downCount }}</span>
+              <div class="flex items-center gap-1" data-v-inspector="src/components/common/Search.vue:59:15">
+                <ThumbsDown class="w-4 h-4 text-red-500" data-v-inspector="src/components/common/Search.vue:60:17" />
+                <span class="text-red-500" data-v-inspector="src/components/common/Search.vue:61:17">{{ summoner.downCount }}</span>
               </div>
             </div>
           </div>
@@ -73,9 +79,9 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { summonerApi } from '@/api/summoner'
 import debounce from 'lodash/debounce'
-import type {SearchSummonerDto} from "@/types/search.ts";
-import {searchApi} from "@/api/search.ts";
-import {ThumbsUp, ThumbsDown} from "lucide-vue-next";
+import type { SearchSummonerDto } from "@/types/search.ts"
+import { searchApi } from "@/api/search.ts"
+import { ThumbsUp, ThumbsDown } from "lucide-vue-next"
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -83,36 +89,45 @@ const isLoading = ref(false)
 const suggestions = ref<SearchSummonerDto[]>([])
 const selectedIndex = ref(-1)
 const searchContainerRef = ref<HTMLElement | null>(null)
+const isComponentMounted = ref(true)
 
-// 검색어 입력 시 자동완성 API 호출
-const fetchSuggestions = debounce(async (query: string) => {
-  if (!query) {
+// 검색어 입력 시 자동완성 API 호출을 위한 debounce 함수
+const debouncedFetch = debounce(async (query: string) => {
+  if (!query || !isComponentMounted.value) {
     suggestions.value = []
     return
   }
 
   try {
     const response = await searchApi.searchSummoner(query)
-    suggestions.value = response.data
+    if (isComponentMounted.value) {
+      suggestions.value = response.data
+    }
   } catch (error) {
     console.error('Failed to fetch suggestions:', error)
-    suggestions.value = []
+    if (isComponentMounted.value) {
+      suggestions.value = []
+    }
   }
 }, 100)
 
 const handleInput = () => {
-  selectedIndex.value = -1
-  fetchSuggestions(searchQuery.value)
+  if (isComponentMounted.value) {
+    selectedIndex.value = -1
+    debouncedFetch(searchQuery.value)
+  }
 }
 
 const selectSuggestion = (summoner: SearchSummonerDto) => {
-  searchQuery.value = `${summoner.gameName}#${summoner.tagLine}`
-  suggestions.value = []
-  handleSearch()
+  if (isComponentMounted.value) {
+    searchQuery.value = `${summoner.gameName}#${summoner.tagLine}`
+    suggestions.value = []
+    handleSearch()
+  }
 }
 
 const handleKeyNavigation = (direction: number) => {
-  if (suggestions.value.length === 0) return
+  if (!isComponentMounted.value || suggestions.value.length === 0) return
 
   const newIndex = selectedIndex.value + direction
   if (newIndex >= -1 && newIndex < suggestions.value.length) {
@@ -126,28 +141,38 @@ const handleKeyNavigation = (direction: number) => {
 }
 
 const handleSearch = async () => {
+  if (!isComponentMounted.value) return
+
   const query = searchQuery.value.trim()
   if (!query) return
 
   const [summonerId, tagLine] = query.split('#')
 
-  isLoading.value = true
-  const response = await summonerApi.getInfoBySummonerId(summonerId, tagLine)
+  try {
+    isLoading.value = true
+    const response = await summonerApi.getInfoBySummonerId(summonerId, tagLine)
 
-  if (response.data) {
-    router.push({
-      name: 'summoner',
-      params: {
-        name: summonerId,
-        tag: tagLine
-      },
-    })
+    if (response.data && isComponentMounted.value) {
+      router.push({
+        name: 'summoner',
+        params: {
+          name: summonerId,
+          tag: tagLine
+        },
+      })
+    }
+  } catch (error) {
+    console.error('Failed to search summoner:', error)
+  } finally {
+    if (isComponentMounted.value) {
+      isLoading.value = false
+    }
   }
-  isLoading.value = false
 }
 
 const handleClickOutside = (event: MouseEvent) => {
   if (
+      isComponentMounted.value &&
       searchContainerRef.value &&
       !searchContainerRef.value.contains(event.target as Node)
   ) {
@@ -157,10 +182,21 @@ const handleClickOutside = (event: MouseEvent) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  isComponentMounted.value = true
 })
 
 onUnmounted(() => {
+  isComponentMounted.value = false
+  // debounce 함수 취소
+  debouncedFetch.cancel()
+  // 이벤트 리스너 제거
   document.removeEventListener('click', handleClickOutside)
+  // ref 정리
+  suggestions.value = []
+  searchContainerRef.value = null
+  searchQuery.value = ''
+  selectedIndex.value = -1
+  isLoading.value = false
 })
 </script>
 
