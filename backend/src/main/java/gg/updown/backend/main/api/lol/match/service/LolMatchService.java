@@ -9,6 +9,7 @@ import gg.updown.backend.main.api.lol.match.mapper.LolMatchMapper;
 import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoDto;
 import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoResDto;
 import gg.updown.backend.main.api.lol.match.model.dto.LolMatchParticipantDto;
+import gg.updown.backend.main.api.lol.match.model.dto.LolMatchTogetherReqDto;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEntity;
 import gg.updown.backend.main.api.lol.summoner.model.LolMatchModelConverter;
@@ -21,6 +22,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -131,13 +134,13 @@ public class LolMatchService {
      * @param matchId
      * @return
      */
-    public LolMatchInfoResDto getMatchResDto(String matchId, UserDetailImpl userDetails) {
+    public LolMatchInfoResDto getMatchResDto(String matchId, String puuid) {
         LolMatchInfoResDto resDto = this.getMatchResDtoAndInsertConditional(matchId);
 
         resDto.getParticipantList().forEach(player -> {
             player.setReviewDto(new ReviewDto());
             player.setReviewStatsDto(reviewService.getReviewAvgRating(player.getPuuid()));
-            player.setReviewDto(reviewService.getWrittenToTarget(userDetails.getPuuid(), player.getPuuid()));
+            player.setReviewDto(reviewService.getWrittenToTarget(puuid, player.getPuuid()));
         });
 
         return resDto;
@@ -191,6 +194,35 @@ public class LolMatchService {
 
     public List<LolMatchParticipantEntity> getMatchParticipant(String matchId) {
         return matchMapper.getMatchParticipantList(matchId);
+    }
+
+    public boolean hasPlayedTogether(String loginPuuid, LolMatchTogetherReqDto reqDto) {
+        LocalDateTime startDate = LocalDateTime.parse(
+                reqDto.getStartDate() + "000000",
+                DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+        );
+
+        LocalDateTime endDate = LocalDateTime.parse(
+                reqDto.getEndDate() + "235959",
+                DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+        );
+
+        return matchMapper.existsMatchedTogether(loginPuuid, reqDto.getTargetPuuid(), startDate, endDate);
+    }
+
+    public LolMatchInfoResDto getLatestMatchInfoTogether(String loginPuuid, LolMatchTogetherReqDto reqDto) {
+        LocalDateTime startDate = LocalDateTime.parse(
+                reqDto.getStartDate() + "000000",
+                DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+        );
+
+        LocalDateTime endDate = LocalDateTime.parse(
+                reqDto.getEndDate() + "235959",
+                DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+        );
+
+        String matchId = lolMatchMapper.getLatestMatchIdTogether(loginPuuid, reqDto.getTargetPuuid(), startDate, endDate);
+        return this.getMatchResDto(matchId, loginPuuid);
     }
 
     /**

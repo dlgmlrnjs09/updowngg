@@ -16,9 +16,11 @@
           :rating-by-position="ratingByPosition"
           :rating-by-champ="ratingByChamp"
           :written-review="writtenReview || null"
+          :play-together-match="playTogetherLatestMatch"
           @show-detail="showDetailModal = true"
           @update-matches="updateMatchList"
           @open-previous-modal="openPreviousModal"
+          @open-review-modal="openReviewModal"
       />
 
       <MatchList
@@ -122,6 +124,7 @@ const showPreviousReviewModal = ref(false)
 const selectedPlayer = ref(<LolMatchParticipant>({}));
 const suggestTag = ref<ReviewTagSuggestDto[]>([])
 const writtenReview = ref<ReviewRequestDto | null>(null)
+const playTogetherLatestMatch = ref<LolMatchInfoRes>();
 
 const fetchSummonerInfo = async () => {
   try {
@@ -208,7 +211,9 @@ const handleReviewSubmit = async (reviewData: ReviewRequestDto) => {
       fetchFrequentTags(),
       fetchRecentReviews(),
       fetchRatingByChamp(),
-      fetchRatingByPosition()
+      fetchRatingByPosition(),
+      fetchWrittenReview(),
+      checkPlayedTogether()
     ]);
 
   } catch (error) {
@@ -253,6 +258,7 @@ const updateMatchList = async () => {
 }
 
 const openReviewModal = (player: any) => {
+  console.log('player === ' + JSON.stringify(player))
   selectedPlayer.value = player;
   suggestTag.value = []; // suggestTag 배열 초기화
 
@@ -261,9 +267,11 @@ const openReviewModal = (player: any) => {
   )!;
 
   if (authStore.isAuthenticated) {
-    if (!player.reviewDto.reviewable) {
+    if (player.reviewDto && player.reviewDto.reviewable === false) {
+      console.log('previous')
       showPreviousReviewModal.value = true;
     } else {
+      console.log('normal')
       showReviewModal.value = true;
     }
   } else {
@@ -332,6 +340,23 @@ const fetchWrittenReview = async() => {
   }
 }
 
+const checkPlayedTogether = async () => {
+  if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
+  const today = new Date();
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 7);
+
+  const formatDate = (date: Date) => {
+    return date.toISOString().slice(0,10).replace(/-/g,'');
+  }
+
+  const response = await matchApi.checkPlayedTogether(summonerInfo.value.riotAccountInfoEntity.puuid, formatDate(sevenDaysAgo), formatDate(today));
+  if (response.data === true) {
+    const response = await matchApi.getLatestMatchInfoTogether(summonerInfo.value.riotAccountInfoEntity.puuid, formatDate(sevenDaysAgo), formatDate(today));
+    playTogetherLatestMatch.value = response.data;
+  }
+}
+
 watchEffect(async () => {
   const name = route.params.name;
   const tag = route.params.tag;
@@ -351,6 +376,7 @@ watchEffect(async () => {
       await fetchRatingByChamp();
       await fetchRatingByPosition();
       await fetchWrittenReview();
+      await checkPlayedTogether();
     } finally {
       isLoading.value = false;
     }
@@ -361,6 +387,7 @@ onMounted(async () => {
   await fetchReviewTags()
   await fetchReviewTagCategories();
   writtenReview.value = null;
+  playTogetherLatestMatch.value = null;
 })
 </script>
 <style scoped>

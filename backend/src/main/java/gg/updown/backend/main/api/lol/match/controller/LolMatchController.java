@@ -4,6 +4,7 @@ import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoReqDto;
 import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoResDto;
+import gg.updown.backend.main.api.lol.match.model.dto.LolMatchTogetherReqDto;
 import gg.updown.backend.main.api.lol.match.model.dto.LolMatchUpdateReqDto;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.exception.SiteCommonException;
@@ -57,7 +58,7 @@ public class LolMatchController {
     @Operation(summary = "LOL 경기 단건조회", description = "LOL 경기 및 리뷰작성내역 조회")
     @GetMapping("/{matchId}")
     public ResponseEntity<LolMatchInfoResDto> getMatchInfo(@PathVariable String matchId, @AuthenticationPrincipal UserDetailImpl userDetail) {
-        return ResponseEntity.status(HttpStatus.OK).body(lolMatchService.getMatchResDto(matchId, userDetail));
+        return ResponseEntity.status(HttpStatus.OK).body(lolMatchService.getMatchResDto(matchId, userDetail.getPuuid()));
     }
 
     @Operation(summary = "LOL 경기목록 갱신", description = "라이엇 계정정보, LOL 소환사 정보 조회")
@@ -68,5 +69,17 @@ public class LolMatchController {
         Long endDate = DateUtil.getCurrentTimeMillis();
         List<String> responseDto = lolMatchService.getAndInsertMatchIdList(reqDto.getPuuid(), startDate, endDate);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    @Operation(summary = "기간 내 함께 플레이한 게임 유무 조회", description = "로그인한 사용자와 특정 대상이 기간 내 함께 플레이한 게임이 있는지에 대한 유무 조회")
+    @GetMapping("/played-together")
+    public ResponseEntity<Boolean> checkPlayedTogether(@Valid LolMatchTogetherReqDto reqDto, @AuthenticationPrincipal UserDetailImpl userDetail) {
+        return ResponseEntity.ok(lolMatchService.hasPlayedTogether(userDetail.getPuuid(), reqDto));
+    }
+
+    @Operation(summary = "기간 내 함께 플레이한 최근게임 조회", description = "기간 내 함께 플레이한 최근게임 조회")
+    @GetMapping("/played-together/latest")
+    public ResponseEntity<LolMatchInfoResDto> getLatestMatchInfoTogether(@Valid LolMatchTogetherReqDto reqDto, @AuthenticationPrincipal UserDetailImpl userDetail) {
+        return ResponseEntity.ok(lolMatchService.getLatestMatchInfoTogether(userDetail.getPuuid(), reqDto));
     }
 }

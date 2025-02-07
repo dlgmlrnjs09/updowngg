@@ -19,5 +19,23 @@ export const matchApi = {
         }),
 
     getMatchInfo: (matchId: string) =>
-        apiClient.get<LolMatchInfoRes>(`/api/v1/match/${matchId}`)
+        apiClient.get<LolMatchInfoRes>(`/api/v1/match/${matchId}`),
+
+    checkPlayedTogether: (targetPuuid: string, startDate: string, endDate: string) =>
+        apiClient.get<boolean>(`/api/v1/match/played-together`, {
+            params: {
+                targetPuuid,
+                startDate,
+                endDate
+            }
+        }),
+
+    getLatestMatchInfoTogether: (targetPuuid: string, startDate: string, endDate: string) =>
+        apiClient.get<LolMatchInfoRes>(`/api/v1/match/played-together/latest`, {
+            params: {
+                targetPuuid,
+                startDate,
+                endDate
+            }
+        }),
 }

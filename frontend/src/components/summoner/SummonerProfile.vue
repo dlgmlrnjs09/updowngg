@@ -39,11 +39,26 @@
     </div>
 
     <!-- 작성한 리뷰 알림 섹션 -->
-    <div v-if="writtenReview" class="written-review-section">
+    <div v-if="writtenReview && authStore.user?.puuid != profileData.riotAccountInfoEntity.puuid" class="written-review-section">
       <div class="written-review-content">
-        <div class="written-review-text"><InfoIcon/> 해당 소환사에게 작성한 리뷰가 있습니다.</div>
+        <div class="written-review-text">
+          <InfoIcon/>
+          <span class="highlight-name">{{ profileData.riotAccountInfoEntity.gameName }}</span>님에게 작성한 리뷰가 있어요.
+        </div>
         <button @click="$emit('openPreviousModal')" class="edit-button">
           확인
+        </button>
+      </div>
+    </div>
+    <!-- 리뷰작성가능 알림 섹션 -->
+    <div v-if="!writtenReview && playTogetherMatch && authStore.user?.puuid != profileData.riotAccountInfoEntity.puuid" class="written-review-section">
+      <div class="written-review-content">
+        <div class="written-review-text">
+          <InfoIcon/>
+          <span class="highlight-name">{{ profileData.riotAccountInfoEntity.gameName }}</span>님과 함께한 게임, 어떠셨나요?
+        </div>
+        <button @click="$emit('openReviewModal', playTogetherMatch.participantList.filter(p => p.puuid === profileData.riotAccountInfoEntity.puuid)[0])" class="edit-button">
+          리뷰작성
         </button>
       </div>
     </div>
@@ -130,6 +145,10 @@ import { ThumbsUp, ThumbsDown, ChevronDown, InfoIcon } from 'lucide-vue-next'
 import TagList from "@/components/common/TagList.vue";
 import ReviewRolling from "@/components/review/ReviewRolling.vue";
 import ReviewStatic from "@/components/review/ReviewStatic.vue";
+import type {LolMatchInfoRes} from "@/types/match.ts";
+import {useAuthStore} from "@/stores/auth.ts";
+
+const authStore = useAuthStore();
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto
@@ -140,12 +159,14 @@ const props = defineProps<{
   ratingByChamp: ReviewRatingByChampDto[] | null
   ratingByPosition: ReviewRatingByPositionDto[] | null
   writtenReview: ReviewRequestDto | null
+  playTogetherMatch: LolMatchInfoRes;
 }>()
 
 defineEmits<{
   (e: 'showDetail'): void
   (e: 'updateMatches'): void
   (e: 'openPreviousModal'): void
+  (e: 'openReviewModal', player: any): void
 }>()
 
 const isExpanded = ref(true)
@@ -545,6 +566,12 @@ const toggleExpanded = () => {
   display: flex;
   align-items: center;
   gap: 8px; /* InfoIcon과 텍스트 사이의 간격 */
+  /*font-size: 14px;  !* 기존 사이즈와 맞춤 *!*/
+}
+
+.highlight-name {
+  color: #2979FF;  /* 블루 계열 색상 */
+  font-weight: 600;  /* 볼드체 */
 }
 
 @media (max-width: 768px) {

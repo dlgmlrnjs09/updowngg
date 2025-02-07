@@ -197,6 +197,8 @@
             <if test="targetPuuid != null and targetPuuid != ''">
                 and r.target_puuid = #{targetPuuid}
             </if>
+        ORDER BY
+            r.summoner_review_seq desc
         LIMIT
             #{limit}
     </select>

@@ -56,9 +56,9 @@
                     v-for="reviewer in match.reviewByMatchSummaryDto?.reviewerInfoList"
                     :key="reviewer.reviewerChampId"
                     :src="reviewer.isAnonymous ? '/src/assets/icon/anonymous_profile.png' : reviewer.reviewerChampIconUrl"
-                    :alt="reviewer.reviewerChampId.toString()"
+                    :alt="reviewer.reviewerChampId"
                     class="w-7 h-7 rounded-sm border border-gray-700/50"
-                    :title="reviewer.isAnonymous ? '익명의 소환사' : reviewer.reviewerChampName.toString()"
+                    :title="reviewer.isAnonymous ? '익명의 소환사' : reviewer.reviewerChampName"
                 >
               </div>
             </div>

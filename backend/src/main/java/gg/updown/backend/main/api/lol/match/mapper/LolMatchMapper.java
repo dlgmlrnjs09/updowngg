@@ -6,6 +6,7 @@ import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEnti
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -22,4 +23,6 @@ public interface LolMatchMapper {
     void insertMatchRequests(@Param("puuid")String puuid, @Param("matchIdList")List<String> matchIdList);
     void updateMatch(LolMatchEntity match);
     List<String> selectMatchRequestList(@Param("puuid") String puuid, @Param("offset") int offset, @Param("limit") int limit);
+    boolean existsMatchedTogether(@Param("loginPuuid")String loginPuuid, @Param("targetPuuid")String targetPuuid, @Param("startDate")LocalDateTime startDate, @Param("endDate")LocalDateTime endDate);
+    String getLatestMatchIdTogether(@Param("loginPuuid")String loginPuuid, @Param("targetPuuid")String targetPuuid, @Param("startDate")LocalDateTime startDate, @Param("endDate")LocalDateTime endDate);
 }
