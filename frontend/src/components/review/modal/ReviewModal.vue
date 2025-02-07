@@ -63,14 +63,14 @@
         <h3 class="step-title">플레이 스타일은 어땠나요?</h3>
         <div class="tags-section">
           <!-- 태그 검색 -->
-          <div class="search-container">
+<!--          <div class="search-container">
             <input
                 v-model="searchQuery"
                 type="text"
                 class="tag-search"
                 placeholder="태그 검색..."
             />
-          </div>
+          </div>-->
 
           <!-- 카테고리 탭 -->
           <div class="category-tabs">
@@ -137,7 +137,11 @@
           </div>
           <!-- 선택 개수 표시 -->
           <div class="tag-count">
-            {{ selectedStyleTags.length }}/5 태그 선택됨
+            <div class="guide text-gray-400">
+              <span class="plus-icon">+</span>
+              버튼을 눌러 원하는 태그를 추가할 수 있어요!
+            </div>
+            <div>{{ selectedStyleTags.length }}/5 태그 선택됨</div>
           </div>
         </div>
       </div>
@@ -578,7 +582,7 @@ const handleSubmit = async () => {
 
 /* Step Container - 모든 스텝의 기본 컨테이너 */
 .step-container {
-  min-height: 380px;
+  min-height: 410px;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -725,8 +729,8 @@ const handleSubmit = async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  min-height: 140px;
-  max-height: 140px;
+  min-height: 200px;
+  max-height: 200px;
   overflow-y: auto;
   padding: 4px;
 }
@@ -834,7 +838,7 @@ const handleSubmit = async () => {
   background: #2979FF;
   color: white;
   border-radius: 16px;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .remove-tag {
@@ -851,10 +855,35 @@ const handleSubmit = async () => {
 }
 
 .tag-count {
-  text-align: right;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   color: #888;
   font-size: 14px;
-  margin-top: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.tag-count .guide {
+  /*color: #4CAF50;*/
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.tag-count .plus-icon {
+  background: rgb(185, 205, 253, 0.9);
+  color: black;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15%;
+  margin-right: 4px;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 /* 익명 섹션 */
