@@ -3,7 +3,7 @@
     <div class="header-content">
       <RouterLink to="/" class="logo">
         <div class="logo-icon"><img src="/favicon.ico" alt="favicon"></div>
-        updownGG
+        <span>updownGG</span>
       </RouterLink>
       <nav class="nav">
         <RouterLink to="/">홈</RouterLink>
@@ -114,7 +114,7 @@ onUnmounted(() => {
 
 <style scoped>
 .header {
-  position: fixed;
+  /*position: fixed;*/
   top: 0;
   left: 0;
   right: 0;
@@ -279,15 +279,36 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .header-content {
-    gap: 24px;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    padding: 0 16px;
+  }
+
+  .logo span {
+    display: none;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
   }
 
   .nav {
-    display: none;
+    display: flex;
+    gap: 16px;
+    font-size: 14px;
+  }
+
+  .nav a {
+    font-size: 14px;
   }
 
   .user-actions {
     gap: 8px;
+    min-width: auto;
+  }
+
+  .login-wrapper {
     min-width: auto;
   }
 
@@ -296,6 +317,7 @@ onUnmounted(() => {
   .profile-btn {
     padding: 0 12px;
     font-size: 13px;
+    height: 32px;
   }
 
   .profile-icon svg {

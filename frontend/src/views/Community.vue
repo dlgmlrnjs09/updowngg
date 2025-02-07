@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-[#0A0A0A] p-6">
     <div class="max-w-7xl mx-auto mb-8">
       <!-- 상단 영역 -->
-      <div class="flex justify-between items-center mt-20 mb-14">
+      <div class="flex justify-between items-center mb-14">
         <div class="bg-[#141414] p-3 rounded-xl flex-1 mr-4">
           <div class="flex gap-3 items-center">
             <select

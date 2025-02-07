@@ -1,6 +1,6 @@
 # SummonerRankingPage.vue
 <template>
-  <div class="stats-page max-w-[1200px] mx-auto px-6 mt-[100px]">
+  <div class="stats-page max-w-[1200px] mx-auto px-6 mt-[20px]">
     <FilterSection @update:filter="onFilterUpdate" is-not-show-period/>
 
     <div class="stats-card">

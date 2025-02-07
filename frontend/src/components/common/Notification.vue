@@ -1,7 +1,7 @@
 <template>
   <div class="relative" ref="notificationDropdown">
     <button class="notificationEntity-btn" @click="toggleDropdown">
-      <Bell class="w-5 h-5" />
+      <Bell class="bell-icon" />
       <div v-if="store.unreadCount" class="badge">
         {{ store.unreadCount }}
       </div>
@@ -123,7 +123,7 @@ const handleNotificationClick = async (notification: ReviewNotification) => {
 .notificationEntity-btn {
   position: relative;
   height: 36px;
-  padding: 0 12px;
+  padding: 0 15px;
   color: #888;
   background: none;
   border: 1.5px solid #444;
@@ -132,6 +132,11 @@ const handleNotificationClick = async (notification: ReviewNotification) => {
   transition: all 0.2s;
   display: flex;
   align-items: center;
+}
+
+.bell-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .notificationEntity-btn:hover {
@@ -172,6 +177,7 @@ const handleNotificationClick = async (notification: ReviewNotification) => {
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(41, 121, 255, 0.3) transparent;
+  z-index: 9999;
 }
 
 /* Webkit 스크롤바 스타일링 */
@@ -273,6 +279,18 @@ const handleNotificationClick = async (notification: ReviewNotification) => {
 @media (max-width: 1024px) {
   .dropdown-notification {
     right: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .notificationEntity-btn {
+    height: 32px;
+    padding: 0 10px;
+  }
+
+  .bell-icon {
+    width: 1rem;
+    height: 1rem;
   }
 }
 </style>

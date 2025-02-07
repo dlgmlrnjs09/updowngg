@@ -393,7 +393,7 @@ onMounted(async () => {
 <style scoped>
 .container {
   max-width: 1000px;
-  margin: 80px auto 0;
+  margin: 0 auto 0;
   padding: 20px;
 }
 

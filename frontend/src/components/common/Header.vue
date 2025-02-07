@@ -1,28 +1,20 @@
-<!-- Header.vue -->
 <template>
   <header class="header">
     <div class="header-content">
-      <div class="left-section">
+      <div class="top-section">
         <RouterLink to="/" class="logo">
           <div class="logo-icon"><img src="/favicon.ico" alt="favicon"></div>
-          updownGG
+          <span>updownGG</span>
         </RouterLink>
-        <div class="search-container">
-          <Search />
-        </div>
-      </div>
-
-      <div class="right-section">
         <nav class="nav">
           <RouterLink to="/">홈</RouterLink>
           <RouterLink to="/ranking">랭킹</RouterLink>
           <RouterLink to="/stats">통계</RouterLink>
           <RouterLink to="/community/duo">커뮤니티</RouterLink>
         </nav>
-
-        <div class="user-actions" v-if="authStore.isAuthenticated">
-          <div class="profile-dropdown" ref="profileDropdown">
-            <Notification/>
+        <div class="user-actions">
+          <div class="profile-dropdown" ref="profileDropdown" v-if="authStore.isAuthenticated">
+            <Notification />
             <button class="profile-btn" @click="toggleDropdown">
               <div class="profile-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -31,7 +23,6 @@
                 </svg>
               </div>
             </button>
-
             <div v-if="isDropdownOpen" class="dropdown-menu">
               <button class="dropdown-item" @click="handleProfile">프로필</button>
               <button class="dropdown-item" @click="navigateToAccountSettings">계정 설정</button>
@@ -40,10 +31,11 @@
               <button class="dropdown-item logout" @click="handleLogout">로그아웃</button>
             </div>
           </div>
+          <router-link v-else to="/login" class="login-btn">로그인</router-link>
         </div>
-        <div class="user-actions" v-else>
-          <router-link to="/login" class="login-btn">로그인</router-link>
-        </div>
+      </div>
+      <div class="search-container">
+        <Search />
       </div>
     </div>
   </header>
@@ -121,11 +113,11 @@ onUnmounted(() => {
 
 <style scoped>
 .header {
-  position: fixed;
+  /*position: fixed;*/
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: auto;
   background: #0A0A0A;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 1000;
@@ -135,24 +127,14 @@ onUnmounted(() => {
   max-width: 1000px;
   margin: 0 auto;
   padding: 0 24px;
-  height: 100%;
+}
+
+.top-section {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-}
-
-.left-section {
-  display: flex;
-  align-items: center;
   gap: 24px;
-  flex: 1;
-  max-width: 500px;
-}
-
-.right-section {
-  display: flex;
-  align-items: center;
-  gap: 35px;
+  height: 60px;
 }
 
 .logo {
@@ -176,11 +158,6 @@ onUnmounted(() => {
   color: white;
   font-size: 14px;
   font-weight: 700;
-}
-
-.search-container {
-  flex: 1;
-  max-width: 400px;
 }
 
 .nav {
@@ -213,18 +190,21 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  z-index: 9999;
 }
 
 .dropdown-menu {
   position: absolute;
   top: 100%;
-  /*right: 0;*/
+  right: 0;
   margin-top: 8px;
   background: #141414;
   border: 1.5px solid #333;
   border-radius: 8px;
   padding: 8px;
   min-width: 160px;
+  z-index: 9999;
+
 }
 
 .dropdown-item {
@@ -298,31 +278,73 @@ onUnmounted(() => {
   line-height: 0;
 }
 
-@media (max-width: 1024px) {
+.search-container {
+  width: 100%;
+  padding: 0 0 10px 0;
+}
+
+/* PC 레이아웃 스타일 조정 */
+@media (min-width: 769px) {
   .header-content {
-    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
   }
 
-  .left-section {
-    gap: 24px;
-  }
-
-  .right-section {
-    gap: 24px;
+  .top-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .nav {
-    gap: 24px;
+    display: flex;
+    gap: 32px;
+  }
+
+  .search-container {
+    width: 100%;
+    max-width: 1000px;
+    align-self: center;
   }
 }
 
+/* 모바일 레이아웃 */
 @media (max-width: 768px) {
-  .left-section {
-    gap: 16px;
+  .header {
+    height: auto;
+  }
+
+  .header-content {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .top-section {
+    height: auto;
+    width: 100%;
+  }
+
+  .logo span {
+    display: none;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
   }
 
   .nav {
-    display: none;
+    gap: 16px;
+  }
+
+  .nav a {
+    font-size: 14px;
+  }
+
+  .search-container {
+    width: 100%;
+    max-width: none;
+    padding: 5px 0 0 0;
   }
 
   .user-actions {
@@ -334,6 +356,7 @@ onUnmounted(() => {
   .profile-btn {
     padding: 0 12px;
     font-size: 13px;
+    height: 32px;
   }
 
   .profile-icon svg {
