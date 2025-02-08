@@ -51,6 +51,9 @@ const formatNumber = (num: number) => {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0; /* 추가 */
+  flex: 1; /* 추가 */
+  width: 100%; /* 추가 */
 }
 
 .progress-bg {

@@ -7,185 +7,276 @@
         showDetails ? 'bg-[#141414]' : ''
       ]">
     <div class="summary-section" @click="toggleDetails">
-      <div class="match-summary flex items-center">
-        <!-- 왼쪽: 게임 정보 -->
-        <div class="game-info-section w-36 px-4 flex flex-col">
-          <div class="text-sm font-medium">{{ match.matchInfo.gameModeName }}</div>
-          <div class="text-xs text-gray-400">{{ formatDate(match.matchInfo.gameStartDt) }}</div>
-          <div class="divider my-2 border-t border-gray-700 w-[60%]"></div>
-          <div class="text-xs" :class="isWin ? 'text-blue-400' : 'text-red-400'">
-            {{ isWin ? '승리' : '패배' }}
-          </div>
-          <div class="text-xs text-gray-400">{{ formatDuration(match.matchInfo.gameDuration) }}</div>
-        </div>
-
-        <!-- 중앙: 챔피언/KDA 정보 -->
-        <div class="champion-kda-section flex items-center gap-4 w-60">
-          <div class="champion-info">
-            <div class="relative">
-              <img
-                  :src="currentPlayer.champProfileIconUrl"
-                  :alt="currentPlayer.champName"
-                  class="w-12 h-12 rounded-lg"
-              >
-              <span class="absolute bottom-0 right-0 text-xs bg-black/80 px-1 rounded">
-                {{ currentPlayer.champLevel }}
-              </span>
-            </div>
-          </div>
-
-          <div class="kda-info text-center">
-            <div class="text-sm">
-              <span class="text-gray-200">{{ currentPlayer.kills }}</span> /
-              <span class="text-red-400">{{ currentPlayer.deaths }}</span> /
-              <span class="text-gray-200">{{ currentPlayer.assists }}</span>
-            </div>
-            <div class="text-xs text-gray-400">
-              {{ calculateKDA(currentPlayer) }} 평점
-            </div>
-          </div>
-        </div>
-
-        <!-- 평가 정보 섹션 -->
-        <div class="review-info-section px-4 border-l border-r border-gray-700 w-[28.5rem]">
-          <template v-if="match.reviewByMatchSummaryDto">
-            <!-- 평가한 소환사들의 챔피언 초상화 -->
-            <div class="reviewers-champions mb-2">
-              <div class="flex gap-1 overflow-hidden">
+      <div class="match-summary flex flex-col md:flex-row items-stretch">
+        <!-- 모바일 레이아웃 -->
+        <div class="block md:hidden w-full">
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex items-center gap-2">
+              <div class="relative">
                 <img
-                    v-for="reviewer in match.reviewByMatchSummaryDto?.reviewerInfoList"
-                    :key="reviewer.reviewerChampId"
-                    :src="reviewer.isAnonymous ? '/src/assets/icon/anonymous_profile.png' : reviewer.reviewerChampIconUrl"
-                    :alt="reviewer.reviewerChampId"
-                    class="w-7 h-7 rounded-sm border border-gray-700/50"
-                    :title="reviewer.isAnonymous ? '익명의 소환사' : reviewer.reviewerChampName"
+                    :src="currentPlayer.champProfileIconUrl"
+                    :alt="currentPlayer.champName"
+                    class="w-10 h-10 rounded-lg"
                 >
-              </div>
-            </div>
-
-            <!-- 좋아요/싫어요 카운트 -->
-            <div class="flex items-center gap-4 mb-2">
-              <div class="flex items-center gap-2">
-                <ThumbsUp class="w-[20px] h-[20px] text-[#4CAF50]" />
-                <span class="text-[#4CAF50] font-semibold text-sm">
-                  {{ match.reviewByMatchSummaryDto?.upCount || 0 }}
+                <span class="absolute bottom-0 right-0 text-xs bg-black/80 px-1 rounded">
+                  {{ currentPlayer.champLevel }}
                 </span>
               </div>
-              <div class="flex items-center gap-2">
-                <ThumbsDown class="w-[20px] h-[20px] text-[#FF5252]" />
-                <span class="text-[#FF5252] font-semibold text-sm">
-                  {{ match.reviewByMatchSummaryDto?.downCount || 0 }}
-                </span>
+              <div>
+                <div class="text-sm">
+                  <span class="text-gray-200">{{ currentPlayer.kills }}</span> /
+                  <span class="text-red-400">{{ currentPlayer.deaths }}</span> /
+                  <span class="text-gray-200">{{ currentPlayer.assists }}</span>
+                </div>
+                <div class="text-xs text-gray-400">
+                  {{ calculateKDA(currentPlayer) }} 평점
+                </div>
               </div>
             </div>
+            <div class="text-right">
+              <div class="text-xs">{{ match.matchInfo.gameModeName }}</div>
+              <div class="text-xs text-gray-400">{{ formatDate(match.matchInfo.gameStartDt) }}</div>
+              <div class="text-xs" :class="isWin ? 'text-blue-400' : 'text-red-400'">
+                {{ isWin ? '승리' : '패배' }} · {{ formatDuration(match.matchInfo.gameDuration) }}
+              </div>
+            </div>
+          </div>
 
-            <!-- 태그 리스트 -->
-            <TagList :tags="match.reviewByMatchSummaryDto?.tagDtoList?.slice(0, 3)" size="small" is-show-count/>
+          <!-- 리뷰 섹션 -->
+          <template v-if="match.reviewByMatchSummaryDto">
+            <div class="flex items-center justify-between border-t border-gray-700 pt-2">
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                  <ThumbsUp class="w-[16px] h-[16px] text-[#4CAF50]" />
+                  <span class="text-[#4CAF50] font-semibold text-xs">
+                    {{ match.reviewByMatchSummaryDto?.upCount || 0 }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <ThumbsDown class="w-[16px] h-[16px] text-[#FF5252]" />
+                  <span class="text-[#FF5252] font-semibold text-xs">
+                    {{ match.reviewByMatchSummaryDto?.downCount || 0 }}
+                  </span>
+                </div>
+              </div>
+              <div class="reviewers-champions">
+                <div class="flex gap-1 overflow-hidden">
+                  <img
+                      v-for="reviewer in match.reviewByMatchSummaryDto?.reviewerInfoList"
+                      :key="reviewer.reviewerChampId"
+                      :src="reviewer.isAnonymous ? '/src/assets/icon/anonymous_profile.png' : reviewer.reviewerChampIconUrl"
+                      :alt="reviewer.reviewerChampId"
+                      class="w-5 h-5 rounded-sm border border-gray-700/50"
+                      :title="reviewer.isAnonymous ? '익명의 소환사' : reviewer.reviewerChampName"
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="mt-2">
+              <TagList :tags="match.reviewByMatchSummaryDto?.tagDtoList?.slice(0, 3)" size="small" is-show-count/>
+            </div>
           </template>
           <template v-else>
-            <div class="flex items-center justify-center h-full text-sm text-gray-400">
+            <div class="text-center text-xs text-gray-400 border-t border-gray-700 pt-2">
               해당 게임에서 받은 평가가 없습니다.
             </div>
           </template>
-        </div>
 
-        <!-- 오른쪽: 참가자 목록 -->
-        <div class="participants-section">
-          <div class="flex gap-4">
-            <!-- 블루팀 -->
-            <div class="team-column">
-              <div v-for="player in team1"
-                   :key="player.puuid"
-                   class="participant-row">
-                <div class="flex items-center gap-1 min-w-0 flex-1">
-                  <img
-                      :src="player.champProfileIconUrl"
-                      :alt="player.champName"
-                      class="w-4 h-4 rounded-sm flex-shrink-0"
-                  >
-                  <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
-                        @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
-                    {{ player.riotIdGameName }}
-                  </span>
-                </div>
-                <div class="flex items-center">
-                  <FileEdit
-                      v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
-                            && player.puuid !== auth.user?.puuid
-                            && !player.reviewDto.reviewable"
-                      class="w-4 h-4 text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0 ml-2"
-                      @click.stop="$emit('reviewPlayer', player)"
-                  />
-                  <PencilIcon
-                      v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
-                            && player.puuid !== auth.user?.puuid
-                            && player.reviewDto.reviewable"
-                      class="w-[16px] h-[16px] text-gray-600 hover:text-gray-400 cursor-pointer flex-shrink-0 ml-2"
-                      @click.stop="$emit('reviewPlayer', player)"
-                  />
-                </div>
-              </div>
-            </div>
-            <!-- 레드팀 -->
-            <div class="team-column">
-              <div v-for="player in team2"
-                   :key="player.puuid"
-                   class="participant-row">
-                <div class="flex items-center gap-1 min-w-0 flex-1">
-                  <img
-                      :src="player.champProfileIconUrl"
-                      :alt="player.champName"
-                      class="w-4 h-4 rounded-sm flex-shrink-0"
-                  >
-                  <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
-                        @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
-                    {{ player.riotIdGameName }}
-                  </span>
-                </div>
-                <div class="flex items-center">
-                  <FileEdit
-                      v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
-                            && player.puuid !== auth.user?.puuid
-                            && !player.reviewDto.reviewable"
-                      class="w-4 h-4 text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0 ml-2"
-                      @click.stop="$emit('reviewPlayer', player)"
-                  />
-                  <PencilIcon
-                      v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
-                            && player.puuid !== auth.user?.puuid
-                            && player.reviewDto.reviewable"
-                      class="w-[16px] h-[16px] text-gray-600 hover:text-gray-400 cursor-pointer flex-shrink-0 ml-2"
-                      @click.stop="$emit('reviewPlayer', player)"
-                  />
-                </div>
-              </div>
+          <div class="flex justify-center items-center mt-2 border-t border-gray-700 pt-2">
+            <div class="toggle-section flex items-center">
+              <ChevronDown v-if="!showDetails" class="w-5 h-5 text-gray-400" />
+              <ChevronUp v-else class="w-5 h-5 text-gray-400" />
             </div>
           </div>
         </div>
 
-        <!-- 토글 아이콘 -->
-        <div class="toggle-section flex items-center px-4">
-          <ChevronDown v-if="!showDetails" class="w-5 h-5 text-gray-400" />
-          <ChevronUp v-else class="w-5 h-5 text-gray-400" />
+        <!-- 태블릿/PC 레이아웃 -->
+        <div class="hidden md:flex w-full">
+          <!-- 기존 데스크탑 레이아웃 코드 유지 -->
+          <div class="game-info-section w-36 px-4 flex flex-col">
+            <div class="text-sm font-medium">{{ match.matchInfo.gameModeName }}</div>
+            <div class="text-xs text-gray-400">{{ formatDate(match.matchInfo.gameStartDt) }}</div>
+            <div class="divider my-2 border-t border-gray-700 w-[60%]"></div>
+            <div class="text-xs" :class="isWin ? 'text-blue-400' : 'text-red-400'">
+              {{ isWin ? '승리' : '패배' }}
+            </div>
+            <div class="text-xs text-gray-400">{{ formatDuration(match.matchInfo.gameDuration) }}</div>
+          </div>
+
+          <div class="champion-kda-section flex items-center gap-4 w-60">
+            <div class="champion-info">
+              <div class="relative">
+                <img
+                    :src="currentPlayer.champProfileIconUrl"
+                    :alt="currentPlayer.champName"
+                    class="w-12 h-12 rounded-lg"
+                >
+                <span class="absolute bottom-0 right-0 text-xs bg-black/80 px-1 rounded">
+                  {{ currentPlayer.champLevel }}
+                </span>
+              </div>
+            </div>
+
+            <div class="kda-info text-center">
+              <div class="text-sm">
+                <span class="text-gray-200">{{ currentPlayer.kills }}</span> /
+                <span class="text-red-400">{{ currentPlayer.deaths }}</span> /
+                <span class="text-gray-200">{{ currentPlayer.assists }}</span>
+              </div>
+              <div class="text-xs text-gray-400">
+                {{ calculateKDA(currentPlayer) }} 평점
+              </div>
+            </div>
+          </div>
+
+          <div class="review-info-section px-4 border-l border-r border-gray-700 w-[28.5rem]">
+            <template v-if="match.reviewByMatchSummaryDto">
+              <div class="reviewers-champions mb-2">
+                <div class="flex gap-1 overflow-hidden">
+                  <img
+                      v-for="reviewer in match.reviewByMatchSummaryDto?.reviewerInfoList"
+                      :key="reviewer.reviewerChampId"
+                      :src="reviewer.isAnonymous ? '/src/assets/icon/anonymous_profile.png' : reviewer.reviewerChampIconUrl"
+                      :alt="reviewer.reviewerChampId"
+                      class="w-7 h-7 rounded-sm border border-gray-700/50"
+                      :title="reviewer.isAnonymous ? '익명의 소환사' : reviewer.reviewerChampName"
+                  >
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4 mb-2">
+                <div class="flex items-center gap-2">
+                  <ThumbsUp class="w-[20px] h-[20px] text-[#4CAF50]" />
+                  <span class="text-[#4CAF50] font-semibold text-sm">
+                    {{ match.reviewByMatchSummaryDto?.upCount || 0 }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <ThumbsDown class="w-[20px] h-[20px] text-[#FF5252]" />
+                  <span class="text-[#FF5252] font-semibold text-sm">
+                    {{ match.reviewByMatchSummaryDto?.downCount || 0 }}
+                  </span>
+                </div>
+              </div>
+
+              <TagList :tags="match.reviewByMatchSummaryDto?.tagDtoList?.slice(0, 3)" size="small" is-show-count/>
+            </template>
+            <template v-else>
+              <div class="flex items-center justify-center h-full text-sm text-gray-400">
+                해당 게임에서 받은 평가가 없습니다.
+              </div>
+            </template>
+          </div>
+
+          <div class="participants-section">
+            <div class="flex gap-4">
+              <div class="team-column">
+                <div v-for="player in team1"
+                     :key="player.puuid"
+                     class="participant-row">
+                  <div class="flex items-center gap-1 min-w-0 flex-1">
+                    <img
+                        :src="player.champProfileIconUrl"
+                        :alt="player.champName"
+                        class="w-4 h-4 rounded-sm flex-shrink-0"
+                    >
+                    <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
+                          @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
+                      {{ player.riotIdGameName }}
+                    </span>
+                  </div>
+                  <div class="flex items-center">
+                    <FileEdit
+                        v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                              && player.puuid !== auth.user?.puuid
+                              && !player.reviewDto.reviewable"
+                        class="w-4 h-4 text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0 ml-2"
+                        @click.stop="$emit('reviewPlayer', player)"
+                    />
+                    <PencilIcon
+                        v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                              && player.puuid !== auth.user?.puuid
+                              && player.reviewDto.reviewable"
+                        class="w-[16px] h-[16px] text-gray-600 hover:text-gray-400 cursor-pointer flex-shrink-0 ml-2"
+                        @click.stop="$emit('reviewPlayer', player)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="team-column">
+                <div v-for="player in team2"
+                     :key="player.puuid"
+                     class="participant-row">
+                  <div class="flex items-center gap-1 min-w-0 flex-1">
+                    <img
+                        :src="player.champProfileIconUrl"
+                        :alt="player.champName"
+                        class="w-4 h-4 rounded-sm flex-shrink-0"
+                    >
+                    <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
+                          @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
+                      {{ player.riotIdGameName }}
+                    </span>
+                  </div>
+                  <div class="flex items-center">
+                    <FileEdit
+                        v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                              && player.puuid !== auth.user?.puuid
+                              && !player.reviewDto.reviewable"
+                        class="w-4 h-4 text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0 ml-2"
+                        @click.stop="$emit('reviewPlayer', player)"
+                    />
+                    <PencilIcon
+                        v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                              && player.puuid !== auth.user?.puuid
+                              && player.reviewDto.reviewable"
+                        class="w-[16px] h-[16px] text-gray-600 hover:text-gray-400 cursor-pointer flex-shrink-0 ml-2"
+                        @click.stop="$emit('reviewPlayer', player)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="toggle-section flex items-center px-4">
+            <ChevronDown v-if="!showDetails" class="w-5 h-5 text-gray-400" />
+            <ChevronUp v-else class="w-5 h-5 text-gray-400" />
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 매치 상세 정보 -->
     <div v-show="showDetails" class="game-item">
-      <div class="teams-container">
+      <!-- PC/태블릿 레이아웃 -->
+      <div class="hidden md:block">
+        <div class="teams-container">
+          <match-team
+              :participants="team1"
+              :all-participants="match.participantList"
+              :team-type="'blue'"
+              :profile-data="profileData"
+              @review-player="$emit('reviewPlayer', $event)"
+          />
+          <div class="teams-divider"></div>
+          <match-team
+              :participants="team2"
+              :all-participants="match.participantList"
+              :team-type="'red'"
+              :profile-data="profileData"
+              @review-player="$emit('reviewPlayer', $event)"
+          />
+        </div>
+      </div>
+
+      <!-- 모바일 레이아웃 -->
+      <div class="md:hidden">
         <match-team
-            :participants="team1"
+            :participants="match.participantList"
             :all-participants="match.participantList"
-            :team-type="'blue'"
-            :profile-data="profileData"
-            @review-player="$emit('reviewPlayer', $event)"
-        />
-        <div class="teams-divider"></div>
-        <match-team
-            :participants="team2"
-            :all-participants="match.participantList"
-            :team-type="'red'"
+            :team-type="'all'"
             :profile-data="profileData"
             @review-player="$emit('reviewPlayer', $event)"
         />
@@ -353,41 +444,5 @@ const formatDuration = (seconds: number) => {
 
 .player-icon img {
   @apply transition-transform hover:scale-110;
-}
-
-@media (max-width: 768px) {
-  .match-summary {
-    @apply flex-col;
-  }
-
-  .game-info-section,
-  .champion-kda-section,
-  .review-info-section,
-  .participants-section {
-    @apply w-full mb-2;
-  }
-
-  .review-info-section {
-    @apply border-l-0 border-r-0 border-t border-b py-2;
-  }
-
-  .participants-section {
-    @apply flex-col gap-4;
-  }
-
-  .team-column {
-    @apply gap-2;
-  }
-
-  .teams-container {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .teams-divider {
-    width: 100%;
-    height: 1px;
-    margin: 8px 0;
-  }
 }
 </style>

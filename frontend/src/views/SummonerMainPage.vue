@@ -342,18 +342,20 @@ const fetchWrittenReview = async() => {
 
 const checkPlayedTogether = async () => {
   if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
-  const today = new Date();
-  const sevenDaysAgo = new Date(today);
-  sevenDaysAgo.setDate(today.getDate() - 7);
+  if (authStore.isAuthenticated) {
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
 
-  const formatDate = (date: Date) => {
-    return date.toISOString().slice(0,10).replace(/-/g,'');
-  }
+    const formatDate = (date: Date) => {
+      return date.toISOString().slice(0, 10).replace(/-/g, '');
+    }
 
-  const response = await matchApi.checkPlayedTogether(summonerInfo.value.riotAccountInfoEntity.puuid, formatDate(sevenDaysAgo), formatDate(today));
-  if (response.data === true) {
-    const response = await matchApi.getLatestMatchInfoTogether(summonerInfo.value.riotAccountInfoEntity.puuid, formatDate(sevenDaysAgo), formatDate(today));
-    playTogetherLatestMatch.value = response.data;
+    const response = await matchApi.checkPlayedTogether(summonerInfo.value.riotAccountInfoEntity.puuid, formatDate(sevenDaysAgo), formatDate(today));
+    if (response.data === true) {
+      const response = await matchApi.getLatestMatchInfoTogether(summonerInfo.value.riotAccountInfoEntity.puuid, formatDate(sevenDaysAgo), formatDate(today));
+      playTogetherLatestMatch.value = response.data;
+    }
   }
 }
 
