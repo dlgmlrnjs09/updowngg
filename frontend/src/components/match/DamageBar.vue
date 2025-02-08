@@ -61,7 +61,7 @@ const formatNumber = (num: number) => {
   height: 6px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 3px;
-  overflow: hidden;
+  overflow: hidden;;
 }
 
 .progress-fill {
