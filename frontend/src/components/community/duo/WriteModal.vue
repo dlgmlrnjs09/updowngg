@@ -90,12 +90,18 @@
 
         <!-- 내용 입력 -->
         <div class="space-y-3">
-          <label class="text-sm text-gray-300 font-medium">내용</label>
+          <div class="flex justify-between">
+            <label class="text-sm text-gray-300 font-medium">내용</label>
+            <span class="text-sm" :class="remainingChars >= 0 ? 'text-gray-400' : 'text-red-500'">
+              {{ content.length }}/{{ maxLength }}
+            </span>
+          </div>
           <textarea
               v-model="content"
               rows="4"
               placeholder="듀오 모집 내용을 입력해주세요."
-              class="w-full bg-[#1A1A1A] text-white text-sm px-3 py-2.5 rounded-lg border border-[#333] focus:outline-none focus:border-[#2979FF] transition-colors resize-none"
+              maxlength="50"
+              class="w-full bg-[#1A1A1A] text-white text-sm px-3 py-2.5 rounded-lg border border-[#333] focus:outline-none focus:border-[#2979FF] transition-colors resize-none whitespace-pre-wrap break-words"
           ></textarea>
         </div>
       </div>
@@ -114,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { XIcon, MicIcon, MicOffIcon } from 'lucide-vue-next'
 import {communityApi} from "@/api/community.ts";
 import type {CommunityPostDto} from "@/types/community.ts";
@@ -133,6 +139,14 @@ const targetPosition = ref('TOP')
 const queueType = ref('SOLO_RANK')
 const hasMic = ref(false)
 const content = ref('')
+const maxLength = 50
+const remainingChars = computed(() => maxLength - content.value.length)
+
+watch(content, (newValue) => {
+  if (newValue.length > maxLength) {
+    content.value = newValue.slice(0, maxLength)
+  }
+})
 
 const emit = defineEmits(['close', 'submit'])
 
@@ -153,6 +167,9 @@ const handleSubmit = () => {
       isUseMic: hasMic.value
     }
   }
+
+  console.log('formData:', formData)  // 추가
+  console.log('hasMic value:', hasMic.value)  // 추가
 
   emit('submit', formData)
 }
