@@ -13,7 +13,7 @@
             <th class="py-2 px-4 text-gray-300 w-24">평가수</th>
             <th class="py-2 px-4 text-gray-300 w-24">평가점수</th>
             <th class="py-2 px-4 text-gray-300 w-48">평가비율</th>
-            <th class="py-2 px-4 text-gray-300 w-52">모스트 챔피언별 평가</th>
+            <th class="py-2 px-4 text-gray-300 w-52 most-champion-column">모스트 챔피언별 평가</th>
             <th class="py-2 px-4 text-gray-300">자주 받은 태그</th>
           </tr>
           </thead>
@@ -49,7 +49,7 @@
                 </div>
               </div>
             </td>
-            <td class="py-2 px-4 text-gray-400">
+            <td class="py-2 px-4 text-gray-400 most-champion-column">
               <div class="flex items-center gap-4">
                 <div v-for="champion in player.championStatsDtoList" :key="champion.nameUs"
                      class="flex flex-col items-center gap-1">
@@ -73,95 +73,6 @@
           </tr>
           </tbody>
         </table>
-
-        <!-- 선택된 소환사 상세 정보 (PC에서만 보임) -->
-        <div
-            v-if="selectedPlayer && !isMobile"
-            class="selected-summoner-details desktop-details"
-        >
-          <div class="selected-summoner-header">
-            <img
-                :src="selectedPlayer.summonerBasicInfoDto.profileIconUrl"
-                :alt="selectedPlayer.summonerBasicInfoDto.gameName"
-                class="selected-summoner-image"
-            >
-            <div class="selected-summoner-info">
-              <div class="selected-summoner-name">
-                {{ selectedPlayer.summonerBasicInfoDto.gameName }}
-                <span class="selected-summoner-tag">
-                  #{{ selectedPlayer.summonerBasicInfoDto.tagLine }}
-                </span>
-              </div>
-              <div class="selected-summoner-stats">
-                <div class="stat-item">
-                  <span class="stat-label">평가수</span>
-                  <span class="stat-value">{{ selectedPlayer.reviewStatsDto.totalReviewCnt }}</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-label">평가점수</span>
-                  <span class="stat-value">{{ selectedPlayer.reviewStatsDto.score }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="selected-summoner-rating">
-            <div class="rating-bar">
-              <div class="bar-background">
-                <div
-                    class="bar-positive"
-                    :style="{ width: `${selectedPlayer.reviewStatsDto.upRatio}%` }"
-                ></div>
-                <div
-                    class="bar-negative"
-                    :style="{ width: `${selectedPlayer.reviewStatsDto.downRatio}%` }"
-                ></div>
-              </div>
-              <div class="rating-labels">
-                <span class="label-positive">{{ selectedPlayer.reviewStatsDto.upRatio }}%</span>
-                <span class="label-negative">{{ selectedPlayer.reviewStatsDto.downRatio }}%</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="selected-summoner-bottom">
-            <div class="most-champions">
-              <h3>모스트 챔피언별 평가</h3>
-              <div class="champions-grid">
-                <div
-                    v-for="champion in selectedPlayer.championStatsDtoList"
-                    :key="champion.nameUs"
-                    class="champion-item"
-                >
-                  <img
-                      :src="champion.iconUrl"
-                      :alt="champion.nameKr"
-                      class="champion-image"
-                  >
-                  <div class="champion-rating-bar">
-                    <div
-                        class="rating-positive"
-                        :style="{ width: `${champion.upRatio}%` }"
-                    ></div>
-                    <div
-                        class="rating-negative"
-                        :style="{ width: `${champion.downRatio}%` }"
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="most-tags">
-              <h3>자주 받은 태그</h3>
-              <TagList
-                  :tags="selectedPlayer.reviewTagDtoList"
-                  size="small"
-                  is-show-count
-              />
-            </div>
-          </div>
-        </div>
 
         <!-- 모바일 리스트 (모바일에서만 보임) -->
         <div v-if="isMobile" class="mobile-table">
@@ -417,6 +328,56 @@ table {
 
   .most-tags h3 {
     @apply text-lg font-semibold text-white mb-4;
+  }
+}
+
+/* 태블릿 환경에서의 스타일 추가 */
+@media (min-width: 641px) and (max-width: 1100px) {
+  .most-champion-column {
+    display: none;
+  }
+
+  /* 태블릿 전용 스타일 (641px ~ 1024px) */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .desktop-table {
+      table-layout: fixed;
+      min-width: 800px;
+    }
+
+    /* 태블릿에서만 헤더 텍스트 크기 줄임 */
+    .desktop-table th {
+      @apply text-xs whitespace-nowrap;
+    }
+
+    /* 열 너비 최적화 */
+    .desktop-table th:nth-child(1),
+    .desktop-table td:nth-child(1) {
+      width: 40px;
+    }
+
+    .desktop-table th:nth-child(2),
+    .desktop-table td:nth-child(2) {
+      width: 200px;
+    }
+
+    /* 평가수, 평가점수 열 너비 증가 */
+    .desktop-table th:nth-child(3),
+    .desktop-table td:nth-child(3),
+    .desktop-table th:nth-child(4),
+    .desktop-table td:nth-child(4) {
+      width: 60px;
+    }
+
+    /* 평가비율 열 너비 줄임 */
+    .desktop-table th:nth-child(5),
+    .desktop-table td:nth-child(5) {
+      width: 180px; /* 기존 w-48 (192px)에서 120px로 줄임 */
+    }
+
+    /* 평가비율 바 크기 조정 */
+    .desktop-table td:nth-child(5) .w-56 {
+      width: 180px; /* 기존 w-56 (224px)에서 100px로 줄임 */
+    }
   }
 }
 
