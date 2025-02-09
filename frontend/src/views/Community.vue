@@ -102,13 +102,14 @@
 
               <div v-if="true" class="flex flex-col items-center">
                 <span class="text-[10px] text-gray-400 mb-0.5">{{ isMobile ? '마이크' : '마이크 사용' }}</span>
-                <MicIcon class="w-4 h-4 text-[#2979FF]" />
+                <MicIcon v-if="card.postDto.isUseMic" class="w-4 h-4 text-[#2979FF]" />
+                <MicOffIcon v-else class="w-4 h-4 text-gray-500" />
               </div>
             </div>
           </div>
 
           <!-- 내용 -->
-          <p class="text-white leading-relaxed line-clamp-3 flex-grow"
+          <p class="text-white leading-relaxed line-clamp-3 flex-grow whitespace-pre-wrap break-words"
              :class="isMobile ? 'text-sm mb-4' : 'text-base mb-3 mt-3 font-pretendard'"
           >
             {{ card.content }}
@@ -224,7 +225,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { ThumbsUp, ThumbsDown, MicIcon } from 'lucide-vue-next'
+import {ThumbsUp, ThumbsDown, MicIcon, MicOffIcon} from 'lucide-vue-next'
 import WriteModal from '@/components/community/duo/WriteModal.vue'
 import type { CommunityPostDto, DuoPostCardDto, SearchFilter } from "@/types/community.ts"
 import { communityApi } from "@/api/community.ts"

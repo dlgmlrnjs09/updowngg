@@ -10,5 +10,5 @@ public class DuoCommunityEntity extends CommunityPostEntity {
     private String gameMode;
     private String positionSelf;
     private String positionFind;
-    private boolean isUseMic;
+    private Boolean isUseMic;
 }
