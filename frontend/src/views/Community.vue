@@ -58,12 +58,15 @@
       <!-- 듀오 카드 그리드 -->
       <div
           class="grid grid-cols-1  gap-4 sm:gap-8"
-          :class="isMobile ? 'md:grid-cols-2' : 'md:grid-cols-3'"
+          :class="{
+            'md:grid-cols-2 lg:grid-cols-3': !isMobile,
+            'md:grid-cols-2': isMobile
+          }"
       >
         <div
             v-for="card in postCards"
             :key="card.postDto.postId"
-            class="bg-[#141414] rounded-xl p-3 sm:p-4 transition-all duration-200 border border-[#2979FF1A] sm:h-[360px] sm:flex sm:flex-col"
+            class="bg-[#141414] rounded-xl p-3 sm:p-4 transition-all duration-200 border border-[#2979FF1A] flex flex-col h-full sm:h-[360px]"
         >
           <!-- 포지션 & 게임 정보 -->
           <div :class="['flex items-center sm:items-start gap-2 mb-2 bg-[#1A1A1A] rounded-lg', isMobile ? 'p-2' : 'p-2.5']">
@@ -105,7 +108,9 @@
           </div>
 
           <!-- 내용 -->
-          <p :class="['text-white leading-relaxed line-clamp-3', isMobile ? 'text-sm mb-4 h-[70px]' : 'text-base mb-3 mt-3 font-pretendard']">
+          <p class="text-white leading-relaxed line-clamp-3 flex-grow"
+             :class="isMobile ? 'text-sm mb-4' : 'text-base mb-3 mt-3 font-pretendard'"
+          >
             {{ card.content }}
           </p>
 
@@ -167,9 +172,9 @@
 
           <!-- 챔피언 정보 -->
           <div :class="['bg-[#1A1A1A] rounded-lg mt-2', isMobile ? 'p-2.5' : 'rounded-t-none px-3 py-2']">
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-2">
               <div
-                  v-for="(champion, index) in card.duoSummonerInfoDto?.mostChampionDto.slice(0, isMobile ? 2 : 3)"
+                  v-for="(champion, index) in card.duoSummonerInfoDto?.mostChampionDto.slice(0, isDesktop ? 3 : 2)"
                   :key="index"
                   class="bg-[#141414] rounded-lg p-2 transition-colors duration-200"
               >
@@ -236,6 +241,7 @@ const isLoading = ref(false)
 const postCards = ref<DuoPostCardDto[]>([])
 const currentStartIndex = ref(0)
 const isMobile = computed(() => window.innerWidth < 640)
+const isDesktop = computed(() => window.innerWidth >= 1024)
 
 onMounted(async () => {
   await fetchPosts({})
