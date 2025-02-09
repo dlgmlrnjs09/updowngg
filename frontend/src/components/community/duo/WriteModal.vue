@@ -29,7 +29,7 @@
                   : 'border-[#333] text-gray-400 hover:border-gray-500'
               ]"
             >
-              <img :src="`/src/assets/icon/position/position_${position.value}.svg`" :alt="position.label" class="w-6 h-6 mb-1" />
+              <img :src="getPositionImage(position.value)" :alt="position.label" class="w-6 h-6 mb-1" />
               <span class="text-xs">{{ position.label }}</span>
             </button>
           </div>
@@ -49,7 +49,7 @@
                   : 'border-[#333] text-gray-400 hover:border-gray-500'
               ]"
             >
-              <img :src="`/src/assets/icon/position/position_${position.value}.svg`" :alt="position.label" class="w-6 h-6 mb-1" />
+              <img :src="getPositionImage(position.value)" :alt="position.label" class="w-6 h-6 mb-1" />
               <span class="text-xs">{{ position.label }}</span>
             </button>
           </div>
@@ -125,6 +125,7 @@ import { XIcon, MicIcon, MicOffIcon } from 'lucide-vue-next'
 import {communityApi} from "@/api/community.ts";
 import type {CommunityPostDto} from "@/types/community.ts";
 import Toast, {useToast} from "vue-toastification";
+import {useImageUrl} from "@/utils/imageUtil.ts";
 
 const positions = [
   { value: 'TOP', label: '탑' },
@@ -141,6 +142,7 @@ const hasMic = ref(false)
 const content = ref('')
 const maxLength = 50
 const remainingChars = computed(() => maxLength - content.value.length)
+const { getPositionImage } = useImageUrl();
 
 watch(content, (newValue) => {
   if (newValue.length > maxLength) {

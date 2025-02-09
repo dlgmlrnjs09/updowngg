@@ -75,7 +75,7 @@
                 <span class="text-[10px] text-gray-400 mb-0.5">{{ isMobile ? '주포지션' : '주 포지션' }}</span>
                 <div class="bg-[#141414] p-1 rounded">
                   <img
-                      :src="`/src/assets/icon/position/position_${card.postDto.positionSelf}.svg`"
+                      :src="getPositionImage(card.postDto.positionSelf)"
                       :alt="card.postDto.positionSelf"
                       class="w-4 h-4"
                   />
@@ -86,7 +86,7 @@
                 <span class="text-[10px] text-gray-400 mb-0.5">{{ isMobile ? '듀오포지션' : '찾는 포지션' }}</span>
                 <div class="bg-[#141414] p-1 rounded">
                   <img
-                      :src="`/src/assets/icon/position/position_${card.postDto.positionFind}.svg`"
+                      :src="getPositionImage(card.postDto.positionFind)"
                       :alt="card.postDto.positionFind"
                       class="w-4 h-4"
                   />
@@ -232,6 +232,9 @@ import { communityApi } from "@/api/community.ts"
 import TagList from "@/components/common/TagList.vue"
 import { useToast } from "vue-toastification"
 import { goSelectedSummonerProfile } from "@/utils/common.ts"
+import {useImageUrl} from "@/utils/imageUtil.ts";
+
+const { getPositionImage } = useImageUrl();
 
 const selectedPosition = ref('')
 const selectedGameMode = ref('')

@@ -109,7 +109,7 @@
             <!-- 포지션별 평가 -->
             <div class="position-stats">
               <div class="position-item" v-for="(position, index) in ['top', 'jungle', 'mid', 'support', 'ad']" :key="position">
-                <img :src="`/src/assets/icon/position/position_${position}.svg`" class="position-icon" alt="Position" />
+                <img :src="getPositionImage(position)" class="position-icon" alt="Position" />
                 <div class="position-rating">
                   <span class="up-count">{{ ratingByPosition?.[index]?.upCount ?? 0 }}</span>
                   <span class="stats-divider">/</span>
@@ -147,6 +147,8 @@ import ReviewRolling from "@/components/review/ReviewRolling.vue";
 import ReviewStatic from "@/components/review/ReviewStatic.vue";
 import type {LolMatchInfoRes} from "@/types/match.ts";
 import {useAuthStore} from "@/stores/auth.ts";
+import {useImageUrl} from "@/utils/imageUtil.ts";
+const { getPositionImage } = useImageUrl();
 
 const authStore = useAuthStore();
 
