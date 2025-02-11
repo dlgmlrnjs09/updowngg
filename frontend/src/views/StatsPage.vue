@@ -225,7 +225,7 @@ const onFilterUpdate = (filter: SearchFilter) => {
 }
 
 onMounted(() => {
-  fetchChampionStats({"queueType": MatchGameMode.SOLO_RANK})
+  fetchChampionStats({})
   window.addEventListener('resize', handleResize)
 })
 
