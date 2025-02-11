@@ -22,7 +22,6 @@ public class SwaggerConfig {
                         /*.description("")*/
                         .version("v2.0")
                         .contact(new Contact()
-                                .name("이희권")
-                                .email("heekwon0867@naver.com")));
+                                .email("lcb0867@naver.com")));
     }
 }

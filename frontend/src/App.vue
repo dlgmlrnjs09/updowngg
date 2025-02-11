@@ -2,6 +2,7 @@
 <template>
   <component :is="currentHeader" />
   <RouterView />
+  <Footer />
 </template>
 
 <script setup lang="ts">
@@ -11,6 +12,7 @@ import Header from '@/components/common/Header.vue';
 import {useAuthStore} from "@/stores/auth.ts";
 import HeaderMain from "@/components/common/HeaderMain.vue";
 import {useNotificationStore} from "@/stores/notification.ts";
+import Footer from "@/components/common/Footer.vue";
 
 const auth = useAuthStore()
 const route = useRoute()

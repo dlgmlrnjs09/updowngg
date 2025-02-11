@@ -53,6 +53,16 @@ const router = createRouter({
             component: () => import('@/views/Community.vue')
         },
         {
+            path: '/privacy',
+            name: 'privacy',
+            component: () => import('@/views/PrivacyPolicy.vue')
+        },
+        {
+            path: '/terms',
+            name: 'terms',
+            component: () => import('@/views/TermsOfService.vue')
+        },
+        {
             path: '/oauth2/discord/callback',
             name: 'discordCallback',
             component: () => import('@/views/AccountSettings.vue'),
