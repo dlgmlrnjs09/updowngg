@@ -113,6 +113,9 @@ const handleNotificationClick = async (notification: ReviewNotification) => {
         reviewSeq: notification.reviewSeq.toString()
       }
     });
+
+    dropdownStore.setOpenDropdown(null)
+    isDropdownOpen.value = !isDropdownOpen.value
   } catch (error) {
     console.error('Error handling notification click:', error);
   }
