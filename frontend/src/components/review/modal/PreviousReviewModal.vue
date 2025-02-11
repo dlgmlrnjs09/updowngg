@@ -8,7 +8,7 @@
         <!-- Review Notice -->
         <div class="notice-banner">
           <div class="notice-icon">!</div>
-          <div class="notice-text">이미 해당 소환사에게 작성한 리뷰가 있습니다. <br/>내역은 하단 게임상세정보를 통해 확인 가능합니다. 수정하시겠습니까?</div>
+          <div class="notice-text">이미 해당 소환사에게 작성한 리뷰가 있습니다.<br/>리뷰를 수정하거나 삭제할 수 있습니다.</div>
         </div>
 
         <!-- Previous Review Section -->
@@ -52,6 +52,7 @@
         <!-- Action Buttons -->
         <div class="action-buttons">
           <button class="btn-rewrite" @click="$emit('rewrite')">리뷰 수정</button>
+          <button class="btn-delete" @click="handleDelete">리뷰 삭제</button>
         </div>
       </div>
 
@@ -82,6 +83,7 @@ import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match.ts'
 import TagList from "@/components/common/TagList.vue"
 import GameDetailSection from '@/components/match/GameDetailSection.vue'
 import { useAuthStore } from "@/stores/auth.ts"
+import {useToast} from "vue-toastification";
 
 const props = defineProps<{
   reviewedMatch: LolMatchInfoRes
@@ -89,13 +91,26 @@ const props = defineProps<{
 }>()
 
 const authStore = useAuthStore()
+const toast = useToast()
 
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'rewrite'): void
+  (e: 'delete', reviewSeq: number): void
 }>()
 
 const isDetailsOpen = ref(false)
+
+const handleDelete = () => {
+  if (!props.player.reviewDto?.summonerReviewSeq) {
+    toast.error('리뷰가 존재하지 않습니다.')
+    return
+  }
+
+  if (confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
+    emit('delete', props.player.reviewDto.summonerReviewSeq)
+  }
+}
 </script>
 
 <style scoped>
@@ -349,6 +364,16 @@ const isDetailsOpen = ref(false)
   transform: rotate(180deg);
 }
 
+.btn-delete {
+  background: rgba(255, 82, 82, 0.1);
+  border: 1px solid #FF5252;
+  color: #FF5252;
+}
+
+.btn-delete:hover {
+  background: rgba(255, 82, 82, 0.2);
+}
+
 @media (max-width: 640px) {
   .modal-content {
     width: 95%;
@@ -378,6 +403,7 @@ const isDetailsOpen = ref(false)
     bottom: 0;
     background: #141414;
     padding-top: 16px;
+    gap: 8px;
   }
 
   .details-toggle {

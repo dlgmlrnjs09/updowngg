@@ -259,6 +259,13 @@
         </foreach>
     </insert>
 
+    <update id="deleteReviewBySiteCode" parameterType="map">
+        UPDATE site_summoner_review
+        SET del_dt = current_timestamp
+        WHERE summoner_review_seq = #{summonerReviewSeq}
+            and reviewer_site_code = #{reviewerSiteCode}
+    </update>
+
     <delete id="deleteReviewTags" parameterType="Long">
         DELETE FROM site_summoner_review_tag WHERE summoner_review_seq = #{reviewSeq}
     </delete>

@@ -1,6 +1,6 @@
 import apiClient from './axios'
 import type {
-    ReviewByMatchDto, ReviewByMatchSummaryDto,
+    ReviewByMatchSummaryDto,
     ReviewHistoryDto, ReviewHistoryResponse,
     ReviewRatingByChampDto,
     ReviewRatingByPositionDto,
@@ -22,6 +22,10 @@ export const reviewApi = {
 
     updateReview: (reviewData: ReviewRequestDto) =>
         apiClient.put<number>('/api/v1/review/update', reviewData),
+
+    deleteReview: (reviewSeq: number) =>
+        apiClient.delete<Boolean>(`/api/v1/review/${reviewSeq}`),
+
 
     getReviewStats: (puuid: string) =>
         apiClient.get<ReviewStatsDto>('/api/v1/review/stats', {

@@ -60,6 +60,13 @@ public class ReviewController {
         return ResponseEntity.ok(reviewUpdateReqDto.getSummonerReviewSeq());
     }
 
+    @Operation(summary = "리뷰 삭제", description = "소환사 리뷰 삭제")
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{reviewSeq}")
+    public ResponseEntity<Boolean> deleteReview(@AuthenticationPrincipal UserDetails userDetail, @PathVariable long reviewSeq) {
+        return ResponseEntity.ok(reviewService.deleteReview(reviewSeq, ((UserDetailImpl) userDetail).getSiteCode()));
+    }
+
     @Operation(summary = "태그 신청", description = "신규태그 신청")
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/tag-suggest")

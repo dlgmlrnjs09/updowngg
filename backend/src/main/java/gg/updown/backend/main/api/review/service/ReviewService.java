@@ -14,11 +14,14 @@ import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
+import gg.updown.backend.main.exception.SiteCommonException;
+import gg.updown.backend.main.exception.SiteErrorMessage;
 import gg.updown.backend.main.riot.ddragon.service.DdragonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -125,6 +128,14 @@ public class ReviewService {
 
     public void updateReview(ReviewUpdateReqDto reqDto) {
         transactionService.updateSummonerReview(reqDto);
+    }
+
+    public boolean deleteReview(long reviewSeq, long reviewerSiteCode) {
+        if (reviewMapper.deleteReviewBySiteCode(reviewSeq, reviewerSiteCode) == 0) {
+            throw new SiteCommonException(HttpStatus.BAD_REQUEST, SiteErrorMessage.NOT_REVIEWER.getMessage());
+        };
+
+        return true;
     }
 
     public ReviewStatsDto getReviewStats(String targetPuuid) {

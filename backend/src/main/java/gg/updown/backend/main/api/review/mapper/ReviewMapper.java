@@ -17,6 +17,7 @@ public interface ReviewMapper {
     void insertReview(ReviewSubmitReqDto reqDto);
     void insertReviewTags(@Param("reviewSeq") Long reviewSeq, @Param("tagCodeList") List<String> tagCodeList);
     void updateReview(ReviewUpdateReqDto reqDto);
+    int deleteReviewBySiteCode(@Param("summonerReviewSeq")long summonerReviewSeq,@Param("reviewerSiteCode") long reviewerSiteCode);
     void deleteReviewTags(Long reviewSeq);
     List<ReviewDto> getWroteReviewList(String reviewerPuuid);
     List<ReviewDto> getWroteReviewListPaging(

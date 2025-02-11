@@ -65,6 +65,7 @@
         :player="selectedPlayer"
         @close="showPreviousReviewModal = false"
         @rewrite="handleReviewModify"
+        @delete="handleReviewDelete"
       />
     </template>
   </div>
@@ -293,6 +294,46 @@ const openPreviousModal = async () => {
 const handleReviewModify = () => {
   showPreviousReviewModal.value = false;
   showReviewModal.value = true;
+}
+
+const handleReviewDelete = async (reviewSeq: number) => {
+  try {
+    const response = await reviewApi.deleteReview(reviewSeq)
+    if (response.data === true) {
+      // 모달 닫기
+      showPreviousReviewModal.value = false;
+
+      // 모든 매치에서 삭제된 리뷰 정보 업데이트
+      matches.value.forEach((match, matchIndex) => {
+        const playerIndex = match.participantList.findIndex(
+            p => p.puuid === selectedPlayer.value.puuid
+        );
+
+        if (playerIndex !== -1) {
+          // reviewable 상태 변경
+          // @ts-ignore
+          matches.value[matchIndex].participantList[playerIndex].reviewDto = {
+            reviewable: true
+          };
+        }
+      });
+
+      // 관련된 모든 데이터 재조회
+      await Promise.all([
+        fetchSummonerReviewStats(),
+        fetchFrequentTags(),
+        fetchRecentReviews(),
+        fetchRatingByChamp(),
+        fetchRatingByPosition(),
+        fetchWrittenReview(),
+        checkPlayedTogether()
+      ]);
+
+      toast.success('리뷰가 삭제되었습니다.');
+    }
+  } catch (error) {
+    toast.error('리뷰 삭제 중 오류가 발생했습니다.');
+  }
 }
 
 const fetchReviewTags = async () => {
