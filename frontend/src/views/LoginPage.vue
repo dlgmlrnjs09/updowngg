@@ -84,8 +84,8 @@ import {useAuthStore} from "@/stores/auth.ts";
 import {useToast} from "vue-toastification";
 import {useRouter} from "vue-router";
 
-/*const email = ref('heekwon0867@naver.com')
-const password = ref('gmlrnjs0')*/
+const email = ref('heekwon0867@naver.com')
+const password = ref('gmlrnjs0')
 const rememberMe = ref(false)
 const authStore = useAuthStore()
 const toast = useToast()
