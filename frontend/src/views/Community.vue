@@ -156,7 +156,7 @@
                     </div>
                   </div>
                   <div :class="[isMobile ? 'hidden' : 'flex flex-col gap-1 ml-2 justify-center']">
-                    <button class="bg-[#5865F2] hover:bg-[#3d61df] text-white text-xs px-3 py-1 rounded-lg transition-colors flex items-center justify-center">
+<!--                    <button class="bg-[#5865F2] hover:bg-[#3d61df] text-white text-xs px-3 py-1 rounded-lg transition-colors flex items-center justify-center">
                       <img class="w-5 h-5" src="@/assets/icon/discord_logo.svg" alt="discord"/>
                     </button>
                     <button class="bg-[#1F1F1F] text-white text-xs px-3 py-1 rounded-lg hover:bg-[#2A2A2A] transition-colors border-[1.5px] border-[#ababab]">
@@ -164,7 +164,7 @@
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                       </svg>
-                    </button>
+                    </button>-->
                   </div>
                 </div>
               </div>
