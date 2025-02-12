@@ -74,7 +74,7 @@
           <i class="info-icon">ℹ</i>
           추가된 태그는 검토 후 24시간 이내에 반영됩니다.<br>
           승인시 작성하신 리뷰에 자동으로 추가됩니다.<br>
-          리뷰를 작성을 취소하는 경우 태그가 추가되지 않습니다.<br>
+          리뷰작성을 취소하는 경우 태그가 추가되지 않습니다.<br>
           부적절한 태그는 반려될 수 있습니다.
         </div>
 
@@ -345,21 +345,56 @@ const handleSubmit = async () => {
 }
 
 @media (max-width: 480px) {
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
   .modal-content {
-    width: 95%;
+    width: 100%;
+    max-height: calc(100vh - 32px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-header {
+    padding: 16px;
   }
 
   .suggest-form {
-    padding: 20px;
+    padding: 16px;
+    gap: 16px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .review-section {
+    gap: 16px;
   }
 
   .review-button {
-    padding: 20px;
+    padding: 16px;
   }
 
   .button-icon {
     width: 28px;
     height: 28px;
+  }
+
+  .tag-description {
+    min-height: 80px;
+  }
+
+  .info-message {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .submit-btn {
+    position: sticky;
+    bottom: 0;
+    margin-top: 16px;
+    padding: 14px;
   }
 }
 </style>

@@ -189,7 +189,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  z-index: 9999;
+  /*z-index: 9999;*/
 }
 
 .dropdown-menu {

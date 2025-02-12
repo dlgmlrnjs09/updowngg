@@ -1088,6 +1088,40 @@ const handleSubmit = async () => {
     min-height: 150px;
     max-height: 150px;
   }
+
+  .selected-tags {
+    padding: 6px;
+    gap: 6px;
+    margin-bottom: 12px;
+    max-height: 80px;
+    overflow-y: auto;
+  }
+
+  .selected-tag {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .tag-container {
+    min-height: 120px;
+    max-height: 120px;
+  }
+
+  .tag-button {
+    padding: 6px 10px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .tag-count {
+    background: transparent;
+    padding: 4px 0;
+  }
+
+  .tag-count div:last-child {
+    font-size: 11px;
+    color: #666;
+  }
 }
 
 .button-content {
