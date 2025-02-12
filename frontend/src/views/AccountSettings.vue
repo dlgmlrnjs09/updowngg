@@ -47,7 +47,6 @@
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useToast } from 'vue-toastification';
-import axios from "axios";
 import {authApi} from "@/api/auth.ts";
 import type {DiscordAccount} from "@/types/auth.ts";
 

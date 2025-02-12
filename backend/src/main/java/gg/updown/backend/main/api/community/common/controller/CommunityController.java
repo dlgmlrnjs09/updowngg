@@ -13,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,12 +25,12 @@ public class CommunityController {
     private final CommunityServiceFactory communityServiceFactory;
 
     @GetMapping("/{communityCode}/list")
-    public ResponseEntity<List<? extends CommunityPostDto>> getPosts(
+    public <T extends CommunityPostDto> ResponseEntity<List<T>> getPosts(
             @PathVariable String communityCode,
             @RequestParam Map<String, String> searchParamMap
     ) {
         CommunityInterface communityService = communityServiceFactory.getCommunityService(communityCode);
-        List<? extends  CommunityPostDto> resultList = communityService.getPostList(communityCode, searchParamMap);
+        List<T> resultList = communityService.getPostList(communityCode, searchParamMap);
 
         return ResponseEntity.ok(resultList);
     }

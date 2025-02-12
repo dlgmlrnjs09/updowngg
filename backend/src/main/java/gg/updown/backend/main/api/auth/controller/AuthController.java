@@ -3,38 +3,25 @@ package gg.updown.backend.main.api.auth.controller;
 import gg.updown.backend.main.api.auth.model.*;
 import gg.updown.backend.main.api.auth.service.AuthService;
 import gg.updown.backend.main.api.auth.service.JwtTokenProvider;
-import gg.updown.backend.main.api.auth.service.UserDetailServiceImpl;
 import gg.updown.backend.main.exception.SiteCommonException;
-import gg.updown.backend.main.exception.SiteErrorMessage;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import gg.updown.backend.main.exception.SiteErrorDevMessage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -67,7 +54,7 @@ public class AuthController {
      */
     @Operation(summary = "로그인", description = "일반 로그인")
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginReqDto loginDto) {
+    public ResponseEntity<JwtToken> login(@RequestBody LoginReqDto loginDto) {
         try {
             JwtToken jwtToken = authService.authAndCreateJwtToken(loginDto);
             return ResponseEntity.ok(jwtToken);
@@ -128,7 +115,7 @@ public class AuthController {
      */
     @Operation(summary = "액세스토큰 갱신", description = "액세스토큰 갱신")
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody JwtToken tokenRefreshDto) {
+    public ResponseEntity<JwtToken> refresh(@RequestBody JwtToken tokenRefreshDto) {
         String refreshToken = tokenRefreshDto.getRefreshToken();
 
         try {
@@ -136,10 +123,10 @@ public class AuthController {
             if (jwtToken != null && !jwtToken.getAccessToken().isEmpty()) {
                 return ResponseEntity.ok(jwtToken);
             } else {
-                throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorMessage.INVALID_TOKEN.getMessage());
+                throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorDevMessage.INVALID_TOKEN.getMessage());
             }
         } catch (AuthenticationException e) {
-            throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorMessage.INVALID_TOKEN.getMessage());
+            throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorDevMessage.INVALID_TOKEN.getMessage());
         }
     }
 
@@ -148,7 +135,7 @@ public class AuthController {
     @GetMapping("/member-info")
     public ResponseEntity<SiteAccountResEntity> getMemberInfo(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails.getUsername() == null) {
-            throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorMessage.NOT_FOUND_SITE_ACCOUNT.getMessage());
+            throw new SiteCommonException(HttpStatus.UNAUTHORIZED, SiteErrorDevMessage.NOT_FOUND_SITE_ACCOUNT.getMessage());
         } else {
             UserDetailImpl memberEntity = (UserDetailImpl) userDetails;
             SiteAccountResEntity resEntity = SiteAccountResEntity.builder()

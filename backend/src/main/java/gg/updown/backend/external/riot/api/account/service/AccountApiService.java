@@ -1,10 +1,10 @@
 package gg.updown.backend.external.riot.api.account.service;
 
 import gg.updown.backend.external.riot.exception.RiotApiException;
-import gg.updown.backend.main.riot.account.mapper.RiotAccountMapper;
 import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 public class AccountApiService {
-    private final String basePath = "/riot/account/v1/accounts";
+    @Value("${riot-api.account.base-path}")
+    private String basePath;
 
     private final WebClient riotAsiaWebClient;
 

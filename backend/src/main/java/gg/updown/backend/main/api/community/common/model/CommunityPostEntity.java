@@ -19,5 +19,4 @@ public class CommunityPostEntity {
     private LocalDateTime regDt;
     private LocalDateTime updDt;
     private LocalDateTime delDt;
-//    private DuoCommunityEntity duoCommunityEntity;
 }

@@ -15,7 +15,7 @@ import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
 import gg.updown.backend.main.exception.SiteCommonException;
-import gg.updown.backend.main.exception.SiteErrorMessage;
+import gg.updown.backend.main.exception.SiteErrorDevMessage;
 import gg.updown.backend.main.riot.ddragon.service.DdragonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -132,7 +131,7 @@ public class ReviewService {
 
     public boolean deleteReview(long reviewSeq, long reviewerSiteCode) {
         if (reviewMapper.deleteReviewBySiteCode(reviewSeq, reviewerSiteCode) == 0) {
-            throw new SiteCommonException(HttpStatus.BAD_REQUEST, SiteErrorMessage.NOT_REVIEWER.getMessage());
+            throw new SiteCommonException(HttpStatus.BAD_REQUEST, SiteErrorDevMessage.NOT_REVIEWER.getMessage());
         };
 
         return true;

@@ -1,6 +1,11 @@
 package gg.updown.backend.common.util;
 
 public class CalculateUtil {
+
+    // private 생성자를 추가하여 인스턴스화 방지
+    private CalculateUtil() {
+        throw new IllegalStateException("Utility class");
+    }
     /**
      * 백분율 계산
      * @param source

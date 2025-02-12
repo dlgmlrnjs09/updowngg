@@ -7,9 +7,6 @@ import gg.updown.backend.main.api.community.common.model.CommunityPostSubmitReqD
 import gg.updown.backend.main.api.community.common.service.CommunityInterface;
 import gg.updown.backend.main.api.community.duo.mapper.DuoCommunityMapper;
 import gg.updown.backend.main.api.community.duo.model.*;
-import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerDto;
-import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerMostChampionDto;
-import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
 import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
 import gg.updown.backend.main.api.ranking.service.SiteRankingService;
@@ -42,7 +39,7 @@ public class DuoCommunityService implements CommunityInterface {
     private final SiteRankingService siteRankingService;
 
     @Override
-    public List<? extends CommunityPostDto> getPostList(String communityCode, Map<String, String> searchParamMap) {
+    public <T extends CommunityPostDto> List<T> getPostList(String communityCode, Map<String, String> searchParamMap) {
         DuoCommunitySearchFilter searchFilter = this.convertSearchMapToFilter(searchParamMap);
         List<DuoCommunityEntity> postList = duoCommunityMapper.getDuoPostList(searchFilter);
 
@@ -66,7 +63,7 @@ public class DuoCommunityService implements CommunityInterface {
 
         // 3. 게시글 + 작성자 매핑
         return postList.stream()
-                .map(post -> createPostCardDto(post, summonerInfoMap.get(post.getWriterSiteCode())))
+                .map(post -> (T) createPostCardDto(post, summonerInfoMap.get(post.getWriterSiteCode())))
                 .collect(Collectors.toList());
     }
 

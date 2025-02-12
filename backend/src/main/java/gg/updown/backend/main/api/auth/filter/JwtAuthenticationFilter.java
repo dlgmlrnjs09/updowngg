@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -46,16 +45,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     response.setHeader("TOKEN_STATUS", TokenStatus.EXPIRED.name());
                     return;
 
-                case BLACKLISTED:
-                case INVALID:
+             case BLACKLISTED, INVALID:
                     // 일반적인 토큰 에러는 그냥 401로 처리
                     break;
             }
-        } else {
-            // 토큰이 없는 경우
-            /*response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setContentType("application/json;charset=UTF-8");
-            return;*/
         }
 
         filterChain.doFilter(request, response);

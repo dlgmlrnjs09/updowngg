@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface CommunityInterface {
-    List<? extends CommunityPostDto> getPostList(String communityCode, Map<String, String> searchParamMap);
+    <T extends CommunityPostDto> List<T> getPostList(String communityCode, Map<String, String> searchParamMap);
     void insertPost(String communityCode, CommunityPostSubmitReqDto post);
     void updatePost(String communityCode, CommunityPostEntity post);
 }

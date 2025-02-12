@@ -1,12 +1,8 @@
 package gg.updown.backend.main.api.stats.model.dto;
 
 import gg.updown.backend.main.api.review.model.dto.ReviewTagDto;
-import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Setter
@@ -48,6 +44,8 @@ public class ChampionStatsDto {
         if (reviewCount == 0) {
             this.upRatio = 0.0;
         }
+
+        if (reviewCount == 0) return;
         this.upRatio = Math.round((double) upCount / reviewCount * 100 * 10) / 10.0;
     }
 
@@ -70,7 +68,7 @@ public class ChampionStatsDto {
     }
 
     public void setIconUrl(String iconUrl) {
-        iconUrl = iconUrl.replaceAll("FiddleSticks", "Fiddlesticks");
+        iconUrl = iconUrl.replace("FiddleSticks", "Fiddlesticks");
         this.iconUrl = iconUrl;
     }
 }

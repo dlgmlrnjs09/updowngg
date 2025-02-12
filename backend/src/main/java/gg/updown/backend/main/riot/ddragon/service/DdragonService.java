@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +31,12 @@ public class DdragonService {
     }
 
     public void insertChampionNameList() {
-
         Map<String, Object> championMap = ddragonApiService.getChampionData();
-        for (String key : championMap.keySet()) {
-            Map innerJson = (Map) championMap.get(key);
+        for (Map.Entry<String, Object> entry : championMap.entrySet()) {
+            Map<String, Object> innerJson = (Map<String, Object>) entry.getValue();
             ddragonMapper.insertChampions(Champion.builder()
-                            .nameUs(innerJson.get("id").toString())
-                            .nameKr(innerJson.get("name").toString())
+                    .nameUs(innerJson.get("id").toString())
+                    .nameKr(innerJson.get("name").toString())
                     .build());
         }
     }

@@ -1,15 +1,18 @@
 package gg.updown.backend.common.util;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Date;
 
 public class DateUtil {
+
+    private DateUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * 밀리초를 LocalDate로 변환
      * @param milliSecond

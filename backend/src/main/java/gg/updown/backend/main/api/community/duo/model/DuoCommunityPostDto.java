@@ -1,6 +1,5 @@
 package gg.updown.backend.main.api.community.duo.model;
 
-import gg.updown.backend.main.api.community.common.model.CommunityPostDto;
 import lombok.*;
 
 @Getter

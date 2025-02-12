@@ -2,19 +2,17 @@ package gg.updown.backend.main.exception;
 
 
 import gg.updown.backend.common.model.CommonErrorResponse;
-import gg.updown.backend.external.riot.exception.RiotApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import org.springframework.security.access.AccessDeniedException;
-import java.util.List;
+
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -38,8 +36,8 @@ public class SiteCommonExceptionHandler {
         log.error(e.getMessage(), e);
         // 일반적인 예외에 대해 공통적인 응답 생성
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(CommonErrorResponse.builder()
-                        .devMessage(SiteErrorMessage.INTERNAL_SERVER_ERROR.getMessage())
-                        .userMessage(SiteErrorMessage.INTERNAL_SERVER_ERROR.getMessage())
+                        .devMessage(SiteErrorDevMessage.INTERNAL_SERVER_ERROR.getMessage())
+                        .userMessage(SiteErrorDevMessage.INTERNAL_SERVER_ERROR.getMessage())
                 .build());
     }
 

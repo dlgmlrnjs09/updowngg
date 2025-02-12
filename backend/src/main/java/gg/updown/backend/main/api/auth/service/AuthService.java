@@ -6,10 +6,12 @@ import gg.updown.backend.main.api.auth.mapper.AuthMapper;
 import gg.updown.backend.main.api.auth.model.*;
 import gg.updown.backend.main.enums.TokenStatus;
 import gg.updown.backend.main.exception.SiteCommonException;
-import gg.updown.backend.main.exception.SiteErrorMessage;
+import gg.updown.backend.main.exception.SiteErrorDevMessage;
+import gg.updown.backend.main.exception.SiteErrorUserMessage;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -98,27 +100,27 @@ public class AuthService {
 
                 case EXPIRED:
                     throw new SiteCommonException(HttpStatus.UNAUTHORIZED,
-                            SiteErrorMessage.INVALID_TOKEN.getMessage(),
-                            SiteErrorMessage.INVALID_TOKEN.getMessage(),
-                            "인증이 만료되었습니다. 다시 로그인해주세요.");
+                            SiteErrorDevMessage.INVALID_TOKEN.getMessage(),
+                            SiteErrorDevMessage.INVALID_TOKEN.getMessage(),
+                            SiteErrorUserMessage.EXPIRED_TOKEN.getMessage());
 
                 case BLACKLISTED:
                     throw new SiteCommonException(HttpStatus.UNAUTHORIZED,
-                            SiteErrorMessage.INVALID_TOKEN.getMessage(),
-                            SiteErrorMessage.INVALID_TOKEN.getMessage(),
-                            "유효하지 않은 인증입니다. 다시 로그인해주세요.");
+                            SiteErrorDevMessage.BLACKLIST_TOKEN.getMessage(),
+                            SiteErrorDevMessage.BLACKLIST_TOKEN.getMessage(),
+                            SiteErrorUserMessage.INVALID_TOKEN.getMessage());
 
                 default:
                     throw new SiteCommonException(HttpStatus.UNAUTHORIZED,
-                            "Invalid refresh token",
-                            "Invalid token",
-                            "유효하지 않은 인증입니다. 다시 로그인해주세요.");
+                            SiteErrorDevMessage.INVALID_TOKEN.getMessage(),
+                            SiteErrorDevMessage.INVALID_TOKEN.getMessage(),
+                            SiteErrorUserMessage.INVALID_TOKEN.getMessage());
             }
         } catch (JwtException e) {
             throw new SiteCommonException(HttpStatus.UNAUTHORIZED,
-                    "Failed to parse refresh token",
-                    "Token parsing failed",
-                    "유효하지 않은 인증입니다. 다시 로그인해주세요.");
+                    SiteErrorDevMessage.INVALID_TOKEN.getMessage(),
+                    SiteErrorDevMessage.INVALID_TOKEN.getMessage(),
+                    SiteErrorUserMessage.INVALID_TOKEN.getMessage());
         }
     }
 

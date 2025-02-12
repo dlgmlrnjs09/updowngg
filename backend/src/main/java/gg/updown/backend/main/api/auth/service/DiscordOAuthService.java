@@ -1,6 +1,5 @@
 package gg.updown.backend.main.api.auth.service;
 
-import io.swagger.v3.oas.annotations.servers.Server;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -13,11 +12,6 @@ import org.springframework.stereotype.Service;
 public class DiscordOAuthService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        try {
-            OAuth2User user = super.loadUser(userRequest);
-            return user;
-        } catch (Exception e) {
-            throw e;
-        }
+        return super.loadUser(userRequest);
     }
 }
