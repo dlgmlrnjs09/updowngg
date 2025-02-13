@@ -21,7 +21,7 @@ const notification = useNotificationStore()
 // 현재 라우트에 따라 헤더 컴포넌트 결정
 const currentHeader = computed(() => {
   // mainPageRoutes에 HeaderMain을 사용할 라우트들의 이름을 추가
-  const mainPageRoutes = ['home', 'login', 'signup']
+  const mainPageRoutes = ['home', 'login', 'signup', 'socialLogin']
   return mainPageRoutes.includes(route.name as string) ? HeaderMain : Header
 })
 

@@ -17,5 +17,6 @@ public interface AuthMapper {
     );
     DiscordAccountEntity getDiscordAccountBySiteCode(Long siteCode);
     void conflictDiscordAccount(@Param("siteCode") long siteCode, @Param("entity") DiscordAccountEntity entity);
+    SiteAccountEntity getSiteAccountByDiscordCode(String discordCode);
     void disconnectDiscordAccount(long siteCode);
 }

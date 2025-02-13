@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { Ref } from 'vue';
 import { authApi } from '@/api/auth';
-import type { SiteAccount, LoginCredentials } from '@/types/auth';
+import type {SiteAccount, LoginCredentials, AuthTokens} from '@/types/auth';
 import { useToast } from "vue-toastification";
 import type {LolSummonerProfileResDto, RiotAccountInfoEntity} from "@/types/summoner.ts";
 import {summonerApi} from "@/api/summoner.ts";
@@ -37,6 +37,23 @@ export const useAuthStore = defineStore('auth', () => {
             return false;
         }
     }
+
+    async function socialLogin(token: AuthTokens): Promise<boolean> {
+        try {
+            localStorage.setItem('accessToken', token.accessToken);
+            localStorage.setItem('refreshToken', token.refreshToken);
+
+            isAuthenticated.value = true;
+            await fetchUserInfo();
+            await fetchUserRiotInfo();
+            notificationStore.initSSE();
+            return true;
+        } catch (error) {
+            console.error('Login failed:', error);
+            return false;
+        }
+    }
+
 
     async function logout(): Promise<void> {
         try {
@@ -107,6 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
         isAuthenticated,
         isInitialized,
         login,
+        socialLogin,
         logout,
         fetchUserInfo,
         fetchUserRiotInfo,

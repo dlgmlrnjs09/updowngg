@@ -125,4 +125,18 @@
         SET del_dt = now()
         WHERE member_site_code = #{siteCode}
     </update>
+
+    <select id="getSiteAccountByDiscordCode" parameterType="String" resultType="SiteAccountEntity">
+        SELECT
+            sa.member_site_code,
+            sa.puuid,
+            member_email,
+            member_password
+        FROM site_account sa
+            INNER JOIN discord_account da ON (sa.member_site_code = da.member_site_code)
+        WHERE
+            da.discord_code = #{discordCode}
+            and da.del_dt is null
+            and sa.del_dt is null
+    </select>
 </mapper>

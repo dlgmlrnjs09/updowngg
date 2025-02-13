@@ -11,7 +11,6 @@ import gg.updown.backend.main.exception.SiteErrorUserMessage;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -135,6 +134,25 @@ public class AuthService {
     public void connectDiscordAccount(long siteCode, Map<String, Object> discordAttr) {
         DiscordAccountEntity convertedEntity = this.convertAttrToDiscordAccountEntity(discordAttr);
         authMapper.conflictDiscordAccount(siteCode, convertedEntity);
+    }
+
+    public JwtToken loginDiscord(Map<String, Object> discordAttr) {
+        DiscordAccountEntity convertedEntity = this.convertAttrToDiscordAccountEntity(discordAttr);
+        SiteAccountEntity siteAccount = authMapper.getSiteAccountByDiscordCode(convertedEntity.getDiscordCode());
+        if (siteAccount == null) {
+            throw new SiteCommonException(
+                    HttpStatus.UNAUTHORIZED,
+                    SiteErrorDevMessage.NOT_FOUND_SITE_ACCOUNT.getMessage(),
+                    SiteErrorDevMessage.NOT_FOUND_SITE_ACCOUNT.getMessage(),
+                    SiteErrorUserMessage.NOT_FOUND_SITE_ACCOUNT.getMessage()
+            );
+        }
+
+        authMapper.conflictDiscordAccount(siteAccount.getMemberSiteCode(), convertedEntity);
+        return this.authAndCreateJwtToken(LoginReqDto.builder()
+                .email(siteAccount.getMemberEmail())
+                .password(siteAccount.getMemberPassword())
+        .build());
     }
 
     public void disconnectDiscordAccount(long siteCode) {

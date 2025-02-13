@@ -19,9 +19,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
 /**
@@ -64,7 +66,7 @@ public class AuthController {
     }
 
     @GetMapping("/discord/connect")
-    @PreAuthorize("isAuthenticated()")
+    /*@PreAuthorize("isAuthenticated()")*/
     public void connectDiscord(HttpSession session, Authentication auth) {
         session.setAttribute("CONNECTING_USER_ID", ((UserDetailImpl) auth.getPrincipal()).getSiteCode());
     }
@@ -83,15 +85,25 @@ public class AuthController {
     }
 
     @Operation(summary = "소셜계정 연동", description = "디스코드 연동")
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/discord/callback")
     public void discordCallback(HttpSession session, HttpServletResponse response) {
         long siteCode = Long.parseLong(session.getAttribute("CONNECTING_USER_ID").toString());
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> attributes = ((DefaultOAuth2User)authentication.getPrincipal()).getAttributes();
+        /*Authentication authentication = SecurityContextHolder.getContext().getAuthentication();*/
+        /*Map<String, Object> attributes = ((DefaultOAuth2User)authentication.getPrincipal()).getAttributes();*/
+        SecurityContextImpl context = (SecurityContextImpl) session.getAttribute("SPRING_SECURITY_CONTEXT");
+        Map<String, Object> attributes = ((DefaultOAuth2User) context.getAuthentication().getPrincipal()).getAttributes();
         authService.connectDiscordAccount(siteCode, attributes);
         response.setHeader("Location", frontendUrl + "/setting/account");
         response.setStatus(HttpStatus.TEMPORARY_REDIRECT.value());
+    }
+
+    @Operation(summary = "소셜로그인", description = "디스코드 로그인")
+    @GetMapping("/discord/login")
+    public ResponseEntity<JwtToken> discordLogin(HttpSession session, HttpServletResponse response) {
+        SecurityContextImpl context = (SecurityContextImpl) session.getAttribute("SPRING_SECURITY_CONTEXT");
+        Map<String, Object> attributes = ((DefaultOAuth2User) context.getAuthentication().getPrincipal()).getAttributes();
+        JwtToken token = authService.loginDiscord(attributes);
+        return ResponseEntity.ok(token);
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃")

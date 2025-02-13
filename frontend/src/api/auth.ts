@@ -27,4 +27,6 @@ export const authApi = {
     checkDiscord: () =>
         apiClient.get<DiscordAccount>('/api/v1/auth/discord/account', {
         }),
+    loginDiscord: () =>
+        apiClient.get<AuthTokens>('/api/v1/auth/discord/login'),
 };

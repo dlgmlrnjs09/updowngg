@@ -3,13 +3,13 @@ package gg.updown.backend.config;
 import gg.updown.backend.main.api.auth.filter.JwtAuthenticationFilter;
 import gg.updown.backend.main.api.auth.service.DiscordOAuthService;
 import gg.updown.backend.main.api.auth.service.JwtTokenProvider;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -67,7 +67,12 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService())
                         )
                         .successHandler((request, response, authentication) -> {
-                            response.sendRedirect("/api/v1/auth/discord/callback");
+                            HttpSession session = request.getSession();
+                            if (session.getAttribute("CONNECTION_USER_ID") != null) {
+                                response.sendRedirect("/api/v1/auth/discord/callback");
+                            } else {
+                                response.sendRedirect("/api/v1/auth/discord/login");
+                            }
                         })
                         .failureHandler((request, response, exception) -> {
                             log.error("OAuth2 로그인 실패", exception);

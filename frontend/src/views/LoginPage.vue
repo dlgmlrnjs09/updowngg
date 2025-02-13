@@ -48,7 +48,7 @@
         <div class="mt-6 space-y-4">
           <div class="relative flex items-center gap-4">
             <div class="border-t flex-grow border-[#333]"></div>
-            <span class="text-gray-500 text-sm">소셜 로그인</span>
+            <span class="text-gray-500 text-sm" @click="handleSocialLogin">소셜 로그인</span>
             <div class="border-t flex-grow border-[#333]"></div>
           </div>
 
@@ -113,5 +113,9 @@ const handleLogin = async () => {
     toast.error('로그인에 실패했습니다.');
     return false;
   }
+}
+
+const handleSocialLogin = async () => {
+  await router.push('/login/social')
 }
 </script>
