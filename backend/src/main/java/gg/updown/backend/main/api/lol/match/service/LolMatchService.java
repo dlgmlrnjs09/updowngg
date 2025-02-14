@@ -243,7 +243,7 @@ public class LolMatchService {
         }
 
         currentMatchInfoDto.setMatchInfoDto(LolMatchInfoDto.builder()
-                        .gameDuration(currentMatchInfo.getGameLength() / 1000)
+                        .gameDuration(currentMatchInfo.getGameLength())
                         .gameMode(currentMatchInfo.getGameMode())
                         .gameModeName(MatchGameMode.getQueueName((int) currentMatchInfo.getGameQueueConfigId()))
                         .gameStartDt(DateUtil.msToLocalDateTime(currentMatchInfo.getGameStartTime()))

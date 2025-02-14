@@ -1,8 +1,15 @@
 <template>
   <div class="current-game-container">
     <div class="current-game-title">
-      <GamepadIcon class="game-icon" />
-      <span>진행 중인 게임 | {{currentMatchInfoDto.matchInfoDto.gameModeName}}</span>
+      <div class="title-left">
+        <GamepadIcon class="game-icon" />
+        <span class="game-status">진행 중인 게임</span>
+        <span class="separator">·</span>
+        <span class="game-duration">{{formattedGameDuration}}</span>
+      </div>
+      <div class="title-right">
+        <span class="game-mode">{{currentMatchInfoDto.matchInfoDto.gameModeName}}</span>
+      </div>
     </div>
 
     <div class="current-game-teams">
@@ -115,7 +122,7 @@
 
 <script setup lang="ts">
 import { ThumbsUp, ThumbsDown, GamepadIcon } from 'lucide-vue-next';
-import {computed} from 'vue';
+import {computed, ref, onMounted, onUnmounted} from 'vue';
 import { useRouter } from 'vue-router';
 import type {CurrentMatchInfoDto} from "@/types/match.ts";
 import {goSelectedSummonerProfile} from "@/utils/common.ts";
@@ -132,6 +139,34 @@ const blueTeamPlayers = computed(() =>
 const redTeamPlayers = computed(() =>
     props.currentMatchInfoDto.participantDtoList.filter((p) => p.playerDto.teamId === 200)
 );
+
+const gameStartTime = new Date(props.currentMatchInfoDto.matchInfoDto.gameStartDt).getTime();
+const currentGameDuration = ref(Math.floor((Date.now() - gameStartTime) / 1000));
+let timer: ReturnType<typeof setTimeout> | null = null;
+
+// 시간 포맷팅 함수
+const formattedGameDuration = computed(() => {
+  const minutes = Math.floor(currentGameDuration.value / 60);
+  const seconds = currentGameDuration.value % 60;
+  return `${minutes}분 ${seconds.toString().padStart(2, '0')}초`;
+});
+
+// 컴포넌트가 마운트될 때 타이머 시작
+onMounted(() => {
+  timer = setInterval(() => {
+    currentGameDuration.value = Math.floor((Date.now() - gameStartTime) / 1000);
+  }, 1000);
+});
+
+// 컴포넌트가 언마운트될 때 타이머 정리
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+});
+
+
 </script>
 
 <style scoped>
@@ -145,11 +180,40 @@ const redTeamPlayers = computed(() =>
 .current-game-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   padding: 12px 16px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
-  color: #9e9e9e;
   font-size: 14px;
+}
+
+.title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.game-icon {
+  width: 18px;
+  height: 18px;
+  color: #2979FF;
+}
+
+.game-status {
+  color: #9e9e9e;
+  font-weight: 500;
+}
+
+.separator {
+  color: rgba(255,255,255,0.2);
+}
+
+.game-mode {
+  color: #2979FF;
+  font-weight: 500;
+}
+
+.game-duration {
+  color: #9e9e9e;
 }
 
 .game-icon {
