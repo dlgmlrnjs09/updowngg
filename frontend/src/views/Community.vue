@@ -131,7 +131,7 @@
                     <div class="flex flex-col gap-1">
                       <div
                           class="flex items-center gap-2 cursor-pointer group"
-                          @click="goSelectedSummonerProfile(card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName, card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine)"
+                          @click.stop="goSelectedSummonerProfile(card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName, card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine)"
                       >
                         <span class="text-white text-sm font-medium group-hover:text-[#2979FF] group-hover:underline">
                           {{ card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName }}

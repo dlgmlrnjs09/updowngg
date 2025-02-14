@@ -161,7 +161,7 @@ const props = defineProps<{
   ratingByChamp: ReviewRatingByChampDto[] | null
   ratingByPosition: ReviewRatingByPositionDto[] | null
   writtenReview: ReviewRequestDto | null
-  playTogetherMatch: LolMatchInfoRes;
+  playTogetherMatch: LolMatchInfoRes | null;
 }>()
 
 defineEmits<{

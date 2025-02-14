@@ -30,7 +30,7 @@
                 </div>
                 <span
                     class="player-name"
-                    @click="goSelectedSummonerProfile(player.summonerInfoDto.gameName, player.summonerInfoDto.tagLine)"
+                    @click.stop="goSelectedSummonerProfile(player.summonerInfoDto.gameName, player.summonerInfoDto.tagLine)"
                 >
                   {{ player.summonerInfoDto.gameName }}
                 </span>
@@ -88,7 +88,7 @@
                 </div>
                 <span
                     class="player-name"
-                    @click="goSelectedSummonerProfile(player.summonerInfoDto.gameName, player.summonerInfoDto.tagLine)"
+                    @click.stop="goSelectedSummonerProfile(player.summonerInfoDto.gameName, player.summonerInfoDto.tagLine)"
                 >
                   {{ player.summonerInfoDto.gameName }}
                 </span>
