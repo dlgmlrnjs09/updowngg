@@ -19,10 +19,12 @@
     <insert id="insertChampions" parameterType="champion">
         INSERT INTO lol_champion (
             name_us,
-            name_kr
+            name_kr,
+            key
         ) VALUES (
             #{nameUs},
-            #{nameKr}
+            #{nameKr},
+            #{key}
         )
     </insert>
 

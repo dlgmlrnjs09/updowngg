@@ -1,6 +1,6 @@
 package gg.updown.backend.main.api.lol.summoner.service;
 
-import gg.updown.backend.external.riot.RiotApiBasePath;
+import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
 import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
@@ -11,20 +11,18 @@ import gg.updown.backend.external.riot.api.lol.summoner.service.SummonerApiServi
 import gg.updown.backend.main.api.lol.summoner.mapper.LolSummonerMapper;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerDto;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerMostChampionDto;
-import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerProfileResDto;
+import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
 import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerLeagueEntity;
 import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
 import gg.updown.backend.main.riot.account.mapper.RiotAccountMapper;
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
-import gg.updown.backend.common.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.lang.invoke.CallSite;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -137,7 +135,7 @@ public class LolSummonerService {
      */
     private LolSummonerDto getAndConflictSummonerInfo(String puuid) {
         LolSummonerDto returnDto = new LolSummonerDto();
-        LolSummonerEntity summonerEntity = lolSummonerMapper.getSummonerInfoByPuuid(puuid);
+        LolSummonerEntity summonerEntity = this.getSummonerInfoByPuuid(puuid);
 
         // 롤 계정정보 저장
         SummonerDto summonerDto = summonerApiService.getSummonerInfoByPuuid(puuid);
@@ -166,6 +164,10 @@ public class LolSummonerService {
         }
 
         return returnDto;
+    }
+
+    public LolSummonerEntity getSummonerInfoByPuuid(String puuid) {
+        return lolSummonerMapper.getSummonerInfoByPuuid(puuid);
     }
 
     /**

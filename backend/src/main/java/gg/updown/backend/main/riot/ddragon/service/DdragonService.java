@@ -37,6 +37,7 @@ public class DdragonService {
             ddragonMapper.insertChampions(Champion.builder()
                     .nameUs(innerJson.get("id").toString())
                     .nameKr(innerJson.get("name").toString())
+                    .key(innerJson.get("key").toString())
                     .build());
         }
     }

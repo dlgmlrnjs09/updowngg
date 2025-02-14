@@ -7,8 +7,6 @@ import gg.updown.backend.main.api.lol.match.model.dto.LolMatchParticipantDto;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.api.review.model.dto.ReviewDto;
 import gg.updown.backend.main.api.review.model.dto.ReviewHistoryDto;
-import gg.updown.backend.main.enums.SiteMatchGameMode;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,7 +51,7 @@ public class ReviewHistoryService {
             );
 
             // 익명인 경우 작성자 정보 숨기기
-            if (review.getIsAnonymous()) {
+            if (Boolean.TRUE.equals(review.getIsAnonymous())) {
                 review.anonymizeReviewerInfo();
             }
 

@@ -264,4 +264,29 @@
         ORDER BY m.game_start_dt DESC
         LIMIT 1;
     </select>
+
+    <select id="getSummonerBasicInfoByPuuid" parameterType="String" resultType="map">
+        select
+            case when sa.member_site_code is not null then true else false end as has_site_account,
+            case when ra.game_name is not null then true else false end as has_riot_account,
+            ra.puuid,
+            ra.game_name,
+            ra.tag_line,
+            ls.profile_icon_id
+        from
+            riot_account ra
+                left outer join site_account sa on (sa.puuid = ra.puuid and sa.del_dt is null)
+                inner join lol_summoner ls on (ra.puuid = ls.puuid)
+        where
+            ra.puuid = #{puuid}
+    </select>
+
+    <select id="getChampionNameByKey" parameterType="String" resultType="String">
+        select
+            name_us
+        from
+            lol_champion
+        where
+            key = #{key}
+    </select>
 </mapper>

@@ -1,6 +1,5 @@
 import  apiClient  from './axios'
-import type { LolMatchInfoRes } from '@/types/match'
-import type {ReviewRequestDto} from "@/types/review.ts";
+import type {CurrentMatchInfoDto, LolMatchInfoRes} from '@/types/match'
 
 export const matchApi = {
     getMatchList: (puuid: string, startIndex: number, count: number) =>
@@ -38,4 +37,7 @@ export const matchApi = {
                 endDate
             }
         }),
+
+    getCurrentMatchInfo: (puuid: string) =>
+        apiClient.get<CurrentMatchInfoDto>(`/api/v1/match/current/${puuid}`),
 }

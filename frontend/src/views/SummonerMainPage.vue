@@ -23,6 +23,8 @@
           @open-review-modal="openReviewModal"
       />
 
+      <CurrentMatchInfo v-if="currentMatchInfo?.matchInfoDto" :current-match-info-dto="currentMatchInfo"/>
+
       <MatchList
           v-if="matches.length"
           :matches="matches"
@@ -85,7 +87,7 @@ import {summonerApi} from '@/api/summoner'
 import {matchApi} from '@/api/match'
 import {reviewApi} from '@/api/review'
 import type {LolSummonerProfileResDto} from '@/types/summoner'
-import type {LolMatchInfoRes, LolMatchParticipant} from '@/types/match'
+import type {CurrentMatchInfoDto, LolMatchInfoRes, LolMatchParticipant} from '@/types/match'
 import type {
   ReviewRatingByChampDto,
   ReviewRatingByPositionDto,
@@ -97,6 +99,7 @@ import PreviousReviewModal from "@/components/review/modal/PreviousReviewModal.v
 import {useToast} from "vue-toastification";
 import {useAuthStore} from "@/stores/auth.ts";
 import TagSuggestModal from "@/components/review/modal/TagSuggestModal.vue";
+import CurrentMatchInfo from "@/components/match/CurrentMatchInfo.vue";
 
 const pageCount = 10;
 const toast = useToast();
@@ -126,6 +129,7 @@ const selectedPlayer = ref(<LolMatchParticipant>({}));
 const suggestTag = ref<ReviewTagSuggestDto[]>([])
 const writtenReview = ref<ReviewRequestDto | null>(null)
 const playTogetherLatestMatch = ref<LolMatchInfoRes>();
+const currentMatchInfo = ref<CurrentMatchInfoDto>();
 
 const fetchSummonerInfo = async () => {
   try {
@@ -381,6 +385,14 @@ const fetchWrittenReview = async() => {
   }
 }
 
+const fetchCurrentMatchInfo = async () => {
+  if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
+  const response = await matchApi.getCurrentMatchInfo(summonerInfo.value.riotAccountInfoEntity.puuid);
+  if (response.data) {
+    currentMatchInfo.value = response.data;
+  }
+}
+
 const checkPlayedTogether = async () => {
   if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
   if (authStore.isAuthenticated) {
@@ -419,6 +431,7 @@ watchEffect(async () => {
       await fetchRatingByChamp();
       await fetchRatingByPosition();
       await fetchWrittenReview();
+      await fetchCurrentMatchInfo();
       await checkPlayedTogether();
     } finally {
       isLoading.value = false;

@@ -10,7 +10,7 @@ export interface Tab {
 }
 
 
-export interface summonerBasicInfoDto {
+export interface SummonerBasicInfoDto {
     puuid: string
     gameName: string
     tagLine: string
@@ -19,7 +19,7 @@ export interface summonerBasicInfoDto {
 }
 
 export interface RankerPlayer {
-    summonerBasicInfoDto: summonerBasicInfoDto
+    summonerBasicInfoDto: SummonerBasicInfoDto
     reviewStatsDto: ReviewStatsDto
     championStatsDtoList: ChampionResDto[]
     reviewTagDtoList: ReviewTagDto[]

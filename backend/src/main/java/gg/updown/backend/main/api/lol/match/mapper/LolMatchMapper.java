@@ -1,6 +1,5 @@
 package gg.updown.backend.main.api.lol.match.mapper;
 
-import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoResDto;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEntity;
 import org.apache.ibatis.annotations.Mapper;
@@ -8,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface LolMatchMapper {
@@ -25,4 +25,6 @@ public interface LolMatchMapper {
     List<String> selectMatchRequestList(@Param("puuid") String puuid, @Param("offset") int offset, @Param("limit") int limit);
     boolean existsMatchedTogether(@Param("loginPuuid")String loginPuuid, @Param("targetPuuid")String targetPuuid, @Param("startDate")LocalDateTime startDate, @Param("endDate")LocalDateTime endDate);
     String getLatestMatchIdTogether(@Param("loginPuuid")String loginPuuid, @Param("targetPuuid")String targetPuuid, @Param("startDate")LocalDateTime startDate, @Param("endDate")LocalDateTime endDate);
+    Map<String, Object> getSummonerBasicInfoByPuuid(String puuid);
+    String getChampionNameByKey(String key);
 }

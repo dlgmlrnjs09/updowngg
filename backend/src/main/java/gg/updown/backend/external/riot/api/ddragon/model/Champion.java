@@ -10,4 +10,5 @@ import lombok.Setter;
 public class Champion {
     private String nameUs;
     private String nameKr;
+    private String key;
 }

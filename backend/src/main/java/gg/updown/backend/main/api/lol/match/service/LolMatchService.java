@@ -1,20 +1,27 @@
 package gg.updown.backend.main.api.lol.match.service;
 
+import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
-import gg.updown.backend.external.riot.enums.MatchGameMode;
-import gg.updown.backend.external.riot.api.lol.match.model.*;
+import gg.updown.backend.external.riot.api.lol.match.model.GetMatchIdListReqDto;
+import gg.updown.backend.external.riot.api.lol.match.model.MatchDto;
 import gg.updown.backend.external.riot.api.lol.match.service.MatchApiService;
+import gg.updown.backend.external.riot.api.lol.spectator.model.CurrentMatchInfoDto;
+import gg.updown.backend.external.riot.api.lol.spectator.model.CurrentMatchParticipantDto;
+import gg.updown.backend.external.riot.api.lol.spectator.service.SpectatorService;
+import gg.updown.backend.external.riot.enums.MatchGameMode;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.lol.match.mapper.LolMatchMapper;
-import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoDto;
-import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoResDto;
-import gg.updown.backend.main.api.lol.match.model.dto.LolMatchParticipantDto;
-import gg.updown.backend.main.api.lol.match.model.dto.LolMatchTogetherReqDto;
+import gg.updown.backend.main.api.lol.match.model.dto.*;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEntity;
 import gg.updown.backend.main.api.lol.summoner.model.LolMatchModelConverter;
+import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerProfileResDto;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
+import gg.updown.backend.main.api.ranking.mapper.SiteRankingMapper;
+import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
 import gg.updown.backend.main.api.review.model.dto.ReviewDto;
+import gg.updown.backend.main.api.review.model.dto.ReviewStatsDto;
+import gg.updown.backend.main.api.review.model.dto.ReviewTagDto;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +43,14 @@ public class LolMatchService {
     private String latestVersion;
 
     private final MatchApiService matchApiService;
+    private final SpectatorService spectatorService;
     private final LolMatchMapper matchMapper;
     private final LolMatchTransactionService transactionService;
     private final LolSummonerService lolSummonerService;
     private final LolMatchModelConverter lolMatchModelConverter;
     private final ReviewService reviewService;
     private final LolMatchMapper lolMatchMapper;
+    private final SiteRankingMapper siteRankingMapper;
 
     /**
      * 기간 내 저장되지 않은 match 전부 불러와 matchId, 갱신정보만 저장하기
@@ -225,6 +234,39 @@ public class LolMatchService {
         return this.getMatchResDto(matchId, loginPuuid);
     }
 
+    public LolCurrentMatchInfoDto getCurrentMatchInfo(String puuid) {
+        LolCurrentMatchInfoDto currentMatchInfoDto = new LolCurrentMatchInfoDto();
+        List<LolCurrentMatchParticipantDto> participantDtoList = new ArrayList<>();
+        CurrentMatchInfoDto currentMatchInfo = spectatorService.getCurrentMatchInfoByPuuid(puuid);
+        if (currentMatchInfo == null) {
+            return currentMatchInfoDto;
+        }
+
+        currentMatchInfoDto.setMatchInfoDto(LolMatchInfoDto.builder()
+                        .gameDuration(currentMatchInfo.getGameLength() / 1000)
+                        .gameMode(currentMatchInfo.getGameMode())
+                        .gameModeName(MatchGameMode.getQueueName((int) currentMatchInfo.getGameQueueConfigId()))
+                        .gameStartDt(DateUtil.msToLocalDateTime(currentMatchInfo.getGameStartTime()))
+                        .gameType(currentMatchInfo.getGameType())
+                        .queueId((int) currentMatchInfo.getGameQueueConfigId())
+                .build());
+        for (CurrentMatchParticipantDto summoner: currentMatchInfo.getParticipants()) {
+            LolCurrentMatchParticipantDto participantDto = this.getCurrentMatchSummonerInfo(summoner.getPuuid());
+            String championName = matchMapper.getChampionNameByKey(String.valueOf(summoner.getChampionId()));
+            participantDto.setPlayerDto(LolCurrentMatchPlayerDto.builder()
+                            .puuid(summoner.getPuuid())
+                            .championId(summoner.getChampionId())
+                            .championIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, championName))
+                            .teamId(summoner.getTeamId())
+                    .build());
+            participantDtoList.add(participantDto);
+        }
+
+        currentMatchInfoDto.setParticipantDtoList(participantDtoList);
+
+        return currentMatchInfoDto;
+    }
+
     /**
      * DB에 저장되지 않은 match Id 전체 목록 가져오기
      * @param puuid
@@ -294,6 +336,49 @@ public class LolMatchService {
         return LolMatchInfoResDto.builder()
                 .matchInfo(infoDto)
                 .participantList(participantDtoList)
+                .build();
+    }
+
+    private LolCurrentMatchParticipantDto getCurrentMatchSummonerInfo(String puuid) {
+        Map<String, Object> summonerInfoMap = matchMapper.getSummonerBasicInfoByPuuid(puuid);
+        SummonerBasicInfoDto summonerInfoDto = null;
+        ReviewStatsDto reviewStatsDto = null;
+        List<ReviewTagDto> frequentTagDtoList = null;
+
+        if (summonerInfoMap == null || Boolean.FALSE.equals(summonerInfoMap.get("has_riot_account"))) {
+            // 라이엇 계정 테이블에 소환사 정보 존재하지않으면 저장 및 데이터 set
+            LolSummonerProfileResDto summonerProfile = lolSummonerService.conflictSummonerInfo(puuid);
+            summonerInfoDto = SummonerBasicInfoDto.builder()
+                    .puuid(summonerProfile.getRiotAccountInfoEntity().getPuuid())
+                    .gameName(summonerProfile.getRiotAccountInfoEntity().getGameName())
+                    .tagLine(summonerProfile.getRiotAccountInfoEntity().getTagLine())
+                    .profileIconId(summonerProfile.getLolSummonerDto().getProfileIconId())
+                    .profileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, summonerProfile.getLolSummonerDto().getProfileIconId()))
+                    .build();
+        }
+
+        if (summonerInfoMap != null) {
+            if (Boolean.TRUE.equals(summonerInfoMap.get("has_site_account"))) {
+                // 사이트에 계정 존재하는경우만 리뷰, 태그정보 set
+                reviewStatsDto = reviewService.getReviewStats(puuid);
+                frequentTagDtoList = reviewService.getFrequentTagCount(puuid, 3);
+            }
+
+            if (Boolean.TRUE.equals(summonerInfoMap.get("has_riot_account"))) {
+                summonerInfoDto = SummonerBasicInfoDto.builder()
+                        .puuid(summonerInfoMap.get("puuid").toString())
+                        .gameName(summonerInfoMap.get("game_name").toString())
+                        .tagLine(summonerInfoMap.get("tag_line").toString())
+                        .profileIconId(summonerInfoMap.get("profile_icon_id").toString())
+                        .profileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, summonerInfoMap.get("profile_icon_id").toString()))
+                        .build();
+            }
+        }
+
+        return LolCurrentMatchParticipantDto.builder()
+                .summonerInfoDto(summonerInfoDto)
+                .reviewStatsDto(reviewStatsDto)
+                .frequentTagDtoList(frequentTagDtoList)
                 .build();
     }
 }

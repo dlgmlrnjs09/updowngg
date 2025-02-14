@@ -1,4 +1,5 @@
-import type {ReviewByMatchSummaryDto, ReviewRequestDto, ReviewStatsDto} from "@/types/review.ts";
+import type {ReviewByMatchSummaryDto, ReviewRequestDto, ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
+import type {SummonerBasicInfoDto} from "@/types/ranking.ts";
 
 export interface LolMatchInfo {
     matchId: string;
@@ -51,6 +52,25 @@ export enum MatchGameMode {
 export interface GameModeInfo {
     queueId: number;
     queueName: string;
+}
+
+interface CurrentMatchPlayerDto {
+    puuid: string;
+    championId: number;
+    championIconUrl: string;
+    teamId: number;
+}
+
+export interface CurrentMatchParticipantDto {
+    playerDto: CurrentMatchPlayerDto;
+    summonerInfoDto: SummonerBasicInfoDto;
+    frequentTagDtoList?: ReviewTagDto[];
+    reviewStatsDto?: ReviewStatsDto;
+}
+
+export interface CurrentMatchInfoDto {
+    matchInfoDto: LolMatchInfo;
+    participantDtoList: CurrentMatchParticipantDto[];
 }
 
 export const MatchGameModeDetails: Record<MatchGameMode, GameModeInfo> = {

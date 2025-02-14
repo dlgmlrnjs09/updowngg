@@ -2,10 +2,7 @@ package gg.updown.backend.main.api.lol.match.controller;
 
 import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
-import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoReqDto;
-import gg.updown.backend.main.api.lol.match.model.dto.LolMatchInfoResDto;
-import gg.updown.backend.main.api.lol.match.model.dto.LolMatchTogetherReqDto;
-import gg.updown.backend.main.api.lol.match.model.dto.LolMatchUpdateReqDto;
+import gg.updown.backend.main.api.lol.match.model.dto.*;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -74,5 +71,11 @@ public class LolMatchController {
     @GetMapping("/played-together/latest")
     public ResponseEntity<LolMatchInfoResDto> getLatestMatchInfoTogether(@Valid LolMatchTogetherReqDto reqDto, @AuthenticationPrincipal UserDetailImpl userDetail) {
         return ResponseEntity.ok(lolMatchService.getLatestMatchInfoTogether(userDetail.getPuuid(), reqDto));
+    }
+
+    @Operation(summary = "인게임 정보 조회", description = "현재 진행중인 게임정보 조회")
+    @GetMapping("/current/{puuid}")
+    public ResponseEntity<LolCurrentMatchInfoDto> getCurrentMatchInfo(@PathVariable String puuid) {
+        return ResponseEntity.ok(lolMatchService.getCurrentMatchInfo(puuid));
     }
 }
