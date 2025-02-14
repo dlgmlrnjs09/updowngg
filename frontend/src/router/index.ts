@@ -88,31 +88,45 @@ const router = createRouter({
     }
 });
 
+// 라우터 에러 핸들러
+router.onError((error, to, from) => {
+    console.error('Navigation error:', error)
+    // 개발/운영 환경 모두 강제 이동
+    window.location.href = to.fullPath
+})
+
 /**
  * 네비게이션 가드 설정
  */
-router.beforeEach((to, from, next) => {
-    // const auth = localStorage.getItem('accessToken');
-    const authStore = useAuthStore();
-    const auth = authStore.isAuthenticated;
-    const requiresAuth = to.matched.some(record => record.meta.requiresAuth ?? false);
+router.beforeEach(async (to, from, next) => {
+    try {
+        const authStore = useAuthStore();
+        const auth = authStore.isAuthenticated;
+        const requiresAuth = to.matched.some(record => record.meta.requiresAuth ?? false);
 
-    if (requiresAuth && !auth) {
-        console.log('requiresAuth && !auth')
-        next('/login');
-    } else if (auth && to.path === '/login') {
-        console.log('auth && to.path')
-        next('/');
-    } else {
-        next();
+        if (requiresAuth && !auth) {
+            next('/login');
+        } else if (auth && to.path === '/login') {
+            next('/');
+        } else {
+            next();
+        }
+    } catch (error) {
+        console.error('Navigation guard error:', error)
+        next(true) // 개발/운영 모두 네비게이션 계속 진행
     }
 });
 
 // 페이지 뷰 추적을 위한 네비게이션 가드
 router.afterEach((to) => {
-    const title = to.meta.title
-    if (title) {
-        document.title = String(title)
+    try {
+        const title = to.meta.title
+        if (title) {
+            document.title = String(title)
+        }
+    } catch (error) {
+        console.error('After navigation error:', error)
+        // afterEach는 네비게이션에 영향을 주지 않으므로 에러만 로깅
     }
 })
 

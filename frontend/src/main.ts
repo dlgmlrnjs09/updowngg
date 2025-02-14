@@ -11,6 +11,13 @@ import {createPinia} from "pinia";
 
 const app = createApp(App)
 const pinia = createPinia()
+
+// 전역 에러 핸들러
+app.config.errorHandler = (err, vm, info) => {
+    console.error('Global error:', err)
+    return true
+}
+
 import { throttleClick } from '@/plugin/throttleClick'
 if (import.meta.env.PROD) {
     app.use(VueGtag, {
