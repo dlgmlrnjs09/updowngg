@@ -16,7 +16,7 @@
           :rating-by-position="ratingByPosition"
           :rating-by-champ="ratingByChamp"
           :written-review="writtenReview || null"
-          :play-together-match="playTogetherLatestMatch"
+          :play-together-match="playTogetherLatestMatch || null"
           @show-detail="showDetailModal = true"
           @update-matches="updateMatchList"
           @open-previous-modal="openPreviousModal"
@@ -127,7 +127,7 @@ const showPreviousReviewModal = ref(false)
 const selectedPlayer = ref(<LolMatchParticipant>({}));
 const suggestTag = ref<ReviewTagSuggestDto[]>([])
 const writtenReview = ref<ReviewRequestDto | null>(null)
-const playTogetherLatestMatch = ref<LolMatchInfoRes>();
+const playTogetherLatestMatch = ref<LolMatchInfoRes | null>(null);
 const currentMatchInfo = ref<CurrentMatchInfoDto>();
 
 const fetchSummonerInfo = async () => {
@@ -271,7 +271,8 @@ const openReviewModal = (player: any) => {
   )!;
 
   if (authStore.isAuthenticated) {
-    if (player.reviewDto && player.reviewDto.reviewable === false) {
+    // optional chaining을 사용하여 reviewDto가 없는 경우도 처리
+    if (player?.reviewDto?.reviewable === false) {
       console.log('previous')
       showPreviousReviewModal.value = true;
     } else {
@@ -419,6 +420,7 @@ watchEffect(async () => {
     currentStartIndex.value = 0;
     noMoreMatches.value = false;
     writtenReview.value = null;
+    playTogetherLatestMatch.value = null;
     try {
       await fetchSummonerInfo();
       await fetchSummonerReviewStats();
