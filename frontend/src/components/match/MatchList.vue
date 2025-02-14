@@ -1,6 +1,6 @@
 <!-- src/components/match/MatchList.vue -->
 <template>
-  <div class="games-section">
+  <div v-if="matches.length > 0" class="games-section">
     <div v-for="match in matches" :key="match.matchInfo.matchId" class="mb-4 mt-4">
       <MatchSummary
           :match="match"
@@ -8,25 +8,29 @@
           @review-player="openReview"
       />
     </div>
-  </div>
-  <!-- 더보기 버튼 -->
-  <div v-if="!noMoreMatches" class="mt-4">
-    <button
-        class="load-more-button"
-        @click="$emit('loadMore')"
-        :disabled="isLoading"
-    >
-      <div class="flex justify-center items-center">
-        <span v-if="!isLoading">더보기</span>
-        <div v-else class="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-      </div>
-    </button>
+
+    <!-- 더보기 버튼 -->
+    <div v-if="!noMoreMatches" class="mt-4">
+      <button
+          class="load-more-button"
+          @click="$emit('loadMore')"
+          :disabled="isLoading"
+      >
+        <div class="flex justify-center items-center">
+          <span v-if="!isLoading">더보기</span>
+          <div v-else class="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+      </button>
+    </div>
+
+    <!-- 더 이상 데이터가 없을 때 표시 -->
+    <div v-if="noMoreMatches" class="text-center py-4 text-gray-500">
+      더 이상 매치 기록이 없습니다
+    </div>
   </div>
 
-  <!-- 더 이상 데이터가 없을 때 표시 -->
-  <div v-if="noMoreMatches" class="text-center py-4 text-gray-500">
-    더 이상 매치 기록이 없습니다
-  </div>
+  <!-- 매치 데이터가 없을 때 -->
+  <MatchDataEmpty v-else />
 </template>
 
 <script setup lang="ts">
@@ -34,6 +38,7 @@ import { computed } from 'vue';
 import type { LolMatchInfoRes } from '@/types/match';
 import type { LolSummonerProfileResDto } from '@/types/summoner';
 import MatchSummary from '@/components/match/MatchSummary.vue';
+import MatchDataEmpty from "@/components/match/MatchDataEmpty.vue";
 
 defineProps<{
   matches: LolMatchInfoRes[];

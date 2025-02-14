@@ -608,6 +608,10 @@ const toggleExpanded = () => {
     grid-column: span 2;
     margin-top: 16px;
   }
+
+  .written-review-text {
+    font-size: 14px;
+  }
 }
 
 .written-review-section {

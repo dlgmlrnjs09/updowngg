@@ -26,7 +26,6 @@
       <CurrentMatchInfo v-if="currentMatchInfo?.matchInfoDto" :current-match-info-dto="currentMatchInfo"/>
 
       <MatchList
-          v-if="matches.length"
           :matches="matches"
           :profile-data="summonerInfo"
           :is-loading="isLoadingMore"
