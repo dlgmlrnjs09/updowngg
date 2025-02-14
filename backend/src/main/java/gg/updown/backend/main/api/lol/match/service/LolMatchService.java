@@ -358,13 +358,11 @@ public class LolMatchService {
         }
 
         if (summonerInfoMap != null) {
-            if (Boolean.TRUE.equals(summonerInfoMap.get("has_site_account"))) {
-                // 사이트에 계정 존재하는경우만 리뷰, 태그정보 set
+            if (Boolean.TRUE.equals(summonerInfoMap.get("has_riot_account"))) {
+                // 계정정보 DB에 존재하는경우만 리뷰, 태그정보 set
                 reviewStatsDto = reviewService.getReviewStats(puuid);
                 frequentTagDtoList = reviewService.getFrequentTagCount(puuid, 3);
-            }
 
-            if (Boolean.TRUE.equals(summonerInfoMap.get("has_riot_account"))) {
                 summonerInfoDto = SummonerBasicInfoDto.builder()
                         .puuid(summonerInfoMap.get("puuid").toString())
                         .gameName(summonerInfoMap.get("game_name").toString())

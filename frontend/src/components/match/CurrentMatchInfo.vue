@@ -38,7 +38,7 @@
               </div>
             </div>
 
-            <div class="player-reviews">
+            <div class="player-reviews" :class="{ 'no-tags': !player.frequentTagDtoList?.length }">
               <div class="review-stats">
                 <div class="review-up">
                   <ThumbsUp class="thumb-icon up" />
@@ -50,14 +50,8 @@
                 </div>
               </div>
 
-              <div class="top-tags">
-                <div
-                    v-for="tag in player.frequentTagDtoList?.slice(0, 3)"
-                    :key="tag.tagCode"
-                    class="top-tag"
-                >
-                  {{ tag.tagValue }}
-                </div>
+              <div class="top-tags" v-if="player.frequentTagDtoList?.length">
+                <TagList class="match-tag-list" :tags="player.frequentTagDtoList || null" size="xSmall" is-show-count/>
               </div>
             </div>
           </div>
@@ -96,7 +90,7 @@
               </div>
             </div>
 
-            <div class="player-reviews">
+            <div class="player-reviews" :class="{ 'no-tags': !player.frequentTagDtoList?.length }">
               <div class="review-stats">
                 <div class="review-up">
                   <ThumbsUp class="thumb-icon up" />
@@ -108,14 +102,8 @@
                 </div>
               </div>
 
-              <div class="top-tags">
-                <div
-                    v-for="tag in player.frequentTagDtoList?.slice(0, 3)"
-                    :key="tag.tagCode"
-                    class="top-tag"
-                >
-                  {{ tag.tagValue }}
-                </div>
+              <div class="top-tags" v-if="player.frequentTagDtoList?.length">
+                <TagList class="match-tag-list" :tags="player.frequentTagDtoList || null" size="xSmall" is-show-count/>
               </div>
             </div>
           </div>
@@ -131,6 +119,7 @@ import {computed} from 'vue';
 import { useRouter } from 'vue-router';
 import type {CurrentMatchInfoDto} from "@/types/match.ts";
 import {goSelectedSummonerProfile} from "@/utils/common.ts";
+import TagList from "@/components/common/TagList.vue";
 
 const props = defineProps<{
   currentMatchInfoDto: CurrentMatchInfoDto;
@@ -200,6 +189,7 @@ const redTeamPlayers = computed(() =>
   background: rgba(255, 255, 255, 0.04);
   border-radius: 8px;
   margin-bottom: 8px;
+  min-height: 70px;
 }
 
 .player-champion {
@@ -265,13 +255,18 @@ const redTeamPlayers = computed(() =>
 .player-reviews {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  /*align-items: flex-end;*/
   gap: 4px;
+}
+
+.player-reviews.no-tags {
+  justify-content: center;
 }
 
 .review-stats {
   display: flex;
   gap: 12px;
+  align-self: flex-end;
 }
 
 .review-up,
@@ -311,6 +306,7 @@ const redTeamPlayers = computed(() =>
   display: flex;
   gap: 4px;
   margin-top: 4px;
+  min-height: 21px;
 }
 
 .top-tag {
@@ -321,9 +317,20 @@ const redTeamPlayers = computed(() =>
   border-radius: 4px;
 }
 
+:deep(.match-tag-list .tag) {
+  background: rgba(41, 121, 255, 0.1);
+  color: #2979FF;
+  border: none;
+}
+
+:deep(.match-tag-list .tag-count) {
+  font-size: 11px;
+}
+
 @media (max-width: 768px) {
   .top-tags {
     max-width: 100%;
+    min-height: 16px;
   }
 
   .top-tags .top-tag:nth-child(n+3) {
@@ -351,6 +358,8 @@ const redTeamPlayers = computed(() =>
     background: rgba(255, 255, 255, 0.04);
     border-radius: 8px;
     margin-bottom: 4px;
+    align-items: end;
+    min-height: 80px;
   }
 
   .player-champion {
@@ -407,11 +416,17 @@ const redTeamPlayers = computed(() =>
     align-items: stretch;
   }
 
+  .current-game-player .player-reviews.no-tags {
+    grid-area: player-tags;
+    align-self: flex-start;
+  }
+
   .review-stats {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 10px;
+    align-self: flex-start;
   }
 
   .review-up,
@@ -435,6 +450,7 @@ const redTeamPlayers = computed(() =>
     display: flex;
     gap: 4px;
     margin-top: 2px;
+    overflow: hidden;
   }
 
   .top-tag {
@@ -444,6 +460,30 @@ const redTeamPlayers = computed(() =>
     padding: 1px 4px;
     border-radius: 4px;
     white-space: nowrap;
+  }
+
+  :deep(.match-tag-list) {
+    width: 100%;
+    overflow: hidden; /* 추가 */
+  }
+
+  :deep(.match-tag-list .tags-wrapper) {
+    width: 100%;
+    flex-wrap: nowrap; /* 추가 */
+    overflow: hidden; /* 추가 */
+  }
+
+  :deep(.match-tag-list .tag) {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+
+  :deep(.match-tag-list .tag-count) {
+    font-size: 9px;
+  }
+
+  :deep(.match-tag-list .tag:nth-child(n+3)) {
+    display: none;
   }
 }
 </style>
