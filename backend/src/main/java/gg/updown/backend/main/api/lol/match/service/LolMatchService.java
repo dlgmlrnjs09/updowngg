@@ -255,13 +255,6 @@ public class LolMatchService {
                 .build());
         for (CurrentMatchParticipantDto summoner: currentMatchInfo.getParticipants()) {
             LolCurrentMatchParticipantDto participantDto = this.getCurrentMatchSummonerInfo(summoner, currentMatchInfo.getGameQueueConfigId());
-            /*String championName = matchMapper.getChampionNameByKey(String.valueOf(summoner.getChampionId()));
-            participantDto.setPlayerDto(LolCurrentMatchPlayerDto.builder()
-                            .puuid(summoner.getPuuid())
-                            .championId(summoner.getChampionId())
-                            .championIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, championName))
-                            .teamId(summoner.getTeamId())
-                    .build());*/
             participantDtoList.add(participantDto);
         }
 
@@ -365,12 +358,33 @@ public class LolMatchService {
                     .build();
 
             if (currentGameMode.isRankGame()) {
+                // 현재 플레이중인 게임이 랭크게임이라면 해당 랭크모드의 티어 표시
                 for (LolSummonerLeagueEntity leagueEntity : summonerProfile.getLeagueEntityList()) {
                     if (leagueEntity.getQueueType().equals(currentGameMode.getLeagueName())) {
                         tier = SiteLeagueTier.findByTierCode(leagueEntity.getTier());
                         rank = leagueEntity.getRank();
                         break;
                     }
+                }
+            } else {
+                // 현재 플레이중인 게임이 랭크게임이 아니라면 솔로랭크의 티어 표시, 없다면 자유랭크 티어 표시
+                if (!summonerProfile.getLeagueEntityList().isEmpty()) {
+                    SiteLeagueTier soloRankTier = null;
+                    SiteLeagueTier flexRankTier = null;
+                    String soloRank = null;
+                    String flexRank = null;
+                    for (LolSummonerLeagueEntity leagueEntity : summonerProfile.getLeagueEntityList()) {
+                        if (leagueEntity.getQueueType().equals(SiteMatchGameMode.SOLO_RANK.getLeagueName())) {
+                            soloRankTier = SiteLeagueTier.findByTierCode(leagueEntity.getTier());
+                            soloRank = leagueEntity.getRank();
+                        } else if (leagueEntity.getQueueType().equals(SiteMatchGameMode.FLEX_RANK.getLeagueName())) {
+                            flexRankTier = SiteLeagueTier.findByTierCode(leagueEntity.getTier());
+                            flexRank = leagueEntity.getRank();
+                        }
+                    }
+
+                    tier = soloRankTier != null ? soloRankTier : flexRankTier;
+                    rank = soloRankTier != null ? soloRank : flexRank;
                 }
             }
         }
@@ -390,9 +404,21 @@ public class LolMatchService {
                         .build();
 
                 if (currentGameMode.isRankGame()) {
+                    // 현재 플레이중인 게임이 랭크게임이라면 해당 랭크모드의 티어 표시
                     LolSummonerLeagueEntity leagueEntity = lolSummonerService.getSummonerLeagueInfo(summoner.getSummonerId(), currentGameMode.getLeagueName());
                     tier = SiteLeagueTier.findByTierCode(leagueEntity.getTier());
                     rank = leagueEntity.getRank();
+                } else {
+                    // 현재 플레이중인 게임이 랭크게임이 아니라면 솔로랭크의 티어 표시, 없다면 자유랭크 티어 표시
+                    LolSummonerLeagueEntity soloRankEntity = lolSummonerService.getSummonerLeagueInfo(summoner.getSummonerId(), SiteMatchGameMode.SOLO_RANK.getLeagueName());
+                    LolSummonerLeagueEntity flexRankEntity = lolSummonerService.getSummonerLeagueInfo(summoner.getSummonerId(), SiteMatchGameMode.FLEX_RANK.getLeagueName());
+                    if (soloRankEntity != null) {
+                        tier = SiteLeagueTier.findByTierCode(soloRankEntity.getTier());
+                        rank = soloRankEntity.getRank();
+                    } else if (flexRankEntity != null) {
+                        tier = SiteLeagueTier.findByTierCode(flexRankEntity.getTier());
+                        rank = flexRankEntity.getRank();
+                    }
                 }
             }
         }
@@ -405,7 +431,7 @@ public class LolMatchService {
                 .teamId(summoner.getTeamId())
                 .build();
 
-        if (currentGameMode.isRankGame()) {
+        if (tier != null) {
             playerDto.setLeagueDto(LolMatchPlayerLeagueDto.builder()
                     .tier(tier.getTierCode())
                     .acronymTier(tier.getAcronym())

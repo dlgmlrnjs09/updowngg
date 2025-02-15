@@ -32,7 +32,7 @@
 
             <div class="player-info">
               <div class="player-name-wrapper">
-                <div class="player-tier-tag" :style="{
+                <div v-if="player.playerDto.leagueDto" class="player-tier-tag" :style="{
                   background: `${player.playerDto.leagueDto.tierColor}1A`,
                   color: player.playerDto.leagueDto.tierColor
                 }">
@@ -87,7 +87,7 @@
 
             <div class="player-info">
               <div class="player-name-wrapper">
-                <div class="player-tier-tag" :style="{
+                <div v-if="player.playerDto.leagueDto" class="player-tier-tag" :style="{
                   background: `${player.playerDto.leagueDto.tierColor}1A`,
                   color: player.playerDto.leagueDto.tierColor
                 }">
@@ -99,13 +99,13 @@
                 >
                   {{ player.summonerInfoDto.gameName }}
                 </span>
+                <span class="player-tag">#{{ player.summonerInfoDto.tagLine }}</span>
               </div>
             </div>
 
             <div class="player-reviews" :class="{ 'no-tags': !player.frequentTagDtoList?.length }">
               <div class="review-stats">
                 <div class="review-up">
-                <span class="player-tag">#{{ player.summonerInfoDto.tagLine }}</span>
                   <ThumbsUp class="thumb-icon up" />
                   <span class="count">{{ player.reviewStatsDto?.upCount || 0 }}</span>
                 </div>
