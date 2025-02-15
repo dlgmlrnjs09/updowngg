@@ -1,15 +1,15 @@
 package gg.updown.backend.main.api.ranking.service;
 
 import gg.updown.backend.common.util.CalculateUtil;
-import gg.updown.backend.external.riot.RiotApiBasePath;
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
 import gg.updown.backend.main.api.ranking.mapper.SiteRankingMapper;
-import gg.updown.backend.main.api.ranking.model.*;
+import gg.updown.backend.main.api.ranking.model.SiteRankingReqDto;
+import gg.updown.backend.main.api.ranking.model.SiteRankingResDto;
+import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
+import gg.updown.backend.main.api.ranking.model.SummonerTagDto;
 import gg.updown.backend.main.api.review.model.dto.ReviewStatsDto;
 import gg.updown.backend.main.api.review.model.dto.ReviewTagDto;
-import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.stats.model.dto.ChampionStatsDto;
-import gg.updown.backend.main.api.stats.model.dto.SortTypeReqDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -143,6 +143,8 @@ public class SiteRankingService {
                             .summonerBasicInfoDto(basicInfo)
                             .build();
 
-                }).collect(Collectors.toList());
+                })
+                .sorted(Comparator.comparing(dto -> dto.getReviewStatsDto().getScore(), Comparator.reverseOrder()))
+                .collect(Collectors.toList());
     }
 }

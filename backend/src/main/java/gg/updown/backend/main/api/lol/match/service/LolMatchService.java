@@ -406,8 +406,10 @@ public class LolMatchService {
                 if (currentGameMode.isRankGame()) {
                     // 현재 플레이중인 게임이 랭크게임이라면 해당 랭크모드의 티어 표시
                     LolSummonerLeagueEntity leagueEntity = lolSummonerService.getSummonerLeagueInfo(summoner.getSummonerId(), currentGameMode.getLeagueName());
-                    tier = SiteLeagueTier.findByTierCode(leagueEntity.getTier());
-                    rank = leagueEntity.getRank();
+                    if (leagueEntity != null) {
+                        tier = SiteLeagueTier.findByTierCode(leagueEntity.getTier());
+                        rank = leagueEntity.getRank();
+                    }
                 } else {
                     // 현재 플레이중인 게임이 랭크게임이 아니라면 솔로랭크의 티어 표시, 없다면 자유랭크 티어 표시
                     LolSummonerLeagueEntity soloRankEntity = lolSummonerService.getSummonerLeagueInfo(summoner.getSummonerId(), SiteMatchGameMode.SOLO_RANK.getLeagueName());
