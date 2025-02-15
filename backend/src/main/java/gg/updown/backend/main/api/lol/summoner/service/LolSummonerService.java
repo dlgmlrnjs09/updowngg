@@ -207,4 +207,8 @@ public class LolSummonerService {
         );
         return list;
     }
+
+    public LolSummonerLeagueEntity getSummonerLeagueInfo(String summonerId, String queueType) {
+        return lolSummonerMapper.getSummonerLeagueInfo(summonerId, queueType);
+    }
 }

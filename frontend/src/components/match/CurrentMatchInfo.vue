@@ -32,8 +32,11 @@
 
             <div class="player-info">
               <div class="player-name-wrapper">
-                <div class="player-tier-tag">
-<!--                  {{ player.summonerInfoDto. }} {{ player.rank }}-->GM
+                <div class="player-tier-tag" :style="{
+                  background: `${player.playerDto.leagueDto.tierColor}1A`,
+                  color: player.playerDto.leagueDto.tierColor
+                }">
+                  {{ player.playerDto.leagueDto.acronymTier }}{{ convertTierRomanToNumber(player.playerDto.leagueDto.rank) }}
                 </div>
                 <span
                     class="player-name"
@@ -84,8 +87,11 @@
 
             <div class="player-info">
               <div class="player-name-wrapper">
-                <div class="player-tier-tag">
-<!--                  {{ player.tier }} {{ player.rank }}--> C
+                <div class="player-tier-tag" :style="{
+                  background: `${player.playerDto.leagueDto.tierColor}1A`,
+                  color: player.playerDto.leagueDto.tierColor
+                }">
+                  {{ player.playerDto.leagueDto.acronymTier }}{{ convertTierRomanToNumber(player.playerDto.leagueDto.rank) }}
                 </div>
                 <span
                     class="player-name"
@@ -93,13 +99,13 @@
                 >
                   {{ player.summonerInfoDto.gameName }}
                 </span>
-                <span class="player-tag">#{{ player.summonerInfoDto.tagLine }}</span>
               </div>
             </div>
 
             <div class="player-reviews" :class="{ 'no-tags': !player.frequentTagDtoList?.length }">
               <div class="review-stats">
                 <div class="review-up">
+                <span class="player-tag">#{{ player.summonerInfoDto.tagLine }}</span>
                   <ThumbsUp class="thumb-icon up" />
                   <span class="count">{{ player.reviewStatsDto?.upCount || 0 }}</span>
                 </div>
@@ -127,6 +133,7 @@ import { useRouter } from 'vue-router';
 import type {CurrentMatchInfoDto} from "@/types/match.ts";
 import {goSelectedSummonerProfile} from "@/utils/common.ts";
 import TagList from "@/components/common/TagList.vue";
+import {convertTierRomanToNumber} from "@/utils/common.ts";
 
 const props = defineProps<{
   currentMatchInfoDto: CurrentMatchInfoDto;
@@ -281,8 +288,8 @@ onUnmounted(() => {
 }
 
 .player-tier-tag {
-  background: rgba(41, 121, 255, 0.1);
-  color: #2979FF;
+  /*background: rgba(41, 121, 255, 0.1);
+  color: #2979FF;*/
   font-size: 11px;
   padding: 1px 4px;
   border-radius: 4px;

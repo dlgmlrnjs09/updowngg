@@ -50,3 +50,14 @@ export const getPageNumbers = (paging: PagingDTO<any>): number[] => {
         (_, i) => paging.startPage + i
     )
 }
+
+export const convertTierRomanToNumber = (roman: string): number => {
+    const romanValues: { [key: string]: number } = {
+        'I': 1,
+        'II': 2,
+        'III': 3,
+        'IV': 4
+    };
+
+    return romanValues[roman] || 0;
+};

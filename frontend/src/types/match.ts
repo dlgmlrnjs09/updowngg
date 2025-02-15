@@ -59,6 +59,14 @@ interface CurrentMatchPlayerDto {
     championId: number;
     championIconUrl: string;
     teamId: number;
+    leagueDto: LolMatchPlayerLeagueDto
+}
+
+interface LolMatchPlayerLeagueDto {
+    tier: string;
+    acronymTier: string;
+    tierColor: string;
+    rank: string;
 }
 
 export interface CurrentMatchParticipantDto {

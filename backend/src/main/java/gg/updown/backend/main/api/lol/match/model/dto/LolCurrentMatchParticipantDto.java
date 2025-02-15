@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class LolCurrentMatchParticipantDto {
-    // 팀 ID
+    // 플레이어 정보 DTO
     private LolCurrentMatchPlayerDto playerDto;
     // 소환사 정보 DTO
     private SummonerBasicInfoDto summonerInfoDto;

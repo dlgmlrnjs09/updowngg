@@ -12,4 +12,5 @@ public class LolCurrentMatchPlayerDto {
     private long championId;
     private String championIconUrl;
     private long teamId;
+    private LolMatchPlayerLeagueDto leagueDto;
 }
