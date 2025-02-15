@@ -92,10 +92,10 @@
         </div>
 
         <!-- 평가 통계 -->
-        <div class="stats-section">
+<!--        <div class="stats-section">
           <div class="stats-title">평가 통계</div>
           <div class="stats-grid">
-            <!-- 챔피언별 평가 -->
+            &lt;!&ndash; 챔피언별 평가 &ndash;&gt;
             <div class="champion-stats">
               <div class="champion-item" v-for="rating in ratingByChamp" :key="rating.champId">
                 <img :src="rating.champIconUrl" class="position-icon" alt="Champion" />
@@ -106,7 +106,7 @@
                 </div>
               </div>
             </div>
-            <!-- 포지션별 평가 -->
+            &lt;!&ndash; 포지션별 평가 &ndash;&gt;
             <div class="position-stats">
               <div class="position-item" v-for="(position, index) in ['top', 'jungle', 'mid', 'support', 'ad']" :key="position">
                 <img :src="getPositionImage(position)" class="position-icon" alt="Position" />
@@ -118,7 +118,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div>-->
 
         <!-- 최근 평가 섹션 -->
         <ReviewRolling :reviews="recentReviews" title="최근 받은 평가" wrapper-height="90px"/>
