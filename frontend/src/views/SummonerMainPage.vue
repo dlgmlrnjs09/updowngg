@@ -99,6 +99,7 @@ import {useToast} from "vue-toastification";
 import {useAuthStore} from "@/stores/auth.ts";
 import TagSuggestModal from "@/components/review/modal/TagSuggestModal.vue";
 import CurrentMatchInfo from "@/components/match/CurrentMatchInfo.vue";
+import {cookieUtils} from "@/utils/cookieUtil.ts";
 
 const pageCount = 10;
 const toast = useToast();
@@ -429,6 +430,13 @@ watchEffect(async () => {
       if (!summonerInfo.value?.riotAccountInfoEntity.puuid) {
         throw new Error('Failed to fetch summoner info');
       }
+
+      // 소환사 정보를 최근 검색 기록에 저장
+      cookieUtils.addRecentSummoner({
+        gameName: summonerInfo.value.riotAccountInfoEntity.gameName,
+        tagLine: summonerInfo.value.riotAccountInfoEntity.tagLine,
+        lastViewedAt: Date.now()
+      });
 
       await Promise.all([
         fetchSummonerReviewStats(),

@@ -20,9 +20,7 @@ public class SiteSearchService {
 
     public List<SiteSearchSummonerDto> searchSummoners(String keyword) {
         List<SiteSearchSummonerDto> resultList = siteSearchMapper.searchSummoners(keyword);
-        resultList.forEach(r -> {
-            r.setProfileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, r.getProfileIconId()));
-        });
+        resultList.forEach(r -> r.setProfileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, r.getProfileIconId())));
         return resultList;
     }
 }
