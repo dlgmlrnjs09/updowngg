@@ -421,19 +421,31 @@ watchEffect(async () => {
     noMoreMatches.value = false;
     writtenReview.value = null;
     playTogetherLatestMatch.value = null;
+
     try {
+      // SummonerInfo 에서 불러온 puuid를 사용해야하기 때문에 동기로 불러옴
       await fetchSummonerInfo();
-      await fetchSummonerReviewStats();
-      await fetchMatchList();
-      await fetchReviewTags();
-      await fetchReviewTagCategories();
-      await fetchFrequentTags();
-      await fetchRecentReviews();
-      await fetchRatingByChamp();
-      await fetchRatingByPosition();
-      await fetchWrittenReview();
-      await fetchCurrentMatchInfo();
-      await checkPlayedTogether();
+
+      if (!summonerInfo.value?.riotAccountInfoEntity.puuid) {
+        throw new Error('Failed to fetch summoner info');
+      }
+
+      await Promise.all([
+        fetchSummonerReviewStats(),
+        fetchMatchList(),
+        fetchReviewTags(),
+        fetchReviewTagCategories(),
+        fetchFrequentTags(),
+        fetchRecentReviews(),
+        fetchRatingByChamp(),
+        fetchRatingByPosition(),
+        fetchWrittenReview(),
+        fetchCurrentMatchInfo(),
+        checkPlayedTogether()
+      ]);
+    } catch (error) {
+      console.error('Error loading summoner data:', error);
+      toast.error('소환사 정보를 불러오는데 실패했습니다.');
     } finally {
       isLoading.value = false;
     }

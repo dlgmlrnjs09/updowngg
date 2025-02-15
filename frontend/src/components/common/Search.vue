@@ -4,7 +4,7 @@
       <input
           type="text"
           class="search-input"
-          placeholder="소환사 이름을 입력하세요"
+          placeholder="소환사 이름을 입력하세요 (플레이어 이름#KR1)"
           v-model="searchQuery"
           @keyup.enter="handleSearch"
           @input="handleInput"
