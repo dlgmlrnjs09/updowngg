@@ -1,5 +1,6 @@
 // src/types/summoner.ts
 import type {SummonerBasicInfoDto} from "@/types/ranking.ts";
+import type {LolSummonerLeagueEntity} from "@/types/league.ts";
 
 export interface LolSummonerDto {
     puuid: string
@@ -21,6 +22,7 @@ export interface RiotAccountInfoEntity {
 export interface LolSummonerProfileResDto {
     summonerBasicInfoDto: SummonerBasicInfoDto
     riotAccountInfoEntity: RiotAccountInfoEntity
+    leagueEntityList: LolSummonerLeagueEntity[]
 }
 
 export interface LolSummonerMostChampionDto {

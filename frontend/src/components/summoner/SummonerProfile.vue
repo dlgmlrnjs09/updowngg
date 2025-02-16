@@ -1,13 +1,13 @@
 <template>
   <div class="profile-section">
+    <!-- 기존 프로필 섹션 -->
     <div class="main-profile">
       <div class="profile-icon">
-        <img :src="profileData.lolSummonerDto.profileIconUrl" alt="">
+        <img :src="profileData.lolSummonerDto.profileIconUrl" alt="프로필 아이콘">
       </div>
       <div class="profile-info">
         <div class="summoner-name">{{ profileData.riotAccountInfoEntity.gameName }}</div>
         <div class="profile-stats">평가 {{ reviewStats?.totalReviewCnt ?? 0 }}회 · 최근 30일 {{ reviewStats?.last30DayReviewCnt ?? 0 }}회</div>
-        <!-- 단순화된 좋아요/싫어요 통계 -->
         <div class="rating-stats">
           <div class="rating-item">
             <div class="up-down-stats">
@@ -50,6 +50,7 @@
         </button>
       </div>
     </div>
+
     <!-- 리뷰작성가능 알림 섹션 -->
     <div v-if="!writtenReview && playTogetherMatch && authStore.user?.puuid != profileData.riotAccountInfoEntity.puuid" class="written-review-section">
       <div class="written-review-content">
@@ -63,6 +64,43 @@
       </div>
     </div>
 
+    <!-- 랭크 티어 섹션 -->
+    <div class="rank-section">
+      <div class="rank-card solo">
+        <div class="rank-header">
+          <img :src="soloRankInfo?.tier ? getTierImage(soloRankInfo?.tier) : getTierImage(`unranked`)" alt="개인 랭크" class="rank-emblem"/>
+          <div class="rank-info">
+            <div class="rank-type">개인 랭크</div>
+            <div class="rank-tier">{{ soloRankInfo?.tier || '배치 전' }}</div>
+            <div v-if="soloRankInfo?.tier" class="rank-lp">
+              {{ soloRankInfo?.leaguePoints }} LP
+            </div>
+          </div>
+        </div>
+        <div v-if="soloRankInfo?.tier" class="rank-record">
+          {{ soloRankInfo?.wins }}승 {{ soloRankInfo?.losses }}패
+          <span class="win-rate">({{ calculateWinRate(soloRankInfo?.wins, soloRankInfo?.losses) }}%)</span>
+        </div>
+      </div>
+      <div class="rank-card flex">
+        <div class="rank-header">
+          <img :src="flexRankInfo?.tier ? getTierImage(flexRankInfo?.tier) : getTierImage(`unranked`)" alt="자유 랭크" class="rank-emblem"/>
+          <div class="rank-info">
+            <div class="rank-type">자유 랭크</div>
+            <div class="rank-tier">{{ flexRankInfo?.tier || '배치 전' }}</div>
+            <div v-if="flexRankInfo?.tier" class="rank-lp">
+              {{ flexRankInfo?.leaguePoints }} LP
+            </div>
+          </div>
+        </div>
+        <div v-if="flexRankInfo?.tier" class="rank-record">
+          {{ flexRankInfo?.wins }}승 {{ flexRankInfo?.losses }}패
+          <span class="win-rate">({{ calculateWinRate(flexRankInfo?.wins, flexRankInfo?.losses) }}%)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 통계 토글 버튼 -->
     <button
         v-if="recentReviews.length > 0"
         @click="toggleExpanded"
@@ -80,7 +118,6 @@
     <!-- 확장 영역 -->
     <Transition name="expand">
       <div v-if="isExpanded && recentReviews.length > 0" class="expanded-section">
-        <!-- 자주 받은 태그 -->
         <div class="tags-section">
           <div class="stats-title">자주 받은 태그</div>
           <div v-if="frequentTags && frequentTags.length > 0" class="tags-slider">
@@ -90,37 +127,6 @@
             받은 태그가 없습니다.
           </div>
         </div>
-
-        <!-- 평가 통계 -->
-<!--        <div class="stats-section">
-          <div class="stats-title">평가 통계</div>
-          <div class="stats-grid">
-            &lt;!&ndash; 챔피언별 평가 &ndash;&gt;
-            <div class="champion-stats">
-              <div class="champion-item" v-for="rating in ratingByChamp" :key="rating.champId">
-                <img :src="rating.champIconUrl" class="position-icon" alt="Champion" />
-                <div class="champion-rating">
-                  <span class="up-count">{{ rating.upCount || 0 }}</span>
-                  <span class="stats-divider">/</span>
-                  <span class="down-count">{{ rating.downCount || 0 }}</span>
-                </div>
-              </div>
-            </div>
-            &lt;!&ndash; 포지션별 평가 &ndash;&gt;
-            <div class="position-stats">
-              <div class="position-item" v-for="(position, index) in ['top', 'jungle', 'mid', 'support', 'ad']" :key="position">
-                <img :src="getPositionImage(position)" class="position-icon" alt="Position" />
-                <div class="position-rating">
-                  <span class="up-count">{{ ratingByPosition?.[index]?.upCount ?? 0 }}</span>
-                  <span class="stats-divider">/</span>
-                  <span class="down-count">{{ ratingByPosition?.[index]?.downCount ?? 0 }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>-->
-
-        <!-- 최근 평가 섹션 -->
         <ReviewRolling :reviews="recentReviews" title="최근 받은 평가" wrapper-height="90px"/>
       </div>
     </Transition>
@@ -132,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, onUnmounted, computed} from 'vue'
+import {ref, computed, onMounted} from 'vue'
 import type { LolSummonerProfileResDto } from '@/types/summoner.ts'
 import type {
   ReviewRatingByChampDto,
@@ -144,11 +150,10 @@ import type {
 import { ThumbsUp, ThumbsDown, ChevronDown, InfoIcon } from 'lucide-vue-next'
 import TagList from "@/components/common/TagList.vue";
 import ReviewRolling from "@/components/review/ReviewRolling.vue";
-import ReviewStatic from "@/components/review/ReviewStatic.vue";
-import type {LolMatchInfoRes} from "@/types/match.ts";
-import {useAuthStore} from "@/stores/auth.ts";
+import type { LolMatchInfoRes } from "@/types/match.ts";
+import { useAuthStore } from "@/stores/auth.ts";
+import type {LolSummonerLeagueEntity} from "@/types/league.ts";
 import {useImageUrl} from "@/utils/imageUtil.ts";
-const { getPositionImage } = useImageUrl();
 
 const authStore = useAuthStore();
 
@@ -161,7 +166,7 @@ const props = defineProps<{
   ratingByChamp: ReviewRatingByChampDto[] | null
   ratingByPosition: ReviewRatingByPositionDto[] | null
   writtenReview: ReviewRequestDto | null
-  playTogetherMatch: LolMatchInfoRes | null;
+  playTogetherMatch: LolMatchInfoRes | null
 }>()
 
 defineEmits<{
@@ -171,11 +176,31 @@ defineEmits<{
   (e: 'openReviewModal', player: any): void
 }>()
 
+const { getTierImage } = useImageUrl();
+
 const isExpanded = ref(true)
+const soloRankInfo = ref<LolSummonerLeagueEntity>();
+const flexRankInfo = ref<LolSummonerLeagueEntity>();
 
 const toggleExpanded = () => {
   isExpanded.value = !isExpanded.value
 }
+
+const calculateWinRate = (wins: number, losses: number) => {
+  const total = wins + losses;
+  if (total === 0) return 0;
+  return Math.round((wins / total) * 100);
+}
+
+onMounted(() => {
+  if (props.profileData.leagueEntityList.length > 0) {
+    props.profileData.leagueEntityList.forEach(league => {
+      if (league.queueType === 'RANKED_SOLO_5x5') soloRankInfo.value = league;
+      if (league.queueType === 'RANKED_FLEX_SR') flexRankInfo.value = league;
+    })
+  }
+});
+
 </script>
 
 <style scoped>
@@ -185,6 +210,75 @@ const toggleExpanded = () => {
   padding: 20px;
 }
 
+.rank-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+  margin-top: 24px
+}
+
+.rank-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.rank-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rank-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rank-emblem {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.rank-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rank-type {
+  color: #9e9e9e;
+  font-size: 13px;
+}
+
+.rank-tier {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.rank-lp {
+  color: #2979FF;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.rank-record {
+  color: #e0e0e0;
+  font-size: 14px;
+  padding-left: 88px;
+}
+
+.win-rate {
+  color: #2979FF;
+  margin-left: 4px;
+}
+
+/* 기존 스타일 유지 */
 .main-profile {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -319,12 +413,9 @@ const toggleExpanded = () => {
 }
 
 .expanded-section {
-  /*margin-top: 20px;*/
   padding-top: 20px;
-  /*border-top: 1px solid rgba(255, 255, 255, 0.1);*/
 }
 
-/* 평가 통계 & 태그 섹션 */
 .stats-section, .tags-section {
   margin-bottom: 24px;
 }
@@ -336,173 +427,10 @@ const toggleExpanded = () => {
   margin-bottom: 16px;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 16px;
-  border-radius: 6px;
-  position: relative;
-}
-
-.stats-grid::after {
-  content: '';
-  position: absolute;
-  top: 16px; /* Match padding */
-  bottom: 16px;
-  left: 50%;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.stats-column {
-  padding: 0 20px;
-}
-
-.stats-column:first-child {
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.champion-stats, .position-stats {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 24px; /* Add horizontal padding for spacing */
-}
-
-.champion-item, .position-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  min-width: 48px;
-}
-
-.champion-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: #2979FF;
-}
-
-.position-icon {
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.champion-rating, .position-rating {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  margin-top: 4px;
-}
-
 .tags-slider {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 6px;
   padding: 16px;
-}
-
-.tags-wrapper {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-}
-
-.tags-wrapper::-webkit-scrollbar {
-  display: none;
-}
-
-.tag {
-  border-radius: 4px;
-  padding: 6px 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.tag-up {
-  background: rgba(41, 121, 255, 0.1);
-}
-
-.tag-down {
-  background: rgba(235, 87, 87, 0.1);
-}
-
-.tag-text {
-  font-size: 13px;
-}
-
-.tag-text-up {
-  color: #2979FF;
-}
-
-.tag-text-down {
-  color: #EB5757;
-}
-
-.tag-count {
-  color: #9e9e9e;
-  font-size: 12px;
-}
-
-.reviews-container {
-  position: relative;
-  margin-bottom: 2px;
-}
-
-.review-wrapper {
-  position: relative;
-  min-height: 80px;
-}
-
-.review-item {
-  position: absolute;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-  padding: 16px;
-}
-
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.review-content {
-  color: #e0e0e0;
-  font-size: 14px;
-  line-height: 1.5;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.5s ease;
-}
-
-.slide-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.slide-leave-to {
-  opacity: 0;
-  transform: translateY(-30px);
 }
 
 .no-review-message {
@@ -514,7 +442,6 @@ const toggleExpanded = () => {
   margin-top: 20px;
 }
 
-/* 토글 버튼 스타일 */
 .toggle-button {
   width: 100%;
   background: transparent;
@@ -543,7 +470,6 @@ const toggleExpanded = () => {
   transition: transform 0.3s ease;
 }
 
-/* 확장 영역 트랜지션 */
 .expand-enter-active,
 .expand-leave-active {
   transition: all 0.3s ease-out;
@@ -567,51 +493,12 @@ const toggleExpanded = () => {
 .written-review-text {
   display: flex;
   align-items: center;
-  gap: 8px; /* InfoIcon과 텍스트 사이의 간격 */
-  /*font-size: 14px;  !* 기존 사이즈와 맞춤 *!*/
+  gap: 8px;
 }
 
 .highlight-name {
-  color: #2979FF;  /* 블루 계열 색상 */
-  font-weight: 600;  /* 볼드체 */
-}
-
-@media (max-width: 768px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .stats-grid::after {
-    display: none;
-  }
-
-  .stats-column:first-child {
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 24px;
-  }
-
-  .champion-stats, .position-stats {
-    padding: 0 12px;
-  }
-
-  .champion-stats {
-    justify-content: space-between;
-  }
-
-  .main-profile {
-    grid-template-columns: auto 1fr;
-  }
-
-  .button-group {
-    grid-column: span 2;
-    margin-top: 16px;
-  }
-
-  .written-review-text {
-    font-size: 14px;
-  }
+  color: #2979FF;
+  font-weight: 600;
 }
 
 .written-review-section {
@@ -629,45 +516,6 @@ const toggleExpanded = () => {
   align-items: center;
 }
 
-.written-review-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.written-review-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: #2979FF;
-}
-
-.written-review-date {
-  font-size: 12px;
-  color: #9e9e9e;
-}
-
-.written-review-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.written-review-rating {
-  display: flex;
-  align-items: center;
-}
-
-.written-review-tags {
-  margin: 4px 0;
-}
-
-.written-review-comment {
-  font-size: 14px;
-  color: #e0e0e0;
-  line-height: 1.5;
-}
-
 .edit-button {
   top: 0;
   right: 0;
@@ -683,5 +531,30 @@ const toggleExpanded = () => {
 
 .edit-button:hover {
   background: rgba(41, 121, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .rank-section {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .rank-emblem {
+    width: 56px;
+    height: 56px;
+  }
+
+  .rank-record {
+    padding-left: 72px;
+  }
+
+  .main-profile {
+    grid-template-columns: auto 1fr;
+  }
+
+  .button-group {
+    grid-column: span 2;
+    margin-top: 16px;
+  }
 }
 </style>
