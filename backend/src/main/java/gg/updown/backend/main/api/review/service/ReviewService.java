@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.review.service;
 
+import gg.updown.backend.common.util.CalculateUtil;
 import gg.updown.backend.common.util.DateUtil;
 import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
 import gg.updown.backend.external.riot.enums.MatchGameMode;
@@ -132,13 +133,19 @@ public class ReviewService {
     public boolean deleteReview(long reviewSeq, long reviewerSiteCode) {
         if (reviewMapper.deleteReviewBySiteCode(reviewSeq, reviewerSiteCode) == 0) {
             throw new SiteCommonException(HttpStatus.BAD_REQUEST, SiteErrorDevMessage.NOT_REVIEWER.getMessage());
-        };
+        }
 
         return true;
     }
 
     public ReviewStatsDto getReviewStats(String targetPuuid) {
-        return reviewMapper.getReviewStatus(targetPuuid);
+        ReviewStatsDto reviewStatsDto = reviewMapper.getReviewStatus(targetPuuid);
+        if (reviewStatsDto == null) {
+            return null;
+        }
+
+        reviewStatsDto.setScore(CalculateUtil.calculateWilsonScore((int) reviewStatsDto.getUpCount(), (int) reviewStatsDto.getDownCount()));
+        return reviewStatsDto;
     }
 
     public ReviewStatsDto getReviewAvgRating(String targetPuuid) {

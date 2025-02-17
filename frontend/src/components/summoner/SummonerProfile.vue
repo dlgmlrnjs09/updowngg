@@ -26,7 +26,7 @@
               <div class="tooltip-arrow"></div>
             </div>
           </div>
-          <span class="score-value">203</span><span class="score-label">점</span>
+          <span class="score-value">{{ reviewStats?.score ?? 0 }}</span><span class="score-label">점</span>
         </div>
         <div class="rating-stats">
           <div class="rating-item">
