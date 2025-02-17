@@ -9,12 +9,12 @@
         <div class="summoner-name">{{ profileData.riotAccountInfoEntity.gameName }}</div>
         <div class="profile-stats">평가 {{ reviewStats?.totalReviewCnt ?? 0 }}회 · 최근 30일 {{ reviewStats?.last30DayReviewCnt ?? 0 }}회</div>
         <div class="score-section">
-          <span class="score-label">평가점수</span>
           <HelpTooltip
-            message="신뢰도 95%의 윌슨 스코어로 계산된 평가 점수입니다.
+              message="신뢰도 95%의 윌슨 스코어로 계산된 평가 점수입니다.
             긍정적인 평가와 부정적인 평가의 비율, 그리고 전체 평가 수를 고려하여
             더 신뢰할 수 있는 점수를 계산합니다."
           />
+          <span class="score-label">평가점수</span>
           <span class="score-value">{{ reviewStats?.score ?? 0 }}</span><span class="score-label">점</span>
         </div>
         <div class="rating-stats">

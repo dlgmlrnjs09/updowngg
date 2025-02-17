@@ -67,8 +67,12 @@
              :key="card.postDto.postId"
              class="bg-[#141414] rounded-xl p-3 sm:p-4 transition-all duration-200 border border-[#2979FF1A] flex flex-col h-full"
         >
+          <p class="text-white leading-relaxed line-clamp-3 whitespace-pre-wrap break-words bg-[#1A1A1A] p-3 rounded-lg mb-4 border-l-4 border-l-[#2979FF] min-h-24 flex content-center">
+            {{ card.content }}
+          </p>
+
           <!-- 포지션 & 게임 정보 -->
-          <div :class="['flex items-center sm:items-start gap-2 mb-4 bg-[#1A1A1A] rounded-lg', isMobile ? 'p-2' : 'p-2.5']">
+          <div :class="['flex items-center sm:items-start gap-2 mb-2 bg-[#1A1A1A] rounded-lg', isMobile ? 'p-2' : 'p-2.5']">
             <div class="grid grid-cols-4 gap-1.5 sm:gap-3 items-center sm:items-start flex-1">
               <div class="flex flex-col items-center">
                 <span class="text-[10px] text-gray-400 mb-0.5">{{ isMobile ? '주포지션' : '주 포지션' }}</span>
@@ -107,15 +111,13 @@
             </div>
           </div>
 
-          <!-- 내용 -->
-          <p class="text-white leading-relaxed line-clamp-3 whitespace-pre-wrap break-words bg-[#1A1A1A] p-4 rounded-lg mb-4"
-             :class="isMobile ? 'text-base' : 'text-lg font-pretendard'"
-          >
-            {{ card.content }}
-          </p>
-
           <!-- 소환사 프로필 섹션 -->
-          <div :class="['bg-[#1A1A1A] rounded-lg mt-auto', isMobile ? 'p-2.5' : 'p-3']">
+          <div
+              :class="[
+                  'bg-[#1A1A1A] rounded-lg rounded-b-none mt-auto', isMobile ? 'p-2.5' : 'p-3',
+              ]"
+              class="pb-0"
+          >
             <div class="flex gap-2 sm:gap-3">
               <img
                   :src="card.duoSummonerInfoDto?.summonerBasicInfoDto.profileIconUrl"
@@ -123,9 +125,9 @@
                   class="rounded-full w-12 h-12 sm:w-14 sm:h-14 object-cover"
               />
               <div class="flex-1">
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-1">
                   <div
-                      class="flex items-center gap-2 cursor-pointer group"
+                      class="flex items-center gap-1 cursor-pointer group"
                       @click.stop="goSelectedSummonerProfile(card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName, card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine)"
                   >
                     <span class="text-white text-sm font-medium group-hover:text-[#2979FF] group-hover:underline">
@@ -137,21 +139,21 @@
                   </div>
 
                   <!-- 평가 점수와 평가 지표 재배치 -->
-                  <div class="flex flex-col gap-2">
+                  <div class="flex flex-col gap-1">
                     <div class="flex items-center gap-1">
                       <span class="text-gray-400 text-xs">
-                        평가점수
                         <HelpTooltip
                             message="신뢰도 95%의 윌슨 스코어로 계산된 평가 점수입니다.
                             긍정적인 평가와 부정적인 평가의 비율, 그리고 전체 평가 수를 고려하여
                             더 신뢰할 수 있는 점수를 계산합니다."
                         />
+                        평가점수
                       </span>
                       <span class="text-[#2979FF] text-sm font-medium">
                         {{ card.duoSummonerInfoDto?.reviewStatsDto.score ?? 0 }}점
                       </span>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
                       <div class="flex items-center gap-1">
                         <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
                         <span class="text-[#4CAF50] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.upCount }}</span>
@@ -172,7 +174,7 @@
           </div>
 
           <!-- 챔피언 정보 -->
-          <div :class="['bg-[#1A1A1A] rounded-lg mt-3', isMobile ? 'p-2.5' : 'p-3']">
+          <div :class="['bg-[#1A1A1A] rounded-lg rounded-t-none', isMobile ? 'p-2.5' : 'p-3']">
             <div class="grid grid-cols-2 gap-2">
               <div
                   v-for="(champion, index) in card.duoSummonerInfoDto?.mostChampionDto.slice(0, 2)"
