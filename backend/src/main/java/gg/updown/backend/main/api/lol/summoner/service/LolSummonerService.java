@@ -9,12 +9,11 @@ import gg.updown.backend.external.riot.api.lol.league.service.LeagueApiService;
 import gg.updown.backend.external.riot.api.lol.summoner.model.SummonerDto;
 import gg.updown.backend.external.riot.api.lol.summoner.service.SummonerApiService;
 import gg.updown.backend.main.api.lol.summoner.mapper.LolSummonerMapper;
-import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerDto;
-import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerMostChampionDto;
-import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerProfileResDto;
+import gg.updown.backend.main.api.lol.summoner.model.dto.*;
 import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerEntity;
 import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerLeagueEntity;
 import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
+import gg.updown.backend.main.enums.SiteMatchGameMode;
 import gg.updown.backend.main.riot.account.mapper.RiotAccountMapper;
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +22,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -48,7 +50,7 @@ public class LolSummonerService {
         // 롤 소환사 정보 저장 및 조회
         LolSummonerDto summonerEntity = this.getAndConflictSummonerInfo(accountEntity.getPuuid());
         // 롤 소환사 랭크정보 저장 및 조회
-        List<LolSummonerLeagueEntity> summonerLeagueInfoEntity = this.getAndConflictSummonerLeagueInfo(summonerEntity.getSummonerId());
+        List<LolSummonerLeagueDto> summonerLeagueInfoEntity = this.getAndConflictSummonerLeagueInfo(summonerEntity.getSummonerId());
 
         resultDto.setRiotAccountInfoEntity(accountEntity);
         resultDto.setLolSummonerDto(summonerEntity);
@@ -65,7 +67,7 @@ public class LolSummonerService {
         // 롤 소환사 정보 저장 및 조회
         LolSummonerDto summonerEntity = this.getAndConflictSummonerInfo(accountEntity.getPuuid());
         // 롤 소환사 랭크정보 저장 및 조회
-        List<LolSummonerLeagueEntity> summonerLeagueInfoEntity = this.getAndConflictSummonerLeagueInfo(summonerEntity.getSummonerId());
+        List<LolSummonerLeagueDto> summonerLeagueInfoEntity = this.getAndConflictSummonerLeagueInfo(summonerEntity.getSummonerId());
 
         resultDto.setRiotAccountInfoEntity(accountEntity);
         resultDto.setLolSummonerDto(summonerEntity);
@@ -74,11 +76,36 @@ public class LolSummonerService {
         return resultDto;
     }
 
-    public void conflictSummonerInfo(String puuid, String gameName, String tagLine) {
-        // 라이엇 계정정보 저장 및 조회
-        this.getAndConflictAccountInfo(puuid, gameName, tagLine);
-        // 롤 소환사 정보 저장 및 조회
-        this.getAndConflictSummonerInfo(puuid);
+    public Map<Integer, LolSummonerLeagueReviewDto> getSummonerLeagueReviewInfo(String puuid) {
+        Map<Integer, LolSummonerLeagueReviewDto> resultMap = new HashMap<>();
+        List<Map<String, Object>> leagueReviewRatings = lolSummonerMapper.getLeagueReviewRatingByPuuid(puuid);
+        leagueReviewRatings.forEach(
+                m -> resultMap.put((Integer) m.get("queue_id"), LolSummonerLeagueReviewDto.builder()
+                                .upCount(((BigDecimal) m.get("up_count")).intValue())
+                                .downCount(((BigDecimal) m.get("down_count")).intValue())
+                        .build()));
+
+        return resultMap;
+    }
+
+    /**
+     * conflictSummonerInfo + getSummonerLeagueReviewInfo
+     * 라이엇 계정정보, 롤 소환사/랭크정보, 랭크별 평가정보
+     * @return
+     */
+    public LolSummonerProfileResDto getSummonerProfile(String gameName, String tagLine) {
+        LolSummonerProfileResDto summonerInfo = this.conflictSummonerInfo(gameName, tagLine);
+        Map<Integer, LolSummonerLeagueReviewDto> reviewMap = this.getSummonerLeagueReviewInfo(summonerInfo.getRiotAccountInfoEntity().getPuuid());
+
+        summonerInfo.getLeagueEntityList().forEach(l -> {
+            if (l.getQueueType().equals(SiteMatchGameMode.SOLO_RANK.getLeagueName()) && reviewMap.containsKey(SiteMatchGameMode.SOLO_RANK.getQueueId())) {
+                l.setReviewDto(reviewMap.get(SiteMatchGameMode.SOLO_RANK.getQueueId()));
+            } else if (l.getQueueType().equals(SiteMatchGameMode.FLEX_RANK.getLeagueName()) && reviewMap.containsKey(SiteMatchGameMode.FLEX_RANK.getQueueId())) {
+                l.setReviewDto(reviewMap.get(SiteMatchGameMode.FLEX_RANK.getQueueId()));
+            }
+        });
+
+        return summonerInfo;
     }
 
     /**
@@ -173,12 +200,11 @@ public class LolSummonerService {
     /**
      * 롤 소환사 랭크정보 DB저장 및 리턴
      */
-    public List<LolSummonerLeagueEntity> getAndConflictSummonerLeagueInfo(String summonerId) {
-        List<LolSummonerLeagueEntity> resultList = new ArrayList<>();
-        List<LolSummonerLeagueEntity> entityList = new ArrayList<>();
+    public List<LolSummonerLeagueDto> getAndConflictSummonerLeagueInfo(String summonerId) {
+        List<LolSummonerLeagueDto> resultList = new ArrayList<>();
         List<LeagueInfoBySummonerDto> leagueInfoList = leagueApiService.getSummonerLeagueInfoBySummonerId(summonerId);
         if (leagueInfoList.isEmpty()) {
-            return entityList;
+            return resultList;
         }
 
         for (LeagueInfoBySummonerDto dto : leagueInfoList) {
@@ -186,7 +212,9 @@ public class LolSummonerService {
             BeanUtils.copyProperties(dto, paramEntity);
 
             lolSummonerMapper.conflictSummonerLeagueInfo(paramEntity);
-            resultList.add(paramEntity);
+            LolSummonerLeagueDto leagueDto = new LolSummonerLeagueDto();
+            BeanUtils.copyProperties(dto, leagueDto);
+            resultList.add(leagueDto);
         }
 
         return resultList;

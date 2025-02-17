@@ -232,4 +232,34 @@
             ORDER BY
             mpc.puuid, mpc.play_count DESC
     </select>
+
+    <select id="getLeagueReviewRatingByPuuid" parameterType="String" resultType="map">
+        WITH ranked_reviews AS (
+            SELECT
+                mp.puuid,
+                m.queue_id,
+                sr.is_up,
+                COUNT(*) as review_count
+            FROM lol_match_participant mp
+                     JOIN lol_match m ON mp.match_id = m.match_id
+                     JOIN site_summoner_review sr ON mp.match_id = sr.match_id
+                AND mp.puuid = sr.target_puuid
+            WHERE
+              -- 420: 솔로랭크, 440: 자유랭크
+                m.queue_id IN (420, 440)
+              AND sr.del_dt IS NULL  -- 삭제되지 않은 리뷰만
+              and mp.puuid = #{puuid}
+            GROUP BY
+                mp.puuid,
+                m.queue_id,
+                sr.is_up
+        )
+        SELECT
+            queue_id,
+            SUM(CASE WHEN is_up = true THEN review_count ELSE 0 END) as up_count,
+            SUM(CASE WHEN is_up = false THEN review_count ELSE 0 END) as down_count
+        FROM ranked_reviews
+        GROUP BY puuid, queue_id
+        ORDER BY puuid, queue_id;
+    </select>
 </mapper>

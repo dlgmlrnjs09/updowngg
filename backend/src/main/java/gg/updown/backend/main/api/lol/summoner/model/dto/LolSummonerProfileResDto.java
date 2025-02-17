@@ -1,6 +1,5 @@
 package gg.updown.backend.main.api.lol.summoner.model.dto;
 
-import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerLeagueEntity;
 import gg.updown.backend.main.riot.account.model.RiotAccountInfoEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -18,5 +17,5 @@ import java.util.List;
 public class LolSummonerProfileResDto {
     private LolSummonerDto lolSummonerDto;
     private RiotAccountInfoEntity riotAccountInfoEntity;
-    private List<LolSummonerLeagueEntity> leagueEntityList;
+    private List<LolSummonerLeagueDto> leagueEntityList;
 }

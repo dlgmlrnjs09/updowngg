@@ -15,6 +15,7 @@ import gg.updown.backend.main.api.lol.match.model.dto.*;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEntity;
 import gg.updown.backend.main.api.lol.summoner.model.LolMatchModelConverter;
+import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerLeagueDto;
 import gg.updown.backend.main.api.lol.summoner.model.dto.LolSummonerProfileResDto;
 import gg.updown.backend.main.api.lol.summoner.model.entity.LolSummonerLeagueEntity;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
@@ -359,7 +360,7 @@ public class LolMatchService {
 
             if (currentGameMode.isRankGame()) {
                 // 현재 플레이중인 게임이 랭크게임이라면 해당 랭크모드의 티어 표시
-                for (LolSummonerLeagueEntity leagueEntity : summonerProfile.getLeagueEntityList()) {
+                for (LolSummonerLeagueDto leagueEntity : summonerProfile.getLeagueEntityList()) {
                     if (leagueEntity.getQueueType().equals(currentGameMode.getLeagueName())) {
                         tier = SiteLeagueTier.findByTierCode(leagueEntity.getTier());
                         rank = leagueEntity.getRank();
@@ -373,7 +374,7 @@ public class LolMatchService {
                     SiteLeagueTier flexRankTier = null;
                     String soloRank = null;
                     String flexRank = null;
-                    for (LolSummonerLeagueEntity leagueEntity : summonerProfile.getLeagueEntityList()) {
+                    for (LolSummonerLeagueDto leagueEntity : summonerProfile.getLeagueEntityList()) {
                         if (leagueEntity.getQueueType().equals(SiteMatchGameMode.SOLO_RANK.getLeagueName())) {
                             soloRankTier = SiteLeagueTier.findByTierCode(leagueEntity.getTier());
                             soloRank = leagueEntity.getRank();

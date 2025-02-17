@@ -72,3 +72,26 @@ export interface LolSummonerLeagueEntity {
     /** 수정일 */
     updDt: string;
 }
+
+export interface LolSummonerLeagueDto {
+    leagueId: string;
+    summonerId: string;
+    queueType: string;
+    tier: string;
+    rank: string;
+    leaguePoints: number;
+    wins: number;
+    losses: number;
+    hotStreak: boolean;
+    veteran: boolean;
+    freshBlood: boolean;
+    inactive: boolean;
+    reviewDto: LolSummonerLeagueReviewDto;
+    regDt: string;
+    updDt: string;
+}
+
+interface LolSummonerLeagueReviewDto {
+    upCount: number;
+    downCount: number;
+}

@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface LolSummonerMapper {
@@ -21,4 +22,5 @@ public interface LolSummonerMapper {
     void conflictSummonerLeagueInfo(LolSummonerLeagueEntity entity);
     SummonerBasicInfoDto getSummonerBasicInfo(long siteCode);
     List<LolSummonerMostChampionDto> getSummonerMostChampions(@Param("puuid")String puuid, @Param("limit")int limit);
+    List<Map<String, Object>> getLeagueReviewRatingByPuuid(String puuid);
 }
