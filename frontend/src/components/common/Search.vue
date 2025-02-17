@@ -14,7 +14,7 @@
           @blur="handleBlur"
           ref="searchInputRef"
       >
-      <div class="search-icon" v-throttle-click:1000="handleSearch">
+      <div class="search-icon" @click="throttledHandleSearch">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -105,6 +105,7 @@ import { searchApi } from "@/api/search.ts"
 import { ThumbsUp, ThumbsDown, XCircle } from "lucide-vue-next"
 import { cookieUtils, type RecentSummoner } from '@/utils/cookieUtil.ts'
 import { useToast } from "vue-toastification"
+import { throttle } from 'lodash'
 
 const router = useRouter()
 const toast = useToast()
@@ -222,6 +223,8 @@ const handleSearch = async () => {
   }
 }
 
+const throttledHandleSearch = throttle(handleSearch, 1000)
+
 const handleClickOutside = (event: MouseEvent) => {
   if (
       isComponentMounted.value &&
@@ -235,9 +238,12 @@ const handleClickOutside = (event: MouseEvent) => {
 };
 
 const showSearchList = () => {
+  if (!isComponentMounted.value) return;
+
   showList.value = true;
-  // 입력창에 포커스 주기
-  searchInputRef.value?.focus();
+  if (searchInputRef.value) {
+    searchInputRef.value.focus();
+  }
   if (searchQuery.value === '') {
     recentSummoners.value = cookieUtils.getRecentSummoners();
   }
@@ -271,15 +277,23 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  isComponentMounted.value = false
-  debouncedFetch.cancel()
-  document.removeEventListener('click', handleClickOutside)
-  suggestions.value = []
-  searchContainerRef.value = null
-  searchQuery.value = ''
-  selectedIndex.value = -1
-  isLoading.value = false
-  showList.value = false
+  // 먼저 타이머 정리
+  if (blurTimeout) {
+    window.clearTimeout(blurTimeout);
+    blurTimeout = null;
+  }
+
+  isComponentMounted.value = false;
+  debouncedFetch.cancel();
+  document.removeEventListener('click', handleClickOutside);
+
+  // 상태 초기화
+  suggestions.value = [];
+  searchContainerRef.value = null;
+  searchQuery.value = '';
+  selectedIndex.value = -1;
+  isLoading.value = false;
+  showList.value = false;
 })
 </script>
 
