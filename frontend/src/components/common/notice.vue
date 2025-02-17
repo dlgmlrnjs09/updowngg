@@ -1,6 +1,5 @@
-// notice.vue
 <template>
-  <div v-if="notices.length > 0" class="site-notice-wrapper">
+  <div v-if="notices.length > 0 && !isHidden" class="site-notice-wrapper">
     <div class="site-notice" :style="{ backgroundColor: currentNotice.backgroundColor }">
       <div class="notice-content">
         <div class="carousel-container">
@@ -20,25 +19,35 @@
           </TransitionGroup>
         </div>
 
-        <!-- 여러 공지사항이 있을 경우에만 네비게이션 표시 -->
-        <div v-if="notices.length > 1" class="carousel-nav">
-          <button @click="prevNotice" class="nav-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-          </button>
-          <div class="carousel-indicators">
-            <button
-                v-for="(_, index) in notices"
-                :key="index"
-                @click="goToNotice(index)"
-                class="indicator"
-                :class="{ active: currentIndex === index }"
-            ></button>
+        <div class="notice-controls">
+          <!-- 여러 공지사항이 있을 경우에만 네비게이션 표시 -->
+          <div v-if="notices.length > 1" class="carousel-nav">
+            <button @click="prevNotice" class="nav-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <div class="carousel-indicators">
+              <button
+                  v-for="(_, index) in notices"
+                  :key="index"
+                  @click="goToNotice(index)"
+                  class="indicator"
+                  :class="{ active: currentIndex === index }"
+              ></button>
+            </div>
+            <button @click="nextNotice" class="nav-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
           </div>
-          <button @click="nextNotice" class="nav-button">
+
+          <!-- X 버튼 (오늘 하루 보지 않기) -->
+          <button @click="hideNoticeForToday" class="close-button" title="오늘 하루 보지 않기">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
         </div>
@@ -60,7 +69,9 @@ interface Notice {
   delDt: string | null;
 }
 
-// 개발용 목업 데이터
+// 쿠키 키
+const NOTICE_HIDDEN_COOKIE = 'notice_hidden_until';
+
 const mockNotices: Notice[] = [
   {
     seq: 1,
@@ -90,9 +101,46 @@ const mockNotices: Notice[] = [
 
 const notices = ref<Notice[]>(mockNotices);
 const currentIndex = ref(0);
+const isHidden = ref(false);
 let autoPlayInterval: number | null = null;
 
 const currentNotice = computed(() => notices.value[currentIndex.value]);
+
+// 쿠키 설정 함수
+const setCookie = (name: string, value: string, hours: number) => {
+  const date = new Date();
+  date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
+  const expires = `expires=${date.toUTCString()}`;
+  document.cookie = `${name}=${value};${expires};path=/`;
+};
+
+// 쿠키 가져오기 함수
+const getCookie = (name: string) => {
+  const cookieName = `${name}=`;
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    cookie = cookie.trim();
+    if (cookie.indexOf(cookieName) === 0) {
+      return cookie.substring(cookieName.length, cookie.length);
+    }
+  }
+  return null;
+};
+
+const hideNoticeForToday = () => {
+  const tomorrow = new Date();
+  tomorrow.setHours(24, 0, 0, 0); // 다음날 자정으로 설정
+  const now = new Date();
+  const hoursUntilTomorrow = (tomorrow.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+  setCookie(NOTICE_HIDDEN_COOKIE, 'true', hoursUntilTomorrow);
+  isHidden.value = true;
+};
+
+const checkHiddenState = () => {
+  const hiddenUntil = getCookie(NOTICE_HIDDEN_COOKIE);
+  isHidden.value = hiddenUntil !== null;
+};
 
 const fetchNotices = async () => {
   try {
@@ -127,7 +175,7 @@ const startAutoPlay = () => {
   if (notices.value.length > 1) {
     autoPlayInterval = window.setInterval(() => {
       nextNotice();
-    }, 3000); // 3초마다 다음 공지로 전환
+    }, 3000);
   }
 };
 
@@ -139,12 +187,14 @@ const resetAutoPlay = () => {
 };
 
 onMounted(() => {
-  // 목업 데이터를 사용할 때는 바로 startAutoPlay 실행
-  if (notices.value.length > 0) {
-    startAutoPlay();
-  } else {
-    // API 연동 시에는 fetchNotices 사용
-    fetchNotices();
+  checkHiddenState();
+
+  if (!isHidden.value) {
+    if (notices.value.length > 0) {
+      startAutoPlay();
+    } else {
+      fetchNotices();
+    }
   }
 });
 
@@ -157,7 +207,7 @@ onUnmounted(() => {
 
 <style scoped>
 .site-notice-wrapper {
-  justify-items: center
+  justify-items: center;
 }
 
 .site-notice {
@@ -180,16 +230,22 @@ onUnmounted(() => {
   gap: 16px;
 }
 
+.notice-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .carousel-container {
   flex: 1;
   position: relative;
   overflow: hidden;
-  min-height: 22px; /* 공지사항의 최소 높이 설정 */
+  min-height: 22px;
 }
 
 .carousel-content {
   position: relative;
-  height: 22px; /* carousel-container와 동일한 높이 */
+  height: 22px;
 }
 
 .carousel-item {
@@ -245,6 +301,22 @@ onUnmounted(() => {
   transform: scale(1.2);
 }
 
+.close-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: white;
+}
+
 /* Carousel Transitions */
 .carousel-enter-active,
 .carousel-leave-active {
@@ -269,6 +341,11 @@ onUnmounted(() => {
   .nav-button svg {
     width: 14px;
     height: 14px;
+  }
+
+  .hide-today-button {
+    font-size: 11px;
+    padding: 3px 8px;
   }
 }
 </style>
