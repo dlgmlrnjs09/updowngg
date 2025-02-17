@@ -1,45 +1,48 @@
 <template>
-  <header class="header">
-    <div class="header-content">
-      <RouterLink to="/" class="logo">
-        <div class="logo-icon"><img src="/favicon.ico" alt="favicon"></div>
-        <span>updownGG</span>
-      </RouterLink>
-      <nav class="nav">
-        <RouterLink to="/">홈</RouterLink>
-        <RouterLink to="/ranking">랭킹</RouterLink>
-        <RouterLink to="/stats">통계</RouterLink>
-        <RouterLink to="/community/duo">커뮤니티</RouterLink>
-      </nav>
+  <div class="header-wrapper">
+    <Notice />
+    <header class="header">
+      <div class="header-content">
+        <RouterLink to="/" class="logo">
+          <div class="logo-icon"><img src="/favicon.ico" alt="favicon"></div>
+          <span>updownGG</span>
+        </RouterLink>
+        <nav class="nav">
+          <RouterLink to="/">홈</RouterLink>
+          <RouterLink to="/ranking">랭킹</RouterLink>
+          <RouterLink to="/stats">통계</RouterLink>
+          <RouterLink to="/community/duo">커뮤니티</RouterLink>
+        </nav>
 
-      <div class="user-actions" v-if="authStore.isAuthenticated">
-        <Notification/>
-        <div class="profile-dropdown" ref="profileDropdown">
-          <button class="profile-btn" @click="toggleDropdown">
-            <div class="profile-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+        <div class="user-actions" v-if="authStore.isAuthenticated">
+          <Notification/>
+          <div class="profile-dropdown" ref="profileDropdown">
+            <button class="profile-btn" @click="toggleDropdown">
+              <div class="profile-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+            </button>
+
+            <div v-if="isDropdownOpen" class="dropdown-menu">
+              <button class="dropdown-item" @click="handleProfile">프로필</button>
+              <button class="dropdown-item" @click="navigateToAccountSettings">계정 설정</button>
+              <button class="dropdown-item" @click="navigateToReviewHistory">평가 내역</button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item logout" @click="handleLogout">로그아웃</button>
             </div>
-          </button>
-
-          <div v-if="isDropdownOpen" class="dropdown-menu">
-            <button class="dropdown-item" @click="handleProfile">프로필</button>
-            <button class="dropdown-item" @click="navigateToAccountSettings">계정 설정</button>
-            <button class="dropdown-item" @click="navigateToReviewHistory">평가 내역</button>
-            <div class="dropdown-divider"></div>
-            <button class="dropdown-item logout" @click="handleLogout">로그아웃</button>
+          </div>
+        </div>
+        <div class="user-actions" v-else>
+          <div class="login-wrapper">
+            <router-link to="/login" class="login-btn">로그인</router-link>
           </div>
         </div>
       </div>
-      <div class="user-actions" v-else>
-        <div class="login-wrapper">
-          <router-link to="/login" class="login-btn">로그인</router-link>
-        </div>
-      </div>
-    </div>
-  </header>
+    </header>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -47,11 +50,13 @@ import {RouterLink, useRouter} from 'vue-router';
 import {useAuthStore} from "@/stores/auth.ts";
 import {onMounted, onUnmounted, ref, watch} from "vue";
 import Notification from "@/components/common/Notification.vue";
+import { useDropdownStore } from '@/stores/dropdown'
+import Notice from "@/components/common/notice.vue";
+
 const authStore = useAuthStore();
 const router = useRouter();
 const isDropdownOpen = ref(false);
 const profileDropdown = ref<HTMLElement | null>(null);
-import { useDropdownStore } from '@/stores/dropdown'
 
 const dropdownStore = useDropdownStore()
 
@@ -113,6 +118,13 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.header-wrapper {
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
 .header {
   top: 0;
   left: 0;
