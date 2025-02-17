@@ -20,6 +20,8 @@ export const formatTimeAgo = (dateString: string) => {
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
+    const months = Math.floor(days / 30);
+    const years = Math.floor(months / 12);
 
     if (minutes < 60) {
         return `${minutes}분 전`;
@@ -27,8 +29,11 @@ export const formatTimeAgo = (dateString: string) => {
         return `${hours}시간 전`;
     } else if (days < 30) {
         return `${days}일 전`;
+    } else if (months < 12) {
+        return `${months}달 전`;
+    } else {
+        return `${years}년 전`;
     }
-    return date.toLocaleDateString();
 }
 
 export const createInitialPaging = <T>(): PagingDTO<T> => ({

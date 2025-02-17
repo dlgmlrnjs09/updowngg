@@ -35,7 +35,7 @@
             </div>
             <div class="text-right">
               <div class="text-xs">{{ match.matchInfo.gameModeName }}</div>
-              <div class="text-xs text-gray-400">{{ formatDate(match.matchInfo.gameStartDt) }}</div>
+              <div class="text-xs text-gray-400">{{ formatTimeAgo(match.matchInfo.gameStartDt) }}</div>
               <div class="text-xs" :class="isWin ? 'text-blue-400' : 'text-red-400'">
                 {{ isWin ? '승리' : '패배' }} · {{ formatDuration(match.matchInfo.gameDuration) }}
               </div>
@@ -95,7 +95,7 @@
           <!-- 기존 데스크탑 레이아웃 코드 유지 -->
           <div class="game-info-section w-36 px-4 flex flex-col">
             <div class="text-sm font-medium">{{ match.matchInfo.gameModeName }}</div>
-            <div class="text-xs text-gray-400">{{ formatDate(match.matchInfo.gameStartDt) }}</div>
+            <div class="text-xs text-gray-400">{{ formatTimeAgo(match.matchInfo.gameStartDt) }}</div>
             <div class="divider my-2 border-t border-gray-700 w-[60%]"></div>
             <div class="text-xs" :class="isWin ? 'text-blue-400' : 'text-red-400'">
               {{ isWin ? '승리' : '패배' }}
@@ -291,7 +291,7 @@ import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match';
 import type { LolSummonerProfileResDto } from '@/types/summoner';
 import { ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, PenLine, FileEdit, PencilIcon } from 'lucide-vue-next';
 import MatchTeam from './MatchTeam.vue';
-import {goSelectedSummonerProfile} from "@/utils/common.ts";
+import {formatTimeAgo, goSelectedSummonerProfile} from "@/utils/common.ts";
 import TagList from "@/components/common/TagList.vue";
 import type {ReviewByMatchSummaryDto} from "@/types/review.ts";
 import {useAuthStore} from "@/stores/auth.ts";
@@ -337,9 +337,9 @@ const calculateKDA = (player: LolMatchParticipant) => {
       : ((player.kills + player.assists) / player.deaths).toFixed(2);
 };
 
-const formatDate = (date: string) => {
+/*const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('ko-KR');
-};
+};*/
 
 const formatDuration = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
