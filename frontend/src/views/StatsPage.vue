@@ -380,7 +380,7 @@ onUnmounted(() => {
   }
 
   .mobile-header-champion {
-    @apply w-24 text-left;
+    @apply w-36 text-left;
   }
 
   .mobile-header-review-count {
