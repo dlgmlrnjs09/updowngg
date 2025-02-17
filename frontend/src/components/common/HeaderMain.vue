@@ -51,7 +51,7 @@ import {useAuthStore} from "@/stores/auth.ts";
 import {onMounted, onUnmounted, ref, watch} from "vue";
 import Notification from "@/components/common/Notification.vue";
 import { useDropdownStore } from '@/stores/dropdown'
-import Notice from "@/components/common/notice.vue";
+import Notice from "@/components/common/Notice.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();

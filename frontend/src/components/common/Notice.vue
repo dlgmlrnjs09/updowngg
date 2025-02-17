@@ -57,52 +57,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import axios from 'axios';
-
-interface Notice {
-  seq: number;
-  content: string;
-  backgroundColor: string;
-  isDisplay: boolean;
-  regDt: string;
-  delDt: string | null;
-}
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useNoticeStore } from '@/stores/notice'
+import type { NoticeResDto } from "@/types/notice.ts";
 
 // 쿠키 키
 const NOTICE_HIDDEN_COOKIE = 'notice_hidden_until';
+const REFRESH_INTERVAL = 10 * 60 * 1000; // 10분
 
-const mockNotices: Notice[] = [
-  {
-    seq: 1,
-    content: "🎮 신규 기능 업데이트! 전적 검색이 더욱 빨라졌습니다.",
-    backgroundColor: "rgb(103 114 152 / 30%)",
-    isDisplay: true,
-    regDt: "2024-02-17T10:00:00",
-    delDt: null
-  },
-  {
-    seq: 2,
-    content: "⚡ 서버 점검 안내: 2월 18일 오전 4시 ~ 6시",
-    backgroundColor: "#FF5722",
-    isDisplay: true,
-    regDt: "2024-02-17T11:00:00",
-    delDt: null
-  },
-  {
-    seq: 3,
-    content: "🎁 설날 이벤트 진행중! 친구 초대하고 특별 보상 받으세요",
-    backgroundColor: "#4CAF50",
-    isDisplay: true,
-    regDt: "2024-02-17T12:00:00",
-    delDt: null
-  }
-];
-
-const notices = ref<Notice[]>(mockNotices);
+const noticeStore = useNoticeStore();
+const notices = ref<NoticeResDto[]>([]);
 const currentIndex = ref(0);
 const isHidden = ref(false);
 let autoPlayInterval: number | null = null;
+let refreshInterval: number | null = null;
 
 const currentNotice = computed(() => notices.value[currentIndex.value]);
 
@@ -142,18 +110,6 @@ const checkHiddenState = () => {
   isHidden.value = hiddenUntil !== null;
 };
 
-const fetchNotices = async () => {
-  try {
-    const response = await axios.get('/api/notices/current');
-    notices.value = response.data.filter((notice: Notice) => notice.isDisplay);
-    if (notices.value.length > 0) {
-      startAutoPlay();
-    }
-  } catch (error) {
-    console.error('Failed to fetch notices:', error);
-  }
-};
-
 const nextNotice = () => {
   currentIndex.value = (currentIndex.value + 1) % notices.value.length;
   resetAutoPlay();
@@ -186,21 +142,35 @@ const resetAutoPlay = () => {
   }
 };
 
-onMounted(() => {
+const startPeriodicRefresh = () => {
+  refreshInterval = window.setInterval(async () => {
+    notices.value = await noticeStore.getNotices();
+  }, REFRESH_INTERVAL);
+};
+
+// store의 notices가 변경될 때마다 실행
+watch(() => noticeStore.notices, (newNotices) => {
+  notices.value = newNotices;
+  if (newNotices.length > 0) {
+    startAutoPlay();
+  }
+});
+
+onMounted(async () => {
   checkHiddenState();
 
   if (!isHidden.value) {
-    if (notices.value.length > 0) {
-      startAutoPlay();
-    } else {
-      fetchNotices();
-    }
+    notices.value = await noticeStore.getNotices();
+    startPeriodicRefresh();
   }
 });
 
 onUnmounted(() => {
   if (autoPlayInterval) {
     clearInterval(autoPlayInterval);
+  }
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
   }
 });
 </script>

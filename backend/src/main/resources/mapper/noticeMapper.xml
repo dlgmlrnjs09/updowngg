@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.notice.mapper.NoticeMapper">
+    <select id="getDisplayNoticeList" resultType="NoticeEntity">
+        SELECT
+            seq,
+            background_color,
+            content,
+            reg_dt
+        FROM
+            site_notice
+        WHERE
+            is_display = true
+            AND del_dt IS NULL
+        ORDER BY seq DESC;
+    </select>
+</mapper>
