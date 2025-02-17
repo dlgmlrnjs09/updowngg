@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#0A0A0A] p-4 sm:p-6">
-    <div class="max-w-7xl mx-auto mb-8">
+    <div class="max-w-6xl mx-auto mb-8">
       <!-- 필터 영역 -->
       <div class="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center mb-8 sm:mb-14">
         <div class="grid grid-cols-2 gap-2 sm:bg-[#141414] sm:p-3 sm:rounded-xl sm:flex sm:gap-3 sm:flex-1 sm:mr-4">
@@ -57,19 +57,18 @@
 
       <!-- 듀오 카드 그리드 -->
       <div
-          class="grid grid-cols-1  gap-4 sm:gap-8"
+          class="grid grid-cols-1 gap-4 sm:gap-6"
           :class="{
             'md:grid-cols-2 lg:grid-cols-3': !isMobile,
             'md:grid-cols-2': isMobile
           }"
       >
-        <div
-            v-for="card in postCards"
-            :key="card.postDto.postId"
-            class="bg-[#141414] rounded-xl p-3 sm:p-4 transition-all duration-200 border border-[#2979FF1A] flex flex-col h-full sm:h-[360px]"
+        <div v-for="card in postCards"
+             :key="card.postDto.postId"
+             class="bg-[#141414] rounded-xl p-3 sm:p-4 transition-all duration-200 border border-[#2979FF1A] flex flex-col h-full"
         >
           <!-- 포지션 & 게임 정보 -->
-          <div :class="['flex items-center sm:items-start gap-2 mb-2 bg-[#1A1A1A] rounded-lg', isMobile ? 'p-2' : 'p-2.5']">
+          <div :class="['flex items-center sm:items-start gap-2 mb-4 bg-[#1A1A1A] rounded-lg', isMobile ? 'p-2' : 'p-2.5']">
             <div class="grid grid-cols-4 gap-1.5 sm:gap-3 items-center sm:items-start flex-1">
               <div class="flex flex-col items-center">
                 <span class="text-[10px] text-gray-400 mb-0.5">{{ isMobile ? '주포지션' : '주 포지션' }}</span>
@@ -109,62 +108,63 @@
           </div>
 
           <!-- 내용 -->
-          <p class="text-white leading-relaxed line-clamp-3 flex-grow whitespace-pre-wrap break-words"
-             :class="isMobile ? 'text-sm mb-4' : 'text-base mb-3 mt-3 font-pretendard'"
+          <p class="text-white leading-relaxed line-clamp-3 whitespace-pre-wrap break-words bg-[#1A1A1A] p-4 rounded-lg mb-4"
+             :class="isMobile ? 'text-base' : 'text-lg font-pretendard'"
           >
             {{ card.content }}
           </p>
 
-          <div class="sm:mt-auto"></div>
-
           <!-- 소환사 프로필 섹션 -->
-          <div :class="['bg-[#1A1A1A] rounded-lg', isMobile ? 'p-2.5' : 'p-3 rounded-b-none']">
+          <div :class="['bg-[#1A1A1A] rounded-lg mt-auto', isMobile ? 'p-2.5' : 'p-3']">
             <div class="flex gap-2 sm:gap-3">
               <img
                   :src="card.duoSummonerInfoDto?.summonerBasicInfoDto.profileIconUrl"
                   alt="Game Profile"
-                  class="rounded-full w-12 h-12 sm:w-[4.6rem] sm:h-[4.6rem] object-cover"
+                  class="rounded-full w-12 h-12 sm:w-14 sm:h-14 object-cover"
               />
               <div class="flex-1">
-                <div class="flex justify-between">
-                  <div :class="['flex flex-col', isMobile ? 'gap-1.5' : 'justify-between py-1 h-[4.6rem]']">
-                    <div class="flex flex-col gap-1">
-                      <div
-                          class="flex items-center gap-2 cursor-pointer group"
-                          @click.stop="goSelectedSummonerProfile(card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName, card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine)"
-                      >
-                        <span class="text-white text-sm font-medium group-hover:text-[#2979FF] group-hover:underline">
-                          {{ card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName }}
-                        </span>
-                        <span class="text-gray-400 text-xs">
-                          #{{ card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine }}
-                        </span>
-                      </div>
-                      <div class="flex items-center gap-3">
-                        <div class="flex items-center gap-1">
-                          <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
-                          <span class="text-[#4CAF50] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.upCount }}</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                          <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
-                          <span class="text-[#FF5252] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.downCount }}</span>
-                        </div>
-                      </div>
+                <div class="flex flex-col gap-2">
+                  <div
+                      class="flex items-center gap-2 cursor-pointer group"
+                      @click.stop="goSelectedSummonerProfile(card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName, card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine)"
+                  >
+                    <span class="text-white text-sm font-medium group-hover:text-[#2979FF] group-hover:underline">
+                      {{ card.duoSummonerInfoDto?.summonerBasicInfoDto.gameName }}
+                    </span>
+                              <span class="text-gray-400 text-xs">
+                      #{{ card.duoSummonerInfoDto?.summonerBasicInfoDto.tagLine }}
+                    </span>
+                  </div>
+
+                  <!-- 평가 점수와 평가 지표 재배치 -->
+                  <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-1">
+                      <span class="text-gray-400 text-xs">
+                        평가점수
+                        <HelpTooltip
+                            message="신뢰도 95%의 윌슨 스코어로 계산된 평가 점수입니다.
+                            긍정적인 평가와 부정적인 평가의 비율, 그리고 전체 평가 수를 고려하여
+                            더 신뢰할 수 있는 점수를 계산합니다."
+                        />
+                      </span>
+                      <span class="text-[#2979FF] text-sm font-medium">
+                        {{ card.duoSummonerInfoDto?.reviewStatsDto.score ?? 0 }}점
+                      </span>
                     </div>
-                    <div class="flex gap-1.5 flex-wrap mt-0.5 sm:mt-0">
-                      <tag-list :tags="card.duoSummonerInfoDto?.frequentTagDtoList" size="xSmall" :is-show-count="false"/>
+                    <div class="flex items-center gap-3">
+                      <div class="flex items-center gap-1">
+                        <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
+                        <span class="text-[#4CAF50] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.upCount }}</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
+                        <span class="text-[#FF5252] text-xs">{{ card.duoSummonerInfoDto?.reviewStatsDto.downCount }}</span>
+                      </div>
                     </div>
                   </div>
-                  <div :class="[isMobile ? 'hidden' : 'flex flex-col gap-1 ml-2 justify-center']">
-<!--                    <button class="bg-[#5865F2] hover:bg-[#3d61df] text-white text-xs px-3 py-1 rounded-lg transition-colors flex items-center justify-center">
-                      <img class="w-5 h-5" src="@/assets/icon/discord_logo.svg" alt="discord"/>
-                    </button>
-                    <button class="bg-[#1F1F1F] text-white text-xs px-3 py-1 rounded-lg hover:bg-[#2A2A2A] transition-colors border-[1.5px] border-[#ababab]">
-                      <svg class="w-[18px] h-[18px] text-[#888]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                      </svg>
-                    </button>-->
+
+                  <div class="flex gap-1.5 flex-wrap mt-1">
+                    <tag-list :tags="card.duoSummonerInfoDto?.frequentTagDtoList" size="xSmall" :is-show-count="false"/>
                   </div>
                 </div>
               </div>
@@ -172,10 +172,10 @@
           </div>
 
           <!-- 챔피언 정보 -->
-          <div :class="['bg-[#1A1A1A] rounded-lg mt-2', isMobile ? 'p-2.5' : 'rounded-t-none px-3 py-2']">
-            <div class="grid grid-cols-2 lg:grid-cols-3 gap-2">
+          <div :class="['bg-[#1A1A1A] rounded-lg mt-3', isMobile ? 'p-2.5' : 'p-3']">
+            <div class="grid grid-cols-2 gap-2">
               <div
-                  v-for="(champion, index) in card.duoSummonerInfoDto?.mostChampionDto.slice(0, isDesktop ? 3 : 2)"
+                  v-for="(champion, index) in card.duoSummonerInfoDto?.mostChampionDto.slice(0, 2)"
                   :key="index"
                   class="bg-[#141414] rounded-lg p-2 transition-colors duration-200"
               >
@@ -233,6 +233,7 @@ import TagList from "@/components/common/TagList.vue"
 import { useToast } from "vue-toastification"
 import { goSelectedSummonerProfile } from "@/utils/common.ts"
 import {useImageUrl} from "@/utils/imageUtil.ts";
+import HelpTooltip from "@/components/common/HelpTooltip.vue";
 
 const { getPositionImage } = useImageUrl();
 
