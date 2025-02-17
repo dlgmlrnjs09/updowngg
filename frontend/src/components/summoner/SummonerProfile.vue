@@ -10,22 +10,11 @@
         <div class="profile-stats">평가 {{ reviewStats?.totalReviewCnt ?? 0 }}회 · 최근 30일 {{ reviewStats?.last30DayReviewCnt ?? 0 }}회</div>
         <div class="score-section">
           <span class="score-label">평가점수</span>
-          <div class="tooltip-wrapper">
-            <HelpCircle
-                class="help-icon"
-                size="14"
-                @mouseenter="showTooltip($event, 'profile')"
-                @mouseleave="hideTooltip"
-            />
-            <div v-if="tooltipInfo.show && tooltipInfo.type === 'profile'"
-                 class="tooltip"
-                 :style="tooltipStyle">
-              신뢰도 95%의 윌슨 스코어로 계산된 평가 점수입니다.
-              긍정적인 평가와 부정적인 평가의 비율, 그리고 전체 평가 수를 고려하여
-              더 신뢰할 수 있는 점수를 계산합니다.
-              <div class="tooltip-arrow"></div>
-            </div>
-          </div>
+          <HelpTooltip
+            message="신뢰도 95%의 윌슨 스코어로 계산된 평가 점수입니다.
+            긍정적인 평가와 부정적인 평가의 비율, 그리고 전체 평가 수를 고려하여
+            더 신뢰할 수 있는 점수를 계산합니다."
+          />
           <span class="score-value">{{ reviewStats?.score ?? 0 }}</span><span class="score-label">점</span>
         </div>
         <div class="rating-stats">
@@ -207,6 +196,7 @@ import type { LolMatchInfoRes } from "@/types/match.ts"
 import { useAuthStore } from "@/stores/auth.ts"
 import type {LolSummonerLeagueDto, LolSummonerLeagueEntity} from "@/types/league.ts"
 import { useImageUrl } from "@/utils/imageUtil.ts"
+import HelpTooltip from "@/components/common/HelpTooltip.vue";
 
 const authStore = useAuthStore()
 const { getTierImage } = useImageUrl()

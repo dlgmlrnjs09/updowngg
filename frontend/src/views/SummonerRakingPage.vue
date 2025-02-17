@@ -10,8 +10,15 @@
           <tr class="text-left border-b border-[#ffffff1a]">
             <th class="py-2 px-4 text-gray-300 w-12">#</th>
             <th class="py-2 px-4 text-gray-300 w-52">소환사</th>
-            <th class="py-2 px-4 text-gray-300 w-24">평가수</th>
-            <th class="py-2 px-4 text-gray-300 w-24">평가점수</th>
+            <th class="py-2 px-4 text-gray-300 w-24 text-center">평가수</th>
+            <th class="py-2 px-4 text-gray-300 w-28 text-center">
+              <HelpTooltip
+                  message="신뢰도 95%의 윌슨 스코어로 계산된 평가 점수입니다.
+                  긍정적인 평가와 부정적인 평가의 비율, 그리고 전체 평가 수를 고려하여
+                  더 신뢰할 수 있는 점수를 계산합니다."
+              />
+              평가점수
+            </th>
             <th class="py-2 px-4 text-gray-300 w-48">평가비율</th>
             <th class="py-2 px-4 text-gray-300 w-52 most-champion-column">모스트 챔피언별 평가</th>
             <th class="py-2 px-4 text-gray-300">자주 받은 태그</th>
@@ -33,8 +40,8 @@
                 <div class="player-tag">#{{ player.summonerBasicInfoDto.tagLine }}</div>
               </div>
             </td>
-            <td class="py-2 px-4 text-sm text-gray-400">{{player.reviewStatsDto.totalReviewCnt}} </td>
-            <td class="py-2 px-4 text-sm text-gray-400">{{ player.reviewStatsDto.score }}</td>
+            <td class="py-2 px-4 text-sm text-gray-400 text-center">{{player.reviewStatsDto.totalReviewCnt}} </td>
+            <td class="py-2 px-4 text-sm text-gray-400 text-center">{{ player.reviewStatsDto.score }}</td>
             <td class="py-2 px-4 text-gray-400">
               <div class="flex items-center justify-between">
                 <div class="w-56 h-4 bg-[#1a1a1a] rounded-full overflow-hidden relative">
@@ -80,7 +87,14 @@
             <div class="mobile-header-rank">#</div>
             <div class="mobile-header-summoner">소환사</div>
             <div class="mobile-header-review-count">평가수</div>
-            <div class="mobile-header-score">평가점수</div>
+            <div class="mobile-header-score">
+              <HelpTooltip
+                  message="신뢰도 95%의 윌슨 스코어로 계산된 평가 점수입니다.
+                  긍정적인 평가와 부정적인 평가의 비율, 그리고 전체 평가 수를 고려하여
+                  더 신뢰할 수 있는 점수를 계산합니다."
+              />
+              평가점수
+            </div>
           </div>
           <div
               v-for="(player, index) in rankerPlayers"
@@ -97,7 +111,7 @@
                 >
                 <div class="mobile-summoner-details">
                   <div class="mobile-summoner-name">
-                    {{ player.summonerBasicInfoDto.gameName }}
+                    <span class="mobile-summoner-nickname">{{ player.summonerBasicInfoDto.gameName }}</span>
                     <span class="mobile-summoner-tag">#{{ player.summonerBasicInfoDto.tagLine }}</span>
                   </div>
                 </div>
@@ -125,6 +139,7 @@ import {rankingApi} from "@/api/ranking.ts";
 import type {RankerPlayer, RankingSearchFilter} from "@/types/ranking.ts";
 import type {SearchFilter} from "@/types/stats.ts";
 import {goSelectedSummonerProfile} from "@/utils/common.ts";
+import HelpTooltip from "@/components/common/HelpTooltip.vue";
 
 const rankerPlayers = ref<RankerPlayer[] | null>(null)
 const selectedPlayer = ref<RankerPlayer | null>(null)
@@ -365,7 +380,8 @@ table {
     .desktop-table td:nth-child(3),
     .desktop-table th:nth-child(4),
     .desktop-table td:nth-child(4) {
-      width: 60px;
+      width: 80px;
+      text-align: center;
     }
 
     /* 평가비율 열 너비 줄임 */
@@ -400,7 +416,7 @@ table {
   }
 
   .mobile-header-rank {
-    @apply w-6 text-center mr-2;
+    @apply w-8 text-center mr-2;
   }
 
   .mobile-header-summoner {
@@ -408,11 +424,11 @@ table {
   }
 
   .mobile-header-review-count {
-    @apply w-12 text-right mr-2;
+    @apply w-12 text-center mr-2;
   }
 
   .mobile-header-score {
-    @apply w-12 text-right;
+    @apply w-16 text-left;
   }
 
   .mobile-ranking-item {
@@ -424,11 +440,13 @@ table {
   }
 
   .mobile-ranking-number {
-    @apply text-base font-bold text-gray-300 w-6 text-center mr-2;
+    @apply text-base font-bold text-gray-300 w-8 text-center mr-2;
   }
 
   .mobile-summoner-info {
-    @apply flex items-center flex-grow mr-2;
+    @apply flex items-center mr-2;
+    /* flex-grow 제거하고 최대 너비 지정 */
+    width: calc(100% - 120px); /* 전체 너비에서 다른 요소들의 너비를 뺀 값 */
   }
 
   .mobile-summoner-image {
@@ -436,11 +454,21 @@ table {
   }
 
   .mobile-summoner-details {
-    @apply flex-grow;
+    @apply flex-shrink;
+    width: calc(100% - 40px); /* 프로필 이미지 너비(32px)와 마진(8px) 제외 */
   }
 
   .mobile-summoner-name {
     @apply text-white font-semibold text-xs flex items-center;
+    max-width: 100%;
+  }
+
+  .mobile-summoner-nickname {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1; /* 공간이 부족할 때 줄어들 수 있도록 */
+    min-width: 0; /* flex item의 overflow 처리를 위해 필요 */
   }
 
   .mobile-summoner-tag {
@@ -448,11 +476,13 @@ table {
   }
 
   .mobile-summoner-review-count {
-    @apply text-sm text-gray-400 w-12 text-right mr-2;
+    @apply text-sm text-gray-400 w-12 text-center mr-2;
+    flex-shrink: 0;
   }
 
   .mobile-summoner-score {
-    @apply text-sm text-white font-semibold w-12 text-right;
+    @apply text-sm text-white font-semibold w-16 text-center;
+    flex-shrink: 0;
   }
 }
 </style>
