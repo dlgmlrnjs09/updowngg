@@ -26,6 +26,7 @@ import gg.updown.backend.main.api.review.model.dto.ReviewStatsDto;
 import gg.updown.backend.main.api.review.model.dto.ReviewTagDto;
 import gg.updown.backend.main.api.review.service.ReviewService;
 import gg.updown.backend.main.enums.SiteLeagueTier;
+import gg.updown.backend.main.enums.SiteMatchFilter;
 import gg.updown.backend.main.enums.SiteMatchGameMode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,11 +83,13 @@ public class LolMatchService {
      * @param count
      * @return
      */
-    public List<LolMatchInfoResDto> getAndInsertMatchList(String puuid, int startIndex, int count, UserDetailImpl userDetails) {
+    public List<LolMatchInfoResDto> getAndInsertMatchList(
+            String puuid, int startIndex, int count, UserDetailImpl userDetails, SiteMatchFilter modeFilter, String reviewFilter
+    ) {
         List<LolMatchInfoResDto> resultList = new ArrayList<>();
 
         // 갱신을 통해 불러온 matchId 목록 조회
-        List<String> requestedMatchList = matchMapper.selectMatchRequestList(puuid, startIndex, count);
+        List<String> requestedMatchList = matchMapper.selectMatchRequestList(puuid, modeFilter, reviewFilter, startIndex, count);
         for (String matchId : requestedMatchList) {
             // 이미 DB에 존재하면 DB에서 get, 없으면 API에서 get 및 DB 저장
             // 1. 경기정보 저장

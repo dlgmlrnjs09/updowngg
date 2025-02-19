@@ -2,12 +2,20 @@ import  apiClient  from './axios'
 import type {CurrentMatchInfoDto, LolMatchInfoRes} from '@/types/match'
 
 export const matchApi = {
-    getMatchList: (puuid: string, startIndex: number, count: number) =>
+    getMatchList: (
+        puuid: string,
+        startIndex: number,
+        count: number,
+        gameMode: string = 'ALL',
+        reviewFilter?: 'reviewed' | 'unreviewed'
+    ) =>
         apiClient.get<LolMatchInfoRes[]>('/api/v1/match/list', {
             params: {
                 puuid,
                 startIndex,
-                count
+                count,
+                gameMode,
+                reviewFilter
             }
         }),
     updateMatchList: (puuid: string) =>

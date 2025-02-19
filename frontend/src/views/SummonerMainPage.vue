@@ -32,6 +32,7 @@
           :no-more-matches="noMoreMatches"
           @review-player="openReviewModal"
           @load-more="loadMoreMatches"
+          @filter-change="handleFilterChange"
       />
 
       <DetailModal
@@ -131,6 +132,25 @@ const writtenReview = ref<ReviewRequestDto | null>(null)
 const playTogetherLatestMatch = ref<LolMatchInfoRes | null>(null);
 const currentMatchInfo = ref<CurrentMatchInfoDto>();
 
+const currentMatchFilters = ref({
+  gameMode: 'ALL',
+  reviewFilter: undefined as 'reviewed' | 'unreviewed' | undefined
+});
+
+const handleFilterChange = async (filters: {
+  gameMode: string;
+  reviewFilter?: 'reviewed' | 'unreviewed';
+}) => {
+  currentMatchFilters.value = filters;
+
+  // 필터가 변경되면 첫 페이지부터 다시 로드
+  currentStartIndex.value = 0;
+  noMoreMatches.value = false;
+  matches.value = [];
+
+  await fetchMatchList(0);
+};
+
 const fetchSummonerInfo = async () => {
   try {
     const summonerId = route.params.name as string
@@ -155,25 +175,32 @@ const fetchSummonerReviewStats = async () => {
 
 const fetchMatchList = async (startIndex: number = 0) => {
   try {
-    if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return
-    const response = await matchApi.getMatchList(summonerInfo.value.riotAccountInfoEntity.puuid, startIndex, pageCount);
+    if (!summonerInfo.value?.riotAccountInfoEntity.puuid) return;
+
+    const response = await matchApi.getMatchList(
+        summonerInfo.value.riotAccountInfoEntity.puuid,
+        startIndex,
+        pageCount,
+        currentMatchFilters.value.gameMode,
+        currentMatchFilters.value.reviewFilter
+    );
 
     if (startIndex === 0) {
-      matches.value = response.data
+      matches.value = response.data;
     } else {
-      matches.value = [...matches.value, ...response.data]
+      matches.value = [...matches.value, ...response.data];
     }
 
     // 더 이상 불러올 데이터가 없는 경우
     if (response.data.length < pageCount) {
-      noMoreMatches.value = true
+      noMoreMatches.value = true;
     }
 
-    currentStartIndex.value = startIndex
+    currentStartIndex.value = startIndex;
   } catch (error) {
-    console.error('Failed to fetch matches:', error)
+    console.error('Failed to fetch matches:', error);
   }
-}
+};
 
 const handleReviewModalClose = () => {
   showReviewModal.value = false;
@@ -422,6 +449,11 @@ watchEffect(async () => {
     noMoreMatches.value = false;
     writtenReview.value = null;
     playTogetherLatestMatch.value = null;
+    // 필터 초기화
+    currentMatchFilters.value = {
+      gameMode: 'ALL',
+      reviewFilter: undefined
+    };
 
     try {
       // SummonerInfo 에서 불러온 puuid를 사용해야하기 때문에 동기로 불러옴

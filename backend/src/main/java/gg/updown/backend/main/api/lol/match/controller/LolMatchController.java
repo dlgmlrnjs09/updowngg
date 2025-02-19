@@ -41,7 +41,7 @@ public class LolMatchController {
             @Valid @ParameterObject LolMatchInfoReqDto reqDto,
             @AuthenticationPrincipal UserDetailImpl userDetail
     ) {
-        List<LolMatchInfoResDto> responseDto = lolMatchService.getAndInsertMatchList(reqDto.getPuuid(), reqDto.getStartIndex(), reqDto.getCount(), userDetail);
+        List<LolMatchInfoResDto> responseDto = lolMatchService.getAndInsertMatchList(reqDto.getPuuid(), reqDto.getStartIndex(), reqDto.getCount(), userDetail, reqDto.getGameMode(), reqDto.getReviewFilter());
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 

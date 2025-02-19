@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 @Getter
 public enum SiteMatchGameMode {
+    ALL("ALL", "전체", "", 0),
     ARAM("ARAM", "칼바람나락", "", 450),
     NORMAL("NORMAL", "일반게임", "", 430),
     NORMAL_DRAFT("NORMAL_DRAFT", "일반게임(드래프트)", "", 400),
@@ -19,7 +20,9 @@ public enum SiteMatchGameMode {
     URF("URF", "우르프", "", 900),
     ONE_FOR_ALL("ONE_FOR_ALL", "단일챔피언", "", 1020),
     NEXUS_BLITZ("NEXUS_BLITZ", "넥서스 블리츠", "", 1300),
-    ULTIMATE_SPELLBOOK("ULTIMATE_SPELLBOOK", "궁극기 주문서", "", 1400);
+    ULTIMATE_SPELLBOOK("ULTIMATE_SPELLBOOK", "궁극기 주문서", "", 1400),
+    ARENA("ARENA", "아레나", "", 1700),
+    CHERRY("CHERRY", "집중포화", "", 1200);
 
     private final String queueCode;
     private final String queueName;

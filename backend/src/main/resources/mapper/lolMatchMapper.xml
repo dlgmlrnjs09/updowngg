@@ -227,15 +227,49 @@
     </insert>
 
     <select id="selectMatchRequestList" parameterType="map" resultType="String">
-        SELECT
-            m.match_id
+        SELECT DISTINCT
+        m.match_id,
+        m.game_create_dt,
+        m.game_mode
         FROM
-            lol_match m
-            JOIN lol_match_request r ON m.match_id = r.match_id
+        lol_match m
+        JOIN lol_match_request r ON m.match_id = r.match_id
+        <if test="reviewFilter != null">
+            JOIN lol_match_participant mp ON m.match_id = mp.match_id
+            LEFT JOIN site_summoner_review sr ON (
+            m.match_id = sr.match_id
+            AND
+            <choose>
+                <when test='reviewFilter == "reviewed"'>
+                    r.puuid = sr.target_puuid
+                </when>
+                <otherwise>
+                    r.puuid = sr.reviewer_puuid
+                </otherwise>
+            </choose>
+            )
+        </if>
         WHERE
-            r.puuid = #{puuid}
+        r.puuid = #{puuid}
+        <if test="reviewFilter != null">
+            AND mp.puuid != #{puuid}
+            <choose>
+                <when test='reviewFilter == "reviewed"'>
+                    AND sr.summoner_review_seq IS NOT NULL
+                </when>
+                <otherwise>
+                    AND sr.summoner_review_seq IS NULL
+                </otherwise>
+            </choose>
+        </if>
+        <if test="gameModeFilter != null and gameModeFilter.code != 'ALL'">
+            AND m.queue_id IN
+            <foreach item="queueId" collection="gameModeFilter.queueIds" open="(" separator="," close=")">
+                #{queueId}
+            </foreach>
+        </if>
         ORDER BY
-            m.match_id DESC
+        m.match_id DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
