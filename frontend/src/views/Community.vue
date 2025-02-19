@@ -67,7 +67,7 @@
              :key="card.postDto.postId"
              class="bg-[#141414] rounded-xl p-3 sm:p-4 transition-all duration-200 border border-[#2979FF1A] flex flex-col h-full"
         >
-          <p class="text-white leading-relaxed line-clamp-3 whitespace-pre-wrap break-words bg-[#1A1A1A] p-3 rounded-lg mb-4 border-l-4 border-l-[#2979FF] min-h-24 flex content-center">
+          <p class="text-white leading-relaxed line-clamp-3 whitespace-pre-wrap break-words bg-[#1A1A1A] p-3 rounded-lg mb-4 border-l-4 border-l-[#2979FF] min-h-[102px] flex content-center">
             {{ card.content }}
           </p>
 
@@ -116,7 +116,7 @@
               :class="[
                   'bg-[#1A1A1A] rounded-lg rounded-b-none mt-auto', isMobile ? 'p-2.5' : 'p-3',
               ]"
-              class="pb-0"
+              class="pb-0 min-h-[105px]"
           >
             <div class="flex gap-2 sm:gap-3">
               <img
