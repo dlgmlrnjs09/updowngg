@@ -1,5 +1,11 @@
 <template>
   <div class="min-h-screen bg-[#0A0A0A] p-4 sm:p-6">
+    <WriteModal
+      v-if="showWriteModal"
+      @submit="handleDuoSubmit"
+      @close="showWriteModal = false"
+    />
+
     <div class="max-w-6xl mx-auto mb-8">
       <!-- 필터 영역 -->
       <div class="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center mb-8 sm:mb-14">
@@ -25,7 +31,7 @@
             <option value="JG">정글</option>
             <option value="MID">미드</option>
             <option value="AD">원딜</option>
-            <option value="SUP">서포터</option>
+            <option value="SUP">서포터</option>'
           </select>
           <select
               v-model="selectedTier"
@@ -160,7 +166,17 @@
                       :alt="position"
                       class="w-5 h-5"
                   >
-                  <div class="text-gray-500 text-xs flex-1">대기 중</div>
+                  <div class="text-gray-500 text-xs flex-1">
+                    {{ card.postDto.status === 'RECRUITING' ? '대기 중' : '모집 마감' }}
+                  </div>
+                  <!-- 참가 신청 버튼 추가 -->
+                  <button
+                      v-if="card.postDto.status === 'RECRUITING' && !isPositionFilled(position)"
+                      @click="applyForPosition(card.postDto.postId, position)"
+                      class="text-[10px] bg-[#2979FF] text-white px-2 py-0.5 rounded"
+                  >
+                    참가
+                  </button>
                 </template>
               </div>
             </div>
@@ -207,7 +223,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { ThumbsUp, ThumbsDown, MicIcon, MicOffIcon } from 'lucide-vue-next'
-import WriteModal from '@/components/community/duo/WriteModal.vue'
+import WriteModal from '@/components/community/party/WriteModal.vue'
 import type { CommunityPostDto, DuoPostCardDto, SearchFilter } from "@/types/community.ts"
 import { communityApi } from "@/api/community.ts"
 import TagList from "@/components/common/TagList.vue"
@@ -350,7 +366,8 @@ onMounted(async () => {
 })
 
 const handleDuoSubmit = async (formData: CommunityPostDto) => {
-  await communityApi.insertPost('duo', formData)
+  console.log(JSON.stringify(formData))
+  await communityApi.insertPost('party', formData)
   showWriteModal.value = false
   const toast = useToast()
   toast.success('게시글 등록에 성공했습니다!')

@@ -1,9 +1,6 @@
-import type {LolSummonerDto, LolSummonerMostChampionDto} from "@/types/summoner.ts";
+import type {LolSummonerMostChampionDto} from "@/types/summoner.ts";
 import type {ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
-import type {summonerBasicInfoDto} from "@/types/ranking.ts";
-import type {MatchGameMode} from "@/types/match.ts";
-import type {Tier} from "@/types/league.ts";
-import {MatchPosition} from "@/types/match.ts";
+import type {SummonerBasicInfoDto} from "@/types/ranking.ts";
 
 export interface CommunityPostDto {
     postId?: number;
@@ -14,6 +11,7 @@ export interface CommunityPostDto {
     updDt?: string;
     delDt?: string;
     duoCommunityEntity?: DuoCommunityDto; // 자식 엔티티는 선택 사항으로 정의
+    partyCommunityDto?: PartyCommunityDto;
 }
 
 export interface DuoCommunityDto {
@@ -29,7 +27,7 @@ export interface DuoPostCardDto {
 }
 
 export interface DuoSummonerInfoDto {
-    summonerBasicInfoDto: summonerBasicInfoDto
+    summonerBasicInfoDto: SummonerBasicInfoDto
     frequentTagDtoList: ReviewTagDto[]
     reviewStatsDto: ReviewStatsDto
     mostChampionDto: LolSummonerMostChampionDto[]
@@ -42,4 +40,15 @@ export interface SearchFilter {
     positionFind?: string;
     offset?: number;
     limit?: number;
+}
+
+export interface PartyCommunityDto {
+    gameMode: string
+    isUseMic: boolean
+    positionSelf: string
+    isOpenTop: boolean
+    isOpenJungle: boolean
+    isOpenMid: boolean
+    isOpenAd: boolean
+    isOpenSup: boolean
 }

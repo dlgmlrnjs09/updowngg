@@ -1,6 +1,7 @@
 package gg.updown.backend.main.api.community.common.model;
 
 import gg.updown.backend.main.api.community.duo.model.DuoCommunityPostDto;
+import gg.updown.backend.main.api.community.party.model.PartyCommunityReqDto;
 import lombok.*;
 
 @Getter
@@ -16,4 +17,5 @@ public class CommunityPostSubmitReqDto {
     private String content;
 
     private DuoCommunityPostDto duoCommunityEntity;
+    private PartyCommunityReqDto partyCommunityDto;
 }

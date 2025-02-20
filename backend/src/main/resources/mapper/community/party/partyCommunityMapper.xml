@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.community.party.mapper.PartyCommunityMapper">
+    <insert id="insertPartyPost" parameterType="PartyCommunityEntity">
+        INSERT INTO site_community_party (
+            game_mode,
+            is_open_top,
+            is_open_jungle,
+            is_open_mid,
+            is_open_ad,
+            is_open_sup,
+            post_status,
+            is_use_mic
+        ) VALUES (
+             #{gameMode},
+             #{isOpenTop},
+             #{isOpenJungle},
+             #{isOpenMid},
+             #{isOpenAd},
+             #{isOpenSup},
+             #{postStatus},
+             #{isUseMic}
+        );
+    </insert>
+</mapper>
