@@ -228,6 +228,10 @@ public class LolSummonerService {
         return lolSummonerMapper.getSummonerBasicInfo(siteCode);
     }
 
+    public SummonerBasicInfoDto getSummonerBasicInfoByPuuid(String puuid) {
+        return lolSummonerMapper.getSummonerBasicInfoByPuuid(puuid);
+    }
+
     public List<LolSummonerMostChampionDto> getSummonerMostChampions(String puuid, int limit) {
         List<LolSummonerMostChampionDto> list = lolSummonerMapper.getSummonerMostChampions(puuid, limit);
         list.forEach(m ->

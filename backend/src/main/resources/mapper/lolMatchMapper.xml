@@ -299,7 +299,7 @@
         LIMIT 1;
     </select>
 
-    <select id="getSummonerBasicInfoByPuuid" parameterType="String" resultType="map">
+    <select id="getSummonerInfoByPuuid" parameterType="String" resultType="map">
         select
             case when sa.member_site_code is not null then true else false end as has_site_account,
             case when ra.game_name is not null then true else false end as has_riot_account,

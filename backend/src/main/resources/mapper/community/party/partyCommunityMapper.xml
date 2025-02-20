@@ -1,8 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="gg.updown.backend.main.api.community.party.mapper.PartyCommunityMapper">
+
+    <select id="getPartyPostList" parameterType="DuoCommunitySearchFilter" resultType="PartyPostCardDto">
+        select
+            scp.post_id,
+            scp.community_code ,
+            scp.title ,
+            scp."content" ,
+            scp.reg_dt ,
+            scp.upd_dt ,
+            scp.writer_site_code ,
+            scp.writer_puuid,
+            scd.game_mode ,
+            scd.is_open_top,
+            scd.is_open_jungle,
+            scd.is_open_mid,
+            scd.is_open_ad,
+            scd.is_open_sup,
+            scd.post_status,
+            scd.is_use_mic,
+            scpp.top_puuid,
+            scpp.jungle_puuid,
+            scpp.mid_puuid,
+            scpp.ad_puuid,
+            scpp.sup_puuid
+        from
+            site_community_post scp
+            inner join site_community_party scd on (scp.post_id = scd.post_id)
+            inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+        where
+            scp.del_dt is null
+            and scp.community_code = 'party'
+            <if test="gameMode != null">
+                and game_mode = #{gameMode}
+            </if>
+            <if test="positionSelf != null">
+                and position_self = #{positionSelf.code}
+            </if>
+            <if test="positionFind != null">
+                and position_find = #{positionFind}
+            </if>
+        order by scp.post_id desc
+        offset #{offset} limit #{limit}
+    </select>
+
     <insert id="insertPartyPost" parameterType="PartyCommunityEntity">
         INSERT INTO site_community_party (
+            post_id,
             game_mode,
             is_open_top,
             is_open_jungle,
@@ -12,6 +57,7 @@
             post_status,
             is_use_mic
         ) VALUES (
+            #{postId},
              #{gameMode},
              #{isOpenTop},
              #{isOpenJungle},
@@ -21,5 +67,43 @@
              #{postStatus},
              #{isUseMic}
         );
+    </insert>
+
+    <insert id="insertPartyParticipant" parameterType="PartyCommunityParticipantEntity">
+        INSERT INTO site_community_party_participant (
+            post_id
+            <if test="topPuuid != null">
+                , top_puuid
+            </if>
+            <if test="junglePuuid != null">
+                , jungle_puuid
+            </if>
+            <if test="midPuuid != null">
+                , mid_puuid
+            </if>
+            <if test="adPuuid != null">
+                , ad_puuid
+            </if>
+            <if test="supPuuid != null">
+                , sup_puuid
+            </if>
+        ) VALUES (
+            #{postId}
+            <if test="topPuuid != null">
+                , #{topPuuid}
+            </if>
+            <if test="junglePuuid != null">
+                , #{junglePuuid}
+            </if>
+            <if test="midPuuid != null">
+                , #{midPuuid}
+            </if>
+            <if test="adPuuid != null">
+                , #{adPuuid}
+            </if>
+            <if test="supPuuid != null">
+                , #{supPuuid}
+            </if>
+        )
     </insert>
 </mapper>

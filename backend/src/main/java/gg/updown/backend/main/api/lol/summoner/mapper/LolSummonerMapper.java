@@ -21,6 +21,7 @@ public interface LolSummonerMapper {
     void updateSummonerLeagueInfo(LolSummonerLeagueEntity entity);
     void conflictSummonerLeagueInfo(LolSummonerLeagueEntity entity);
     SummonerBasicInfoDto getSummonerBasicInfo(long siteCode);
+    SummonerBasicInfoDto getSummonerBasicInfoByPuuid(String puuid);
     List<LolSummonerMostChampionDto> getSummonerMostChampions(@Param("puuid")String puuid, @Param("limit")int limit);
     List<Map<String, Object>> getLeagueReviewRatingByPuuid(String puuid);
 }

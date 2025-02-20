@@ -4,11 +4,13 @@
     <insert id="insertPost" parameterType="map" useGeneratedKeys="true" keyProperty="postEntity.postId">
         INSERT INTO site_community_post (
             writer_site_code,
+            writer_puuid,
             community_code,
             title,
             content
         ) VALUES (
              #{postEntity.writerSiteCode},
+             #{postEntity.writerPuuid},
              #{communityCode},
              #{postEntity.title},
              #{postEntity.content}

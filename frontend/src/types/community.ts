@@ -52,3 +52,32 @@ export interface PartyCommunityDto {
     isOpenAd: boolean
     isOpenSup: boolean
 }
+
+export interface PartyParticipantDto {
+    summonerInfoDto: DuoSummonerInfoDto
+    isOpenPosition: boolean
+    position: string
+}
+
+export interface PartyPostCardDto {
+    postId: number;
+    writerSiteCode: number;
+    writerPuuid: string;
+    communityCode: string;
+    title: string;
+    content: string;
+    gameMode: string;
+    positionSelf: string;
+    isUseMic: boolean;
+    isOpenTop: boolean;
+    isOpenJungle: boolean;
+    isOpenMid: boolean;
+    isOpenAd: boolean;
+    isOpenSup: boolean;
+    topPuuid: string | null;
+    junglePuuid: string | null;
+    midPuuid: string | null;
+    adPuuid: string | null;
+    supPuuid: string | null;
+    participantDtoList: PartyParticipantDto[];
+}

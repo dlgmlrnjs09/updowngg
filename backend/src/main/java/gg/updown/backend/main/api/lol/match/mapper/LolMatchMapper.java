@@ -32,6 +32,6 @@ public interface LolMatchMapper {
     );
     boolean existsMatchedTogether(@Param("loginPuuid")String loginPuuid, @Param("targetPuuid")String targetPuuid, @Param("startDate")LocalDateTime startDate, @Param("endDate")LocalDateTime endDate);
     String getLatestMatchIdTogether(@Param("loginPuuid")String loginPuuid, @Param("targetPuuid")String targetPuuid, @Param("startDate")LocalDateTime startDate, @Param("endDate")LocalDateTime endDate);
-    Map<String, Object> getSummonerBasicInfoByPuuid(String puuid);
+    Map<String, Object> getSummonerInfoByPuuid(String puuid);
     String getChampionNameByKey(String key);
 }

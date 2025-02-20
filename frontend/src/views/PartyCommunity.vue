@@ -58,7 +58,7 @@
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div
             v-for="card in postCards"
-            :key="card.postDto.postId"
+            :key="card.postId"
             class="bg-[#141414] rounded-xl p-4 border border-[#2979FF1A]"
         >
           <!-- 본문 -->
@@ -71,20 +71,23 @@
             <div class="grid grid-cols-1 gap-2 mb-4">
               <!-- 각 포지션 슬롯 -->
               <div
-                  v-for="position in ['TOP', 'JG', 'MID', 'AD', 'SUP']"
-                  :key="position"
+                  v-for="participant in card.participantDtoList"
+                  :key="participant.position"
                   class="bg-[#1A1A1A] rounded-lg p-2 flex items-center justify-between text-center h-[52px] w-full"
                   :class="{
-        'border-2 border-[#2979FF]': card.postDto.positionSelf === position,
-        'border border-[#383838]': card.postDto.positionSelf !== position
-      }"
+                      'border-2 border-[#2979FF]': card.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid,
+                      'border border-[#333]': participant.isOpenPosition && !participant.summonerInfoDto,
+                      'border border-gray-700': participant.summonerInfoDto && card.writerPuuid !== participant.summonerInfoDto.summonerBasicInfoDto.puuid,
+                      'border border-[#383838]': !(card.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid) && !participant.isOpenPosition,
+                      'opacity-50': !(card.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid) && !participant.isOpenPosition // 모집하지 않는 포지션 어둡게
+                  }"
               >
                 <!-- 포지션 채워진 경우 -->
-                <template v-if="card.postDto.positionSelf === position && card.duoSummonerInfoDto">
+                <template v-if="participant.summonerInfoDto">
                   <div class="flex items-center gap-2">
                     <img
-                        :src="getPositionImage(position)"
-                        :alt="position"
+                        :src="getPositionImage(participant.position)"
+                        :alt="participant.position"
                         class="w-5 h-5"
                     >
                   </div>
@@ -94,26 +97,26 @@
                       <div
                           class="text-xs font-medium text-white hover:text-[#2979FF] cursor-pointer truncate max-w-full"
                           @click="goSelectedSummonerProfile(
-        card.duoSummonerInfoDto.summonerBasicInfoDto.gameName,
-        card.duoSummonerInfoDto.summonerBasicInfoDto.tagLine
-      )"
+                            participant.summonerInfoDto.summonerBasicInfoDto.gameName,
+                            participant.summonerInfoDto.summonerBasicInfoDto.tagLine
+                          )"
                       >
-                        {{ card.duoSummonerInfoDto.summonerBasicInfoDto.gameName }}
+                        {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
                       </div>
                       <div class="text-[10px] text-gray-400 truncate">
-                        #{{ card.duoSummonerInfoDto.summonerBasicInfoDto.tagLine }}
+                        #{{ participant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
                       </div>
                     </div>
 
                     <!-- frequentTag 추가 -->
                     <div class="flex gap-1 mt-0.5">
-    <span
-        v-for="tag in card.duoSummonerInfoDto.frequentTagDtoList"
-        :key="tag.name"
-        class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
-    >
-      {{ tag.name }}
-    </span>
+                    <span
+                        v-for="tag in participant.summonerInfoDto.frequentTagDtoList"
+                        :key="tag.tagCode"
+                        class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
+                    >
+                      {{ tag.tagValue }}
+                    </span>
                     </div>
                   </div>
 
@@ -121,29 +124,29 @@
                     <div class="flex items-center gap-1 text-[10px] mb-0.5">
                       <span class="text-gray-400">평가</span>
                       <span class="text-[#2979FF] font-medium">
-              {{ card.duoSummonerInfoDto.reviewStatsDto.score?.toFixed(1) ?? 0 }}점
-            </span>
+                        {{ participant.summonerInfoDto.reviewStatsDto.score?.toFixed(1) ?? 0 }}점
+                      </span>
                     </div>
 
                     <div class="flex items-center gap-2">
                       <div class="flex items-center gap-1">
                         <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
                         <span class="text-[#4CAF50] text-[10px]">
-                {{ card.duoSummonerInfoDto.reviewStatsDto.upCount }}
-              </span>
+                          {{ participant.summonerInfoDto.reviewStatsDto.upCount }}
+                        </span>
                       </div>
                       <div class="flex items-center gap-1">
                         <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
                         <span class="text-[#FF5252] text-[10px]">
-                {{ card.duoSummonerInfoDto.reviewStatsDto.downCount }}
-              </span>
+                          {{ participant.summonerInfoDto.reviewStatsDto.downCount }}
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   <div class="flex gap-1 ml-2">
                     <div
-                        v-for="(champion, index) in card.duoSummonerInfoDto.mostChampionDto.slice(0, 2)"
+                        v-for="(champion, index) in participant.summonerInfoDto.mostChampionDto.slice(0, 2)"
                         :key="index"
                         class="bg-[#141414] rounded-lg p-1 flex flex-col items-center"
                     >
@@ -153,8 +156,8 @@
                           class="w-5 h-5 rounded mb-0.5"
                       >
                       <span class="text-[9px] text-[#4CAF50]">
-              {{ champion.winRate }}%
-            </span>
+                        {{ champion.winRate }}%
+                      </span>
                     </div>
                   </div>
                 </template>
@@ -162,20 +165,19 @@
                 <!-- 대기 중인 경우 -->
                 <template v-else>
                   <img
-                      :src="getPositionImage(position)"
-                      :alt="position"
+                      :src="getPositionImage(participant.position)"
+                      :alt="participant.position"
                       class="w-5 h-5"
                   >
                   <div class="text-gray-500 text-xs flex-1">
-                    {{ card.postDto.status === 'RECRUITING' ? '대기 중' : '모집 마감' }}
+                    {{ participant.isOpenPosition ? '대기 중' : '-' }}
                   </div>
-                  <!-- 참가 신청 버튼 추가 -->
                   <button
-                      v-if="card.postDto.status === 'RECRUITING' && !isPositionFilled(position)"
-                      @click="applyForPosition(card.postDto.postId, position)"
+                      v-if="participant.isOpenPosition && !participant.summonerInfoDto"
+                      @click="applyForPosition(card.postId, participant.position)"
                       class="text-[10px] bg-[#2979FF] text-white px-2 py-0.5 rounded"
                   >
-                    참가
+                    신청
                   </button>
                 </template>
               </div>
@@ -186,12 +188,12 @@
             <div class="flex items-center gap-2">
               <span class="text-gray-400 text-xs">큐타입</span>
               <span class="text-white text-sm">
-                {{ getGameModeName(card.postDto.gameMode) }}
+                {{ getGameModeName(card.gameMode) }}
               </span>
             </div>
             <div>
               <MicIcon
-                  v-if="card.postDto.isUseMic"
+                  v-if="card.isUseMic"
                   class="w-4 h-4 text-[#2979FF]"
               />
               <MicOffIcon
@@ -224,7 +226,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { ThumbsUp, ThumbsDown, MicIcon, MicOffIcon } from 'lucide-vue-next'
 import WriteModal from '@/components/community/party/WriteModal.vue'
-import type { CommunityPostDto, DuoPostCardDto, SearchFilter } from "@/types/community.ts"
+import type {CommunityPostDto, DuoPostCardDto, PartyPostCardDto, SearchFilter} from "@/types/community.ts"
 import { communityApi } from "@/api/community.ts"
 import TagList from "@/components/common/TagList.vue"
 import { useToast } from "vue-toastification"
@@ -242,124 +244,7 @@ const isLoading = ref(false)
 /*const postCards = ref<DuoPostCardDto[]>([])*/
 const currentStartIndex = ref(0)
 const isMobile = computed(() => window.innerWidth < 640)
-
-const dummyPostCards = [
-  {
-    postDto: {
-      postId: '1',
-      positionSelf: 'TOP',
-      gameMode: 'SOLO_RANK',
-      isUseMic: true,
-      content: '탑 포지션 듀오 구해요! 매너있고 소통 잘하는 분 환영합니다. 같이 즐겁게 플레이해요!'
-    },
-    duoSummonerInfoDto: {
-      summonerBasicInfoDto: {
-        profileIconUrl: 'https://example.com/profile1.png',
-        gameName: 'Hide on bush',
-        tagLine: 'KR1'
-      },
-      reviewStatsDto: {
-        score: 4.7,
-        upCount: 128,
-        downCount: 12
-      },
-      frequentTagDtoList: [
-        { name: '매너' },
-        { name: '친절' }
-      ],
-      mostChampionDto: [
-        {
-          iconUrl: 'https://example.com/champion1.png',
-          nameUs: 'Darius',
-          winRate: 61
-        },
-        {
-          iconUrl: 'https://example.com/champion2.png',
-          nameUs: 'Garen',
-          winRate: 58
-        }
-      ]
-    },
-    content: '탑 포지션 듀오 구해요! 매너있고 소통 잘하는 분 환영합니다. 같이 즐겁게 플레이해요!'
-  },
-  {
-    postDto: {
-      postId: '2',
-      positionSelf: 'JG',
-      gameMode: 'FLEX_RANK',
-      isUseMic: false,
-      content: '정글러 구합니다. 트롤 노노하고 승리에 진심인 분만 와주세요.'
-    },
-    duoSummonerInfoDto: {
-      summonerBasicInfoDto: {
-        profileIconUrl: 'https://example.com/profile2.png',
-        gameName: 'Fierce Jungler',
-        tagLine: 'KR2'
-      },
-      reviewStatsDto: {
-        score: 4.2,
-        upCount: 95,
-        downCount: 25
-      },
-      frequentTagDtoList: [
-        { name: '숙련' },
-        { name: '소통' }
-      ],
-      mostChampionDto: [
-        {
-          iconUrl: 'https://example.com/champion3.png',
-          nameUs: 'Lee Sin',
-          winRate: 65
-        },
-        {
-          iconUrl: 'https://example.com/champion4.png',
-          nameUs: 'Elise',
-          winRate: 59
-        }
-      ]
-    },
-    content: '정글러 구합니다. 트롤 노노하고 승리에 진심인 분만 와주세요.'
-  },
-  {
-    postDto: {
-      postId: '3',
-      positionSelf: 'MID',
-      gameMode: 'NORMAL',
-      isUseMic: true,
-      content: '같이 재미있게 즐길 미드 라이너 찾아요. 스트레스 받지 말고 즐겁게 해요!'
-    },
-    duoSummonerInfoDto: {
-      summonerBasicInfoDto: {
-        profileIconUrl: 'https://example.com/profile3.png',
-        gameName: 'Mid Master',
-        tagLine: 'KR3'
-      },
-      reviewStatsDto: {
-        score: 4.5,
-        upCount: 110,
-        downCount: 18
-      },
-      frequentTagDtoList: [
-        { name: '친절' },
-        { name: '위트' }
-      ],
-      mostChampionDto: [
-        {
-          iconUrl: 'https://example.com/champion5.png',
-          nameUs: 'Ahri',
-          winRate: 62
-        },
-        {
-          iconUrl: 'https://example.com/champion6.png',
-          nameUs: 'Syndra',
-          winRate: 57
-        }
-      ]
-    },
-    content: '같이 재미있게 즐길 미드 라이너 찾아요. 스트레스 받지 말고 즐겁게 해요!'
-  }
-]
-const postCards = ref<DuoPostCardDto[]>(dummyPostCards)
+const postCards = ref<PartyPostCardDto[]>()
 
 onMounted(async () => {
   await fetchPosts({})
@@ -384,12 +269,13 @@ const handleDuoSubmit = async (formData: CommunityPostDto) => {
 
 const fetchPosts = async (filter: SearchFilter) => {
   isLoading.value = true
-  const response = await communityApi.getPost('duo', filter)
+  const response = await communityApi.getPartyPost('party', filter)
+  console.log(JSON.stringify(response.data))
 
   if (filter.offset === 0) {
     postCards.value = response.data
   } else {
-    postCards.value = [...postCards.value, ...response.data]
+    postCards.value = [...(postCards.value || []), ...response.data];
   }
 
   showReadMore.value = response.data.length >= 15

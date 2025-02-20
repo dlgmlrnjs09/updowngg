@@ -3,6 +3,7 @@ package gg.updown.backend.main.api.community.party.service;
 import gg.updown.backend.main.api.community.common.service.CommunityService;
 import gg.updown.backend.main.api.community.party.mapper.PartyCommunityMapper;
 import gg.updown.backend.main.api.community.party.model.PartyCommunityEntity;
+import gg.updown.backend.main.api.community.party.model.PartyCommunityParticipantEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,8 +17,14 @@ public class PartyCommunityTransactionService {
     private final PartyCommunityMapper partyCommunityMapper;
 
     @Transactional
-    public void insertPartyCommunityPost(String communityCode, PartyCommunityEntity entity) {
-        communityService.insertPost(communityCode, entity);
-        partyCommunityMapper.insertPartyPost(entity);
+    public void insertPartyCommunityPost(
+            String communityCode,
+            PartyCommunityEntity partyCommunityEntity,
+            PartyCommunityParticipantEntity participantEntity
+    ) {
+        communityService.insertPost(communityCode, partyCommunityEntity);
+        partyCommunityMapper.insertPartyPost(partyCommunityEntity);
+        participantEntity.setPostId(partyCommunityEntity.getPostId());
+        partyCommunityMapper.insertPartyParticipant(participantEntity);
     }
 }

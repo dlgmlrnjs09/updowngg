@@ -43,6 +43,7 @@ public class CommunityController {
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         paramEntity.setWriterSiteCode(((UserDetailImpl) userDetails).getSiteCode());
+        paramEntity.setWriterPuuid(((UserDetailImpl) userDetails).getPuuid());
         CommunityInterface communityService = communityServiceFactory.getCommunityService(communityCode);
         communityService.insertPost(communityCode, paramEntity);
         return ResponseEntity.ok(true);

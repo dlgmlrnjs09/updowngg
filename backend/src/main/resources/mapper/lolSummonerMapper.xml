@@ -46,6 +46,20 @@
             sa.member_site_code = #{siteCode}
     </select>
 
+    <select id="getSummonerBasicInfoByPuuid" parameterType="String" resultType="summonerBasicInfoDto">
+        select
+            ls.puuid,
+            game_name,
+            tag_line,
+            ls.profile_icon_id
+        from
+            site_account sa
+                inner join riot_account ra on (sa.puuid = ra.puuid)
+                inner join lol_summoner ls on (ra.puuid = ls.puuid)
+        where
+            sa.puuid = #{puuid}
+    </select>
+
     <insert id="insertSummonerInfo" parameterType="LolSummonerEntity">
         INSERT INTO lol_summoner (
              puuid

@@ -10,6 +10,7 @@ import lombok.*;
 public class CommunityPostDto {
     private long postId;
     private long writerSiteCode;
+    private String writerPuuid;
     private String communityCode;
     private String title;
     private String content;

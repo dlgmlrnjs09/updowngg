@@ -12,6 +12,7 @@ import lombok.*;
 public class CommunityPostSubmitReqDto {
     private long postId;
     private long writerSiteCode;
+    private String writerPuuid;
     private String communityCode;
     private String title;
     private String content;

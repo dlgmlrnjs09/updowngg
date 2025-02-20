@@ -340,7 +340,7 @@ public class LolMatchService {
     }
 
     private LolCurrentMatchParticipantDto getCurrentMatchSummonerInfo(CurrentMatchParticipantDto summoner, long queueId) {
-        Map<String, Object> summonerInfoMap = matchMapper.getSummonerBasicInfoByPuuid(summoner.getPuuid());
+        Map<String, Object> summonerInfoMap = matchMapper.getSummonerInfoByPuuid(summoner.getPuuid());
         LolCurrentMatchPlayerDto playerDto;
         SummonerBasicInfoDto summonerInfoDto = null;
         ReviewStatsDto reviewStatsDto = null;
