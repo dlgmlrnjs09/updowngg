@@ -290,7 +290,6 @@ const updateMatchList = async () => {
 }
 
 const openReviewModal = (player: any) => {
-  console.log('player === ' + JSON.stringify(player))
   selectedPlayer.value = player;
   suggestTag.value = []; // suggestTag 배열 초기화
 
@@ -301,10 +300,8 @@ const openReviewModal = (player: any) => {
   if (authStore.isAuthenticated) {
     // optional chaining을 사용하여 reviewDto가 없는 경우도 처리
     if (player?.reviewDto?.reviewable === false) {
-      console.log('previous')
       showPreviousReviewModal.value = true;
     } else {
-      console.log('normal')
       showReviewModal.value = true;
     }
   } else {

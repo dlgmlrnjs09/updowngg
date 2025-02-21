@@ -14,7 +14,7 @@
 
       <!-- 파티장 포지션 선택 -->
       <div class="space-y-3 mb-6">
-        <label class="text-sm text-gray-300 font-medium">파티장 포지션</label>
+        <label class="text-sm text-gray-300 font-medium">내 포지션</label>
         <div class="grid grid-cols-5 gap-2">
           <button
               v-for="position in positions"
@@ -39,7 +39,7 @@
 
       <!-- 포지션 모집 설정 -->
       <div class="space-y-3">
-        <label class="text-sm text-gray-300 font-medium">포지션 모집 설정</label>
+        <label class="text-sm text-gray-300 font-medium">모집할 포지션</label>
         <div class="grid grid-cols-5 gap-2">
           <button
               v-for="position in positions"
@@ -93,11 +93,11 @@
           <button
               @click="hasMic = !hasMic"
               :class="[
-        'w-full px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center gap-2',
-        hasMic
-          ? 'bg-[#1A1A1A] border-[#2979FF] text-white'
-          : 'border-[#333] text-gray-400 hover:border-gray-500'
-      ]"
+                'w-full px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center gap-2',
+                hasMic
+                  ? 'bg-[#1A1A1A] border-[#2979FF] text-white'
+                  : 'border-[#333] text-gray-400 hover:border-gray-500'
+              ]"
           >
             <MicIcon v-if="hasMic" class="w-4 h-4" />
             <MicOffIcon v-else class="w-4 h-4" />
@@ -111,8 +111,8 @@
         <div class="flex justify-between">
           <label class="text-sm text-gray-300 font-medium">내용</label>
           <span class="text-sm" :class="remainingChars >= 0 ? 'text-gray-400' : 'text-red-500'">
-      {{ content.length }}/{{ maxLength }}
-    </span>
+            {{ content.length }}/{{ maxLength }}
+          </span>
         </div>
         <textarea
             v-model="content"
@@ -186,7 +186,7 @@ const handleSubmit = () => {
 
   // 파티장 포지션 선택 필수
   if (!partyLeaderPosition.value) {
-    toast.error('파티장의 포지션을 선택해주세요.')
+    toast.error('내 포지션을 선택해주세요.')
     return
   }
 
@@ -196,7 +196,7 @@ const handleSubmit = () => {
       .some(([, isOpen]) => isOpen)
 
   if (!hasOpenPosition) {
-    toast.error('파티장 포지션을 제외하고 최소 한 개의 포지션을 모집해야 합니다.')
+    toast.error('내 포지션을 제외하고 최소 한 개의 포지션을 모집해야 합니다.')
     return
   }
 
@@ -219,8 +219,6 @@ const handleSubmit = () => {
       isOpenSup: positionsOpen.value.SUP
     }
   }
-
-  console.log('writemodal == ' + JSON.stringify(formData))
 
   emit('submit', formData)
 }
