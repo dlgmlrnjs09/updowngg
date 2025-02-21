@@ -16,10 +16,13 @@ import gg.updown.backend.main.api.review.service.ReviewService;
 import gg.updown.backend.main.enums.SiteLeagueTier;
 import gg.updown.backend.main.enums.SiteMatchGameMode;
 import gg.updown.backend.main.enums.SiteMatchPosition;
+import gg.updown.backend.main.exception.SiteCommonException;
+import gg.updown.backend.main.exception.SiteErrorMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -100,8 +103,45 @@ public class PartyCommunityService implements CommunityInterface {
 
     }
 
-    public boolean apply(String puuid, long postId, String position) {
-        return transactionService.applyPartyCommunityPost(postId, position, puuid);
+    public void apply(String puuid, long postId, String position) {
+        // 이미 참가한 포지션이 있는지 확인
+        boolean isParticipateAnotherPosition = partyCommunityMapper.checkParticipateAnotherPosition(postId, puuid);
+        if (isParticipateAnotherPosition) {
+            throw new SiteCommonException(
+                    HttpStatus.CONFLICT
+                    , SiteErrorMessage.PARTICIPATED_ANOTHER_POSITION.getMessage()
+                    , SiteErrorMessage.PARTICIPATED_ANOTHER_POSITION.getMessage()
+                    , SiteErrorMessage.PARTICIPATED_ANOTHER_POSITION.getMessage()
+            );
+        }
+
+        transactionService.applyPartyCommunityPost(postId, position, puuid);
+    }
+
+    public void updateApplicantStatus(PartyCommunityApproveReqDto reqDto, String puuid, boolean isApproval) {
+        // 파티장 본인인지 확인
+        boolean isPartyReader = partyCommunityMapper.checkPartyReader(reqDto.getPostId(), puuid);
+        if (!isPartyReader) {
+            throw new SiteCommonException(
+                    HttpStatus.FORBIDDEN
+                    , SiteErrorMessage.NOT_PARTY_READER.getMessage()
+                    , SiteErrorMessage.NOT_PARTY_READER.getMessage()
+                    , SiteErrorMessage.NOT_PARTY_READER.getMessage()
+            );
+        }
+
+        // 해당 포지션이 마감됐는지 확인
+        boolean isAlreadyPosition = partyCommunityMapper.checkAlreadyByPosition(reqDto.getPostId(), reqDto.getPosition());
+        if (isAlreadyPosition) {
+            throw new SiteCommonException(
+                    HttpStatus.CONFLICT
+                    , SiteErrorMessage.ALREADY_PARTY_POSITION.getMessage()
+                    , SiteErrorMessage.ALREADY_PARTY_POSITION.getMessage()
+                    , SiteErrorMessage.ALREADY_PARTY_POSITION.getMessage()
+            );
+        }
+
+        transactionService.updateApplicantAndParticipant(reqDto.getPostId(), reqDto.getApplicantSeq(), isApproval);
     }
 
     public List<PartyCommunityApplicantDto> getApplicantList(String puuid, List<Long> postIds) {
@@ -113,6 +153,39 @@ public class PartyCommunityService implements CommunityInterface {
         });
 
         return resDtoList;
+    }
+
+    public MyPartyDto getMyActivePartyPost(String puuid) {
+        MyPartyDto resDto = new MyPartyDto();
+
+        PartyPostCardDto postDto = partyCommunityMapper.getPartyActivePost(puuid);
+        if (postDto == null) {
+            // 등록된 모집중인 글이 없음
+            return null;
+        }
+
+        // 참여자 목록 조회
+        List<PartyCommunityParticipantDto> participantDtoList = new ArrayList<>();
+        participantDtoList.add(this.createParticipantDto(SiteMatchPosition.TOP, postDto.getTopPuuid(), postDto.getIsOpenTop()));
+        participantDtoList.add(this.createParticipantDto(SiteMatchPosition.JUNGLE, postDto.getJunglePuuid(), postDto.getIsOpenJungle()));
+        participantDtoList.add(this.createParticipantDto(SiteMatchPosition.MIDDLE, postDto.getMidPuuid(), postDto.getIsOpenMid()));
+        participantDtoList.add(this.createParticipantDto(SiteMatchPosition.BOTTOM, postDto.getAdPuuid(), postDto.getIsOpenAd()));
+        participantDtoList.add(this.createParticipantDto(SiteMatchPosition.UTILITY, postDto.getSupPuuid(), postDto.getIsOpenSup()));
+        postDto.setParticipantDtoList(participantDtoList);
+
+        // 신청자 목록 조회
+        List<PartyCommunityApplicantEntity> applicantEntities = partyCommunityMapper.getWaitingApplicantList(postDto.getPostId());
+        resDto.setPostCardDto(postDto);
+
+        LinkedHashMap<String, List<PartyCommunityApplicantDetailDto>> innerMap = new LinkedHashMap<>();
+        innerMap.put(SiteMatchPosition.TOP.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.TOP, applicantEntities));
+        innerMap.put(SiteMatchPosition.JUNGLE.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.JUNGLE, applicantEntities));
+        innerMap.put(SiteMatchPosition.MIDDLE.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.MIDDLE, applicantEntities));
+        innerMap.put(SiteMatchPosition.BOTTOM.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.BOTTOM, applicantEntities));
+        innerMap.put(SiteMatchPosition.UTILITY.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.UTILITY, applicantEntities));
+        resDto.setApplicantByPositionMap(innerMap);
+
+        return resDto;
     }
 
 
@@ -169,5 +242,63 @@ public class PartyCommunityService implements CommunityInterface {
                 .isOpenPosition(isOpen)
                 .summonerInfoDto(this.getSummonerInfo(puuid))
                 .build();
+    }
+
+    /*private PartyCommunityParticipantDto createParticipantDto(PartyPostCardDto postDto, SiteMatchPosition position) {
+        PartyCommunityParticipantDto innerDto = new PartyCommunityParticipantDto();
+
+        String puuid = null;
+        switch (position){
+            case TOP:
+                puuid = postDto.getTopPuuid();
+                break;
+            case JUNGLE:
+                puuid = postDto.getJunglePuuid();
+                break;
+            case MIDDLE:
+                puuid = postDto.getMidPuuid();
+                break;
+            case BOTTOM:
+                puuid = postDto.getAdPuuid();
+                break;
+            case UTILITY:
+                puuid = postDto.getSupPuuid();
+                break;
+        }
+
+        if (puuid == null) {
+            return null;
+        }
+
+        innerDto.setPosition(position.getCode());
+        innerDto.setIsOpenPosition(postDto.getIsOpenTop());
+        innerDto.setSummonerInfoDto(this.getSummonerInfo(puuid));
+
+        return innerDto;
+    }*/
+
+    private List<PartyCommunityApplicantDetailDto> sortApplicantsByPosition(
+            SiteMatchPosition position,
+            List<PartyCommunityApplicantEntity> applicantEntities
+    ) {
+        return applicantEntities.stream()
+                .filter(applicantEntity -> applicantEntity.getPosition().equals(position.getCode()))
+                .map(applicantEntity -> {
+                    PartyCommunityApplicantDetailDto resultDto = new PartyCommunityApplicantDetailDto();
+                    DuoSummonerInfoDto innerBasicInfoDto = new DuoSummonerInfoDto();
+
+                    // 소환사 기본 정보 설정
+                    innerBasicInfoDto = this.getSummonerInfo(applicantEntity.getApplicantPuuid());
+
+                    resultDto.setPuuid(applicantEntity.getApplicantPuuid());
+                    resultDto.setPosition(applicantEntity.getPosition());
+                    resultDto.setPostId(applicantEntity.getPostId());
+                    resultDto.setApplicantSeq(applicantEntity.getApplicantSeq());
+                    resultDto.setSummonerInfoDto(innerBasicInfoDto);
+                    resultDto.setIsApprove(applicantEntity.isApprove());
+
+                    return resultDto;
+                })
+                .toList();
     }
 }

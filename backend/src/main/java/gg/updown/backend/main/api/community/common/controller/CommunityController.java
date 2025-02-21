@@ -5,8 +5,10 @@ import gg.updown.backend.main.api.community.common.CommunityServiceFactory;
 import gg.updown.backend.main.api.community.common.model.CommunityPostDto;
 import gg.updown.backend.main.api.community.common.model.CommunityPostSubmitReqDto;
 import gg.updown.backend.main.api.community.common.service.CommunityInterface;
+import gg.updown.backend.main.api.community.party.model.MyPartyDto;
 import gg.updown.backend.main.api.community.party.model.PartyCommunityApplicantDto;
 import gg.updown.backend.main.api.community.party.model.PartyCommunityApplyReqDto;
+import gg.updown.backend.main.api.community.party.model.PartyCommunityApproveReqDto;
 import gg.updown.backend.main.api.community.party.service.PartyCommunityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -56,13 +58,12 @@ public class CommunityController {
 
     @PostMapping("/party/apply")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Boolean> applyParty(
+    public void applyParty(
             @RequestBody @Valid PartyCommunityApplyReqDto reqDto,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
-        boolean isSuccess = partyCommunityService.apply(puuid, reqDto.getPostId(), reqDto.getPosition());
-        return ResponseEntity.ok(isSuccess);
+        partyCommunityService.apply(puuid, reqDto.getPostId(), reqDto.getPosition());
     }
 
     @PostMapping("/party/apply/list")
@@ -73,6 +74,35 @@ public class CommunityController {
     ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
         return ResponseEntity.ok(partyCommunityService.getApplicantList(puuid, postIds));
+    }
+
+    @PostMapping("/party/approve")
+    @PreAuthorize("isAuthenticated()")
+    public void approve(
+            @RequestBody @Valid PartyCommunityApproveReqDto reqDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        partyCommunityService.updateApplicantStatus(reqDto, puuid, true);
+    }
+
+    @PostMapping("/party/reject")
+    @PreAuthorize("isAuthenticated()")
+    public void reject(
+            @RequestBody @Valid PartyCommunityApproveReqDto reqDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        partyCommunityService.updateApplicantStatus(reqDto, puuid, false);
+    }
+
+    @GetMapping("/party/my")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<MyPartyDto> getMyParty(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        return ResponseEntity.ok(partyCommunityService.getMyActivePartyPost(puuid));
     }
 
 }

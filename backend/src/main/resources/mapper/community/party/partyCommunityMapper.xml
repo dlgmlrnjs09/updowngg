@@ -122,11 +122,98 @@
 
     <insert id="insertPartyApplicant" parameterType="PartyCommunityApplicantEntity">
         INSERT INTO site_community_party_applicant (
-            post_id, applicant_puuid, position
+            post_id, applicant_puuid, position, applicant_seq
         ) VALUES (
-            #{postId}, #{puuid}, #{position}
+            #{postId}, #{applicantPuuid}, #{position}, #{applicantSeq}
         )
     </insert>
+
+    <select id="checkPartyReader" parameterType="map" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM site_community_post
+            WHERE
+                post_id = #{postId}
+                and writer_puuid = #{puuid}
+        )
+    </select>
+
+    <select id="checkAlreadyByPosition" parameterType="map" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM site_community_party_participant
+            WHERE
+                post_id = #{postId}
+                <choose>
+                    <when test="position == 'TOP'">
+                        and top_puuid is not null
+                    </when>
+                    <when test="position == 'JG'">
+                        and jungle_puuid is not null
+                    </when>
+                    <when test="position == 'MID'">
+                        and mid_puuid is not null
+                    </when>
+                    <when test="position == 'AD'">
+                        and ad_puuid is not null
+                    </when>
+                    <when test="position == 'SUP'">
+                        and sup_puuid is not null
+                    </when>
+                </choose>
+        )
+    </select>
+
+    <select id="checkParticipateAnotherPosition" parameterType="map" resultType="boolean">
+        SELECT EXISTS (
+        SELECT 1
+        FROM site_community_party_participant
+        WHERE
+            post_id = #{postId}
+            and (
+                top_puuid = #{puuid}
+                or jungle_puuid = #{puuid}
+                or mid_puuid = #{puuid}
+                or ad_puuid = #{puuid}
+                or sup_puuid = #{puuid}
+            )
+        )
+    </select>
+
+    <update id="updateApplicantStatus" parameterType="map">
+        UPDATE site_community_party_applicant
+        SET is_approve = #{isApproval}
+        WHERE
+            post_id = #{postId}
+            and applicant_seq = #{applicantSeq}
+    </update>
+
+    <select id="getNextApplicantSeq" parameterType="long" resultType="long">
+        WITH seq AS (
+            INSERT INTO sequence_party_applicant(post_id, current_seq)
+                VALUES (#{postId}, 1)
+                ON CONFLICT (post_id)
+                    DO UPDATE SET current_seq = sequence_party_applicant.current_seq + 1
+                RETURNING current_seq
+        )
+        SELECT current_seq FROM seq
+    </select>
+
+    <select id="getApplicant" resultType="PartyCommunityApplicantEntity" parameterType="map">
+        SELECT
+            post_id,
+            applicant_puuid,
+            position,
+            is_approve,
+            reg_dt,
+            upd_dt,
+            applicant_seq
+        FROM
+            site_community_party_applicant
+        WHERE
+            applicant_seq = #{applicantSeq}
+            AND post_id = #{postId}
+    </select>
 
     <select id="getApplicantList" resultType="PartyCommunityApplicantEntity" parameterType="map">
         SELECT
@@ -135,8 +222,10 @@
             position,
             is_approve,
             reg_dt,
-            upd_dt
-        FROM site_community_party_applicant
+            upd_dt,
+            applicant_seq
+        FROM
+            site_community_party_applicant
         WHERE
             applicant_puuid = #{puuid}
             AND post_id IN
@@ -144,4 +233,85 @@
                 #{postId}
             </foreach>
     </select>
+
+    <select id="getPartyActivePost" parameterType="String" resultType="PartyPostCardDto">
+        select
+            scp.post_id,
+            scp.community_code ,
+            scp.title ,
+            scp."content" ,
+            scp.reg_dt ,
+            scp.upd_dt ,
+            scp.writer_site_code ,
+            scp.writer_puuid,
+            scd.game_mode ,
+            scd.is_open_top,
+            scd.is_open_jungle,
+            scd.is_open_mid,
+            scd.is_open_ad,
+            scd.is_open_sup,
+            scd.post_status,
+            scd.is_use_mic,
+            scpp.top_puuid,
+            scpp.jungle_puuid,
+            scpp.mid_puuid,
+            scpp.ad_puuid,
+            scpp.sup_puuid
+        from
+            site_community_post scp
+            inner join site_community_party scd on (scp.post_id = scd.post_id)
+            inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+        where
+            scp.del_dt is null
+            and scp.writer_puuid = #{puuid}
+            and scd.post_status = 'OPEN'
+    </select>
+
+    <select id="getWaitingApplicantList" resultType="PartyCommunityApplicantEntity" parameterType="long">
+        SELECT
+            post_id,
+            applicant_puuid,
+            position,
+            is_approve,
+            reg_dt,
+            upd_dt,
+            applicant_seq
+        FROM
+            site_community_party_applicant
+        WHERE
+            post_id = #{postId}
+            and is_approve is null
+            and del_dt is null
+    </select>
+
+    <update id="updateParticipant" parameterType="PartyCommunityParticipantEntity">
+        UPDATE site_community_party_participant
+        SET upd_dt = current_timestamp
+            <if test="topPuuid != null">
+                , top_puuid = #{topPuuid}
+            </if>
+            <if test="junglePuuid != null">
+                , jungle_puuid = #{junglePuuid}
+            </if>
+            <if test="midPuuid != null">
+                , mid_puuid = #{midPuuid}
+            </if>
+            <if test="adPuuid != null">
+                , ad_puuid = #{adPuuid}
+            </if>
+            <if test="supPuuid != null">
+                , sup_puuid = #{supPuuid}
+            </if>
+        WHERE
+            post_id = #{postId}
+    </update>
+
+    <update id="deleteAnotherApplicant" parameterType="PartyCommunityApplicantEntity">
+        UPDATE site_community_party_applicant
+        SET del_dt = current_timestamp
+        WHERE
+            post_id = #{postId}
+            AND applicant_puuid = #{applicantPuuid}
+            AND applicant_seq != #{applicantSeq}
+    </update>
 </mapper>

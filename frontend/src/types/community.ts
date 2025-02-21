@@ -84,7 +84,15 @@ export interface PartyPostCardDto {
 
 export interface PartyCommunityApplicantDto {
     postId: number;
-    puuid: string;
+    applicantSeq: number;
+    applicantPuuid: string;
     position: string;
     isApprove: boolean
+
+    summonerInfoDto: DuoSummonerInfoDto
+}
+
+export interface MyPartyPostDto {
+    postCardDto: PartyPostCardDto
+    applicantByPositionMap: Record<string, PartyCommunityApplicantDto[]>;
 }

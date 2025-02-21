@@ -332,13 +332,8 @@ const onLoadMore = () => {
 
 const applyForPosition = async (postId: number, position: string) => {
   const response = await communityApi.applyParty(postId, position);
-  if (response.data === true) {
-    // 신청 성공 시 상태를 저장합니다
     appliedPositions.value.set(`${postId}-${position}`, true);
     toast.success("참가신청이 완료되었습니다.")
-  } else {
-    toast.error("이미 마감된 포지션입니다.")
-  }
 }
 
 const getGameModeName = (code: string) => {

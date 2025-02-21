@@ -1,7 +1,7 @@
 import apiClient from "@/api/axios.ts";
 import type {
     CommunityPostDto,
-    DuoPostCardDto,
+    DuoPostCardDto, MyPartyPostDto,
     PartyCommunityApplicantDto,
     PartyPostCardDto,
     SearchFilter
@@ -35,11 +35,28 @@ export const communityApi = {
         }),
 
     applyParty: (postId: number, position: string) =>
-        apiClient.post<boolean>('/api/v1/community/party/apply', {
+        apiClient.post<void>('/api/v1/community/party/apply', {
             postId: postId,
             position: position
         }),
 
     getApplyList: (postIds: number[]) =>
         apiClient.post<PartyCommunityApplicantDto[]>('/api/v1/community/party/apply/list', postIds),
+
+    getMyPartyPost: () =>
+        apiClient.get<MyPartyPostDto>('/api/v1/community/party/my'),
+
+    approvePartyApplicant: (postId: number, applicantSeq: number, position: string) =>
+        apiClient.post<boolean>('/api/v1/community/party/approve', {
+            postId: postId,
+            applicantSeq: applicantSeq,
+            position: position
+        }),
+
+    rejectPartyApplicant: (postId: number, applicantSeq: number, position: string) =>
+        apiClient.post<boolean>('/api/v1/community/party/reject', {
+            postId: postId,
+            applicantSeq: applicantSeq,
+            position: position
+        }),
 }

@@ -5,8 +5,11 @@ import gg.updown.backend.main.api.community.party.mapper.PartyCommunityMapper;
 import gg.updown.backend.main.api.community.party.model.PartyCommunityApplicantEntity;
 import gg.updown.backend.main.api.community.party.model.PartyCommunityEntity;
 import gg.updown.backend.main.api.community.party.model.PartyCommunityParticipantEntity;
+import gg.updown.backend.main.exception.SiteCommonException;
+import gg.updown.backend.main.exception.SiteErrorMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ public class PartyCommunityTransactionService {
             PartyCommunityEntity partyCommunityEntity,
             PartyCommunityParticipantEntity participantEntity
     ) {
+        partyCommunityEntity.setPostStatus("OPEN");
         communityService.insertPost(communityCode, partyCommunityEntity);
         partyCommunityMapper.insertPartyPost(partyCommunityEntity);
         participantEntity.setPostId(partyCommunityEntity.getPostId());
@@ -30,21 +34,50 @@ public class PartyCommunityTransactionService {
     }
 
     @Transactional
-    public boolean applyPartyCommunityPost(long postId, String position, String puuid) {
+    public void applyPartyCommunityPost(long postId, String position, String puuid) {
         PartyCommunityParticipantEntity participantEntity = partyCommunityMapper.selectParticipantWithLock(postId);
         if (!this.isPositionAvailable(participantEntity, position)) {
             // 마감된 포지션
-            return false;
+            throw new SiteCommonException(
+                HttpStatus.CONFLICT,
+                SiteErrorMessage.ALREADY_PARTY_POSITION.getMessage(),
+                SiteErrorMessage.ALREADY_PARTY_POSITION.getMessage(),
+                SiteErrorMessage.ALREADY_PARTY_POSITION.getMessage()
+            );
         }
+
+        long applicantSeq = partyCommunityMapper.getNextApplicantSeq(postId);
 
         partyCommunityMapper.insertPartyApplicant(PartyCommunityApplicantEntity.builder()
                         .postId(postId)
                         .position(position)
-                        .puuid(puuid)
+                        .applicantPuuid(puuid)
+                        .applicantSeq(applicantSeq)
                 .build()
         );
+    }
 
-        return true;
+    @Transactional
+    public void updateApplicantAndParticipant(long postId, long applicantSeq, boolean isApprove) {
+        // 승인/거절로 상태 변경
+        partyCommunityMapper.updateApplicantStatus(postId, applicantSeq, isApprove);
+        PartyCommunityApplicantEntity applicantEntity = partyCommunityMapper.getApplicant(postId, applicantSeq);
+
+        if (isApprove) {
+            // 해당 post의 다른 포지션 신청서 삭제
+            partyCommunityMapper.deleteAnotherApplicant(applicantEntity);
+
+            // 참가자 목록 업데이트
+            PartyCommunityParticipantEntity sqlParamEntity = new PartyCommunityParticipantEntity();
+            sqlParamEntity.setPostId(postId);
+            sqlParamEntity.setTopPuuid(applicantEntity.getPosition().equals("TOP") ? applicantEntity.getApplicantPuuid() : null);
+            sqlParamEntity.setJunglePuuid(applicantEntity.getPosition().equals("JG") ? applicantEntity.getApplicantPuuid() : null);
+            sqlParamEntity.setMidPuuid(applicantEntity.getPosition().equals("MID") ? applicantEntity.getApplicantPuuid() : null);
+            sqlParamEntity.setAdPuuid(applicantEntity.getPosition().equals("AD") ? applicantEntity.getApplicantPuuid() : null);
+            sqlParamEntity.setSupPuuid(applicantEntity.getPosition().equals("SUP") ? applicantEntity.getApplicantPuuid() : null);
+
+            partyCommunityMapper.updateParticipant(sqlParamEntity);
+        }
     }
 
     private boolean isPositionAvailable(PartyCommunityParticipantEntity participant, String position) {
