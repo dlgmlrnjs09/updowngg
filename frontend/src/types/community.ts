@@ -81,3 +81,10 @@ export interface PartyPostCardDto {
     supPuuid: string | null;
     participantDtoList: PartyParticipantDto[];
 }
+
+export interface PartyCommunityApplicantDto {
+    postId: number;
+    puuid: string;
+    position: string;
+    isApprove: boolean
+}

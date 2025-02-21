@@ -175,9 +175,15 @@
                   <button
                       v-if="participant.isOpenPosition && !participant.summonerInfoDto"
                       @click="applyForPosition(card.postId, participant.position)"
-                      class="text-[10px] bg-[#2979FF] text-white px-2 py-0.5 rounded"
+                      :class="[
+                        'text-[10px] px-2 py-0.5 rounded',
+                        appliedPositions.get(`${card.postId}-${participant.position}`)
+                          ? 'bg-gray-500 cursor-not-allowed'
+                          : 'bg-[#2979FF]'
+                      ]"
+                      :disabled="appliedPositions.get(`${card.postId}-${participant.position}`)"
                   >
-                    신청
+                    {{ appliedPositions.get(`${card.postId}-${participant.position}`) ? '신청완료' : '신청' }}
                   </button>
                 </template>
               </div>
@@ -226,12 +232,19 @@
 import { ref, onMounted, computed } from 'vue'
 import { ThumbsUp, ThumbsDown, MicIcon, MicOffIcon } from 'lucide-vue-next'
 import WriteModal from '@/components/community/party/WriteModal.vue'
-import type {CommunityPostDto, DuoPostCardDto, PartyPostCardDto, SearchFilter} from "@/types/community.ts"
+import type {
+  CommunityPostDto,
+  DuoPostCardDto,
+  PartyCommunityApplicantDto,
+  PartyPostCardDto,
+  SearchFilter
+} from "@/types/community.ts"
 import { communityApi } from "@/api/community.ts"
 import TagList from "@/components/common/TagList.vue"
 import { useToast } from "vue-toastification"
 import { goSelectedSummonerProfile } from "@/utils/common.ts"
 import { useImageUrl } from "@/utils/imageUtil.ts"
+import {useAuthStore} from "@/stores/auth.ts";
 
 const { getPositionImage } = useImageUrl()
 
@@ -245,16 +258,26 @@ const isLoading = ref(false)
 const currentStartIndex = ref(0)
 const isMobile = computed(() => window.innerWidth < 640)
 const postCards = ref<PartyPostCardDto[]>()
+const appliedPositions = ref(new Map());
+
+const toast = useToast()
+const authStore = useAuthStore();
 
 onMounted(async () => {
   await fetchPosts({})
+  const postIds = postCards.value?.map(p => p.postId);
+  if (postIds && postIds.length > 0 && authStore.isAuthenticated) {
+    const response = await communityApi.getApplyList(postIds);
+    // 기존 신청 목록을 appliedPositions에 설정
+    response.data.forEach((application: PartyCommunityApplicantDto) => {
+      appliedPositions.value.set(`${application.postId}-${application.position}`, true);
+    });
+  }
 })
 
 const handleDuoSubmit = async (formData: CommunityPostDto) => {
-  console.log(JSON.stringify(formData))
   await communityApi.insertPost('party', formData)
   showWriteModal.value = false
-  const toast = useToast()
   toast.success('게시글 등록에 성공했습니다!')
 
   const currentFilter: SearchFilter = {
@@ -270,7 +293,6 @@ const handleDuoSubmit = async (formData: CommunityPostDto) => {
 const fetchPosts = async (filter: SearchFilter) => {
   isLoading.value = true
   const response = await communityApi.getPartyPost('party', filter)
-  console.log(JSON.stringify(response.data))
 
   if (filter.offset === 0) {
     postCards.value = response.data
@@ -280,6 +302,8 @@ const fetchPosts = async (filter: SearchFilter) => {
 
   showReadMore.value = response.data.length >= 15
   isLoading.value = false
+
+  return response.data
 }
 
 const onFilterUpdate = () => {
@@ -304,6 +328,17 @@ const onLoadMore = () => {
     limit: 15
   }
   fetchPosts(reqDto)
+}
+
+const applyForPosition = async (postId: number, position: string) => {
+  const response = await communityApi.applyParty(postId, position);
+  if (response.data === true) {
+    // 신청 성공 시 상태를 저장합니다
+    appliedPositions.value.set(`${postId}-${position}`, true);
+    toast.success("참가신청이 완료되었습니다.")
+  } else {
+    toast.error("이미 마감된 포지션입니다.")
+  }
 }
 
 const getGameModeName = (code: string) => {

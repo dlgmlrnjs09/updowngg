@@ -106,4 +106,42 @@
             </if>
         )
     </insert>
+
+    <select id="selectParticipantWithLock" resultType="PartyCommunityParticipantEntity" parameterType="long">
+        SELECT
+            post_id,
+            scpp.top_puuid,
+            scpp.jungle_puuid,
+            scpp.mid_puuid,
+            scpp.ad_puuid,
+            scpp.sup_puuid
+        FROM site_community_party_participant scpp
+        WHERE post_id = #{postId}
+            FOR UPDATE
+    </select>
+
+    <insert id="insertPartyApplicant" parameterType="PartyCommunityApplicantEntity">
+        INSERT INTO site_community_party_applicant (
+            post_id, applicant_puuid, position
+        ) VALUES (
+            #{postId}, #{puuid}, #{position}
+        )
+    </insert>
+
+    <select id="getApplicantList" resultType="PartyCommunityApplicantEntity" parameterType="map">
+        SELECT
+            post_id,
+            applicant_puuid,
+            position,
+            is_approve,
+            reg_dt,
+            upd_dt
+        FROM site_community_party_applicant
+        WHERE
+            applicant_puuid = #{puuid}
+            AND post_id IN
+            <foreach item="postId" collection="postIds" open="(" separator="," close=")">
+                #{postId}
+            </foreach>
+    </select>
 </mapper>

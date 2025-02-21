@@ -5,6 +5,10 @@ import gg.updown.backend.main.api.community.common.CommunityServiceFactory;
 import gg.updown.backend.main.api.community.common.model.CommunityPostDto;
 import gg.updown.backend.main.api.community.common.model.CommunityPostSubmitReqDto;
 import gg.updown.backend.main.api.community.common.service.CommunityInterface;
+import gg.updown.backend.main.api.community.party.model.PartyCommunityApplicantDto;
+import gg.updown.backend.main.api.community.party.model.PartyCommunityApplyReqDto;
+import gg.updown.backend.main.api.community.party.service.PartyCommunityService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +27,7 @@ import java.util.Map;
 public class CommunityController {
 
     private final CommunityServiceFactory communityServiceFactory;
+    private final PartyCommunityService partyCommunityService;
 
     @GetMapping("/{communityCode}/list")
     public <T extends CommunityPostDto> ResponseEntity<List<T>> getPosts(
@@ -48,4 +53,26 @@ public class CommunityController {
         communityService.insertPost(communityCode, paramEntity);
         return ResponseEntity.ok(true);
     }
+
+    @PostMapping("/party/apply")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Boolean> applyParty(
+            @RequestBody @Valid PartyCommunityApplyReqDto reqDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        boolean isSuccess = partyCommunityService.apply(puuid, reqDto.getPostId(), reqDto.getPosition());
+        return ResponseEntity.ok(isSuccess);
+    }
+
+    @PostMapping("/party/apply/list")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<PartyCommunityApplicantDto>> getApplyParty(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody List<Long> postIds
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        return ResponseEntity.ok(partyCommunityService.getApplicantList(puuid, postIds));
+    }
+
 }

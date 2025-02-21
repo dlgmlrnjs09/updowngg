@@ -8,10 +8,7 @@ import gg.updown.backend.main.api.community.common.service.CommunityInterface;
 import gg.updown.backend.main.api.community.duo.model.DuoCommunitySearchFilter;
 import gg.updown.backend.main.api.community.duo.model.DuoSummonerInfoDto;
 import gg.updown.backend.main.api.community.party.mapper.PartyCommunityMapper;
-import gg.updown.backend.main.api.community.party.model.PartyCommunityEntity;
-import gg.updown.backend.main.api.community.party.model.PartyCommunityParticipantDto;
-import gg.updown.backend.main.api.community.party.model.PartyCommunityParticipantEntity;
-import gg.updown.backend.main.api.community.party.model.PartyPostCardDto;
+import gg.updown.backend.main.api.community.party.model.*;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
 import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
 import gg.updown.backend.main.api.review.model.dto.ReviewStatsDto;
@@ -102,6 +99,24 @@ public class PartyCommunityService implements CommunityInterface {
     public void updatePost(String communityCode, CommunityPostEntity post) {
 
     }
+
+    public boolean apply(String puuid, long postId, String position) {
+        return transactionService.applyPartyCommunityPost(postId, position, puuid);
+    }
+
+    public List<PartyCommunityApplicantDto> getApplicantList(String puuid, List<Long> postIds) {
+        List<PartyCommunityApplicantDto> resDtoList = new ArrayList<>();
+        partyCommunityMapper.getApplicantList(puuid, postIds).forEach(dto -> {
+            PartyCommunityApplicantDto p = new PartyCommunityApplicantDto();
+            BeanUtils.copyProperties(dto, p);
+            resDtoList.add(p);
+        });
+
+        return resDtoList;
+    }
+
+
+
 
     private DuoSummonerInfoDto getSummonerInfo(String puuid) {
         SummonerBasicInfoDto summonerDto = lolSummonerService.getSummonerBasicInfoByPuuid(puuid);
