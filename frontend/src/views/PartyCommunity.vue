@@ -7,6 +7,25 @@
     />
 
     <div class="max-w-6xl mx-auto mb-8">
+      <!-- 새로고침 영역 -->
+      <div class="flex justify-end items-center mb-4 gap-3">
+        <span class="text-gray-400 text-sm">{{ countdown }}초 후 새로고침</span>
+        <button
+            @click="manualRefresh"
+            class="bg-[#141414] text-[#2979FF] p-2 rounded-lg transition-colors"
+            :class="{
+        'animate-spin': isPolling,
+        'hover:bg-[#1A1A1A]': countdown <= 5 && !isPolling,
+        'opacity-50 cursor-not-allowed': countdown > 5 || isPolling
+      }"
+            :disabled="countdown > 5 || isPolling"
+        >
+          <RefreshCcw class="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto mb-8">
       <!-- 필터 영역 -->
       <div class="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center mb-8 sm:mb-14">
         <div class="grid grid-cols-2 gap-2 sm:bg-[#141414] sm:p-3 sm:rounded-xl sm:flex sm:gap-3 sm:flex-1 sm:mr-4">
@@ -55,7 +74,11 @@
       </div>
 
       <!-- 듀오 카드 그리드 -->
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <transition-group
+          name="card-transition"
+          tag="div"
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
         <div
             v-for="card in postCards"
             :key="card.postId"
@@ -209,7 +232,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </transition-group>
 
       <!-- 더보기 버튼 -->
       <div v-if="showReadMore" class="max-w-7xl mx-auto mb-20">
@@ -229,18 +252,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { ThumbsUp, ThumbsDown, MicIcon, MicOffIcon } from 'lucide-vue-next'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ThumbsUp, ThumbsDown, MicIcon, MicOffIcon, RefreshCcw } from 'lucide-vue-next'
 import WriteModal from '@/components/community/party/WriteModal.vue'
 import type {
   CommunityPostDto,
-  DuoPostCardDto,
   PartyCommunityApplicantDto,
   PartyPostCardDto,
   SearchFilter
 } from "@/types/community.ts"
 import { communityApi } from "@/api/community.ts"
-import TagList from "@/components/common/TagList.vue"
 import { useToast } from "vue-toastification"
 import { goSelectedSummonerProfile } from "@/utils/common.ts"
 import { useImageUrl } from "@/utils/imageUtil.ts"
@@ -254,17 +275,69 @@ const selectedTier = ref('')
 const showWriteModal = ref(false)
 const showReadMore = ref(true)
 const isLoading = ref(false)
+const isPolling = ref(false)
 /*const postCards = ref<DuoPostCardDto[]>([])*/
 const currentStartIndex = ref(0)
 const isMobile = computed(() => window.innerWidth < 640)
 const postCards = ref<PartyPostCardDto[]>()
 const appliedPositions = ref(new Map());
+const updateInterval = ref<number>()
+const UPDATE_INTERVAL = 10000
+const countdown = ref(10)
+const countdownInterval = ref<number>()
 
 const toast = useToast()
 const authStore = useAuthStore();
 
 onMounted(async () => {
+  setupVisibilityHandler()
   await fetchPosts({})
+  await fetchAppliedPositions()
+  startCountdown()
+
+  // 10초마다 전체 업데이트
+  updateInterval.value = window.setInterval(async () => {
+    await checkUpdates()
+  }, UPDATE_INTERVAL)
+})
+
+onUnmounted(() => {
+  // 컴포넌트 언마운트 시 모든 interval 정리
+  if (updateInterval.value) {
+    clearInterval(updateInterval.value)
+  }
+  if (countdownInterval.value) {
+    clearInterval(countdownInterval.value)
+  }
+  document.removeEventListener('visibilitychange', visibilityHandler)
+})
+
+// 카운트다운 시작 함수
+const startCountdown = () => {
+  // 기존 카운트다운이 있다면 제거
+  if (countdownInterval.value) {
+    clearInterval(countdownInterval.value)
+  }
+
+  countdown.value = 10
+  countdownInterval.value = window.setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) {
+      clearInterval(countdownInterval.value)
+    }
+  }, 1000)
+}
+
+// 수동 새로고침 함수
+const manualRefresh = async () => {
+  // 5초 이상 남았거나 이미 새로고침 중이면 실행하지 않음
+  if (countdown.value > 5 || isPolling.value) return
+
+  await checkUpdates()
+  startCountdown()
+}
+
+const fetchAppliedPositions = async() => {
   const postIds = postCards.value?.map(p => p.postId);
   if (postIds && postIds.length > 0 && authStore.isAuthenticated) {
     const response = await communityApi.getApplyList(postIds);
@@ -273,7 +346,7 @@ onMounted(async () => {
       appliedPositions.value.set(`${application.postId}-${application.position}`, true);
     });
   }
-})
+}
 
 const handleDuoSubmit = async (formData: CommunityPostDto) => {
   await communityApi.insertPost('party', formData)
@@ -330,6 +403,57 @@ const onLoadMore = () => {
   fetchPosts(reqDto)
 }
 
+const visibilityHandler = () => {
+  if (document.hidden) {
+    // 페이지 비활성화 시 모든 interval 제거
+    if (updateInterval.value) {
+      clearInterval(updateInterval.value)
+      updateInterval.value = undefined
+    }
+    if (countdownInterval.value) {
+      clearInterval(countdownInterval.value)
+      countdownInterval.value = undefined
+    }
+  } else {
+    // 페이지 활성화 시 다시 시작
+    if (!updateInterval.value) {
+      checkUpdates() // 즉시 한번 체크
+      startCountdown() // 카운트다운 시작
+      updateInterval.value = window.setInterval(async () => {
+        await checkUpdates()
+      }, UPDATE_INTERVAL)
+    }
+  }
+}
+
+const setupVisibilityHandler = () => {
+  document.addEventListener('visibilitychange', visibilityHandler)
+}
+
+const checkUpdates = async () => {
+  if (isPolling.value) return
+
+  isPolling.value = true
+  startCountdown()
+  try {
+    const currentFilter: SearchFilter = {
+      gameMode: selectedGameMode.value,
+      tier: selectedTier.value,
+      positionSelf: selectedPosition.value,
+      offset: 0,
+      limit: currentStartIndex.value + 15
+    }
+
+    const response = await communityApi.getPartyPost('party', currentFilter)
+    postCards.value = response.data
+    await fetchAppliedPositions()
+  } catch (error) {
+    console.error('업데이트 체크 중 오류:', error)
+  } finally {
+    isPolling.value = false
+  }
+}
+
 const applyForPosition = async (postId: number, position: string) => {
   await communityApi.applyParty(postId, position);
     appliedPositions.value.set(`${postId}-${position}`, true);
@@ -383,6 +507,26 @@ const getGameModeName = (code: string) => {
   animation: spin 1s linear infinite;
 }
 
+.card-transition-move {
+  transition: transform 0.5s ease;
+}
+
+.card-transition-enter-active {
+  transition: all 0.5s ease;
+}
+
+.card-transition-leave-active {
+  transition: all 0.5s ease;
+  position: absolute; /* 제거될 때 다른 요소들의 재배치를 부드럽게 */
+  width: calc(100% - 1rem); /* gap 고려한 너비 */
+}
+
+.card-transition-enter-from,
+.card-transition-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -392,5 +536,18 @@ const getGameModeName = (code: string) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 반응형에 따른 카드 너비 조정 */
+@media (min-width: 640px) {
+  .card-transition-leave-active {
+    width: calc(50% - 1rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-transition-leave-active {
+    width: calc(33.333% - 1rem);
+  }
 }
 </style>
