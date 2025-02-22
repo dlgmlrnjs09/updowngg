@@ -173,7 +173,7 @@
                     {{ participant.isOpenPosition ? '대기 중' : '-' }}
                   </div>
                   <button
-                      v-if="participant.isOpenPosition && !participant.summonerInfoDto"
+                      v-if="shouldShowApplyButton(card, participant)"
                       @click="applyForPosition(card.postId, participant.position)"
                       :class="[
                         'text-[10px] px-2 py-0.5 rounded',
@@ -331,9 +331,27 @@ const onLoadMore = () => {
 }
 
 const applyForPosition = async (postId: number, position: string) => {
-  const response = await communityApi.applyParty(postId, position);
+  await communityApi.applyParty(postId, position);
     appliedPositions.value.set(`${postId}-${position}`, true);
     toast.success("참가신청이 완료되었습니다.")
+}
+
+const shouldShowApplyButton = (card: PartyPostCardDto, currentParticipant: any) => {
+  // 작성자인 경우 버튼 표시하지 않음
+  if (card.writerPuuid === authStore.user?.puuid) {
+    return false;
+  }
+
+  // 이미 다른 포지션에 참가자로 등록된 경우 버튼 표시하지 않음
+  const isAlreadyParticipant = card.participantDtoList.some(participant =>
+      participant.summonerInfoDto?.summonerBasicInfoDto?.puuid === authStore.user?.puuid
+  );
+  if (isAlreadyParticipant) {
+    return false;
+  }
+
+  // 해당 포지션이 신청 가능한 상태인 경우에만 버튼 표시
+  return currentParticipant.isOpenPosition && !currentParticipant.summonerInfoDto;
 }
 
 const getGameModeName = (code: string) => {
