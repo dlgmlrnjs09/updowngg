@@ -16,6 +16,9 @@ public interface PartyCommunityMapper {
     PartyCommunityApplicantEntity getApplicant(@Param("postId") long postId, @Param("applicantSeq") long applicantSeq);
     List<PartyCommunityApplicantEntity> getWaitingApplicantList(long postId);
     long getNextApplicantSeq(long postId);
+    List<PartyCommunityHistoryDto> getPartyHostedHistory(String puuid);
+    List<PartyCommunityHistoryDto> getPartyParticipatedHistory(String puuid);
+    List<PartyCommunityAppliedHistoryDto> getPartyAppliedHistory(String puuid);
 
     void insertPartyPost(PartyCommunityEntity paramEntity);
     void insertPartyParticipant(PartyCommunityParticipantEntity paramEntity);

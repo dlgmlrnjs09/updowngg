@@ -257,7 +257,7 @@ import { ThumbsUp, ThumbsDown, MicIcon, MicOffIcon, RefreshCcw } from 'lucide-vu
 import WriteModal from '@/components/community/party/WriteModal.vue'
 import type {
   CommunityPostDto,
-  PartyCommunityApplicantDto,
+  PartyCommunityApplicantDetailDto,
   PartyPostCardDto,
   SearchFilter
 } from "@/types/community.ts"
@@ -342,7 +342,7 @@ const fetchAppliedPositions = async() => {
   if (postIds && postIds.length > 0 && authStore.isAuthenticated) {
     const response = await communityApi.getApplyList(postIds);
     // 기존 신청 목록을 appliedPositions에 설정
-    response.data.forEach((application: PartyCommunityApplicantDto) => {
+    response.data.forEach((application: PartyCommunityApplicantDetailDto) => {
       appliedPositions.value.set(`${application.postId}-${application.position}`, true);
     });
   }

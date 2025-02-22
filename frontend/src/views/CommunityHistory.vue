@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#0A0A0A] p-6">
+  <div class="min-h-[1000px] bg-[#0A0A0A] p-6">
     <!-- 컨텐츠 컨테이너 -->
     <div class="max-w-[1000px] mx-auto">
       <!-- 탭 네비게이션 -->
@@ -29,7 +29,7 @@
       </div>
 
       <!-- Current Party Section -->
-      <div v-if="activeTab === 'current'" class="space-y-4 min-h-[600px] place-items-center">
+      <div v-if="activeTab === 'current'" class="space-y-4 min-h-[600px] place-items-center content-center">
         <div v-if="myActivePost" class="bg-[#141414] rounded-xl border border-[#ffffff1a] p-4 w-[60%]">
           <!-- 파티 상단 버튼들 -->
           <div class="flex justify-end gap-2 mb-4">
@@ -267,58 +267,224 @@
 
       <!-- History Section -->
       <div v-else class="space-y-4">
-        <!-- 모집했던 파티 -->
-        <div class="bg-[#141414] rounded-xl p-4">
-          <h3 class="text-white text-lg mb-4 flex items-center gap-2">
-            <Users class="w-5 h-5"/>
+        <!-- Section Navigation -->
+        <div class="flex space-x-2 mb-8 bg-[#141414] p-2 rounded-lg">
+          <button
+              @click="setActiveHistoryTab('hosted')"
+              :class="[
+                'flex items-center px-4 py-2 rounded-lg text-sm transition-colors flex-1',
+                activeHistoryTab === 'hosted'
+                  ? 'bg-[#2979FF] text-white'
+                  : 'bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]'
+              ]"
+          >
+            <Users class="w-4 h-4 mr-2" />
             모집했던 파티
-          </h3>
-          <div class="space-y-3">
-            <div v-for="party in hostedParties" :key="party.id"
-                 class="bg-[#1A1A1A] rounded-lg p-3">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-gray-400 text-sm">{{ formatTimeAgo(party.createdAt) }}</span>
-                <span :class="party.status === '마감' ? 'text-[#2979FF]' : 'text-[#FF5252]'"
-                      class="text-sm">
-                  {{ party.status }}
+          </button>
+          <button
+              @click="setActiveHistoryTab('participated')"
+              :class="[
+                'flex items-center px-4 py-2 rounded-lg text-sm transition-colors flex-1',
+                activeHistoryTab === 'participated'
+                  ? 'bg-[#2979FF] text-white'
+                  : 'bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]'
+              ]"
+          >
+            <History class="w-4 h-4 mr-2" />
+            참가했던 파티
+          </button>
+          <button
+              @click="setActiveHistoryTab('applied')"
+              :class="[
+                'flex items-center px-4 py-2 rounded-lg text-sm transition-colors flex-1',
+                activeHistoryTab === 'applied'
+                  ? 'bg-[#2979FF] text-white'
+                  : 'bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]'
+              ]"
+          >
+            <Clock class="w-4 h-4 mr-2" />
+            신청했던 파티
+          </button>
+        </div>
+
+        <!-- 모집했던 파티 -->
+        <div v-if="activeHistoryTab === 'hosted' && hostedPartyHistory"
+             v-for="party in hostedPartyHistory"
+             :key="party.postId"
+             class="bg-[#141414] rounded-xl p-4"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex flex-col">
+              <span class="text-sm text-gray-400">{{ formatTimeAgo(party.regDt) }}</span>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-white font-medium">{{ getGameModeName(party.gameMode) }}</span>
+                <span :class="party.postStatus === 'CLOSE' ? 'text-[#2979FF]' : 'text-[#FF5252]'" class="text-sm">
+                  {{ party.postStatus === 'CLOSE' ? '마감' : '취소' }}
                 </span>
               </div>
-              <p class="text-white mb-2">{{ party.content }}</p>
-              <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-400">{{ getGameModeName(party.gameMode) }}</span>
-                <span class="text-gray-400">참가자 {{ party.participantCount }}명</span>
+            </div>
+            <!-- 펼치기 버튼 -->
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1">
+                <Users class="w-4 h-4 text-gray-400" />
+                <span class="text-gray-400 text-sm">{{ party.participantCount }}/{{party.recruitCount}}</span>
               </div>
+              <div class="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-gray-300"
+                   @click="togglePartyDetails(party.postId)">
+                <component
+                    :is="expandedParties.has(party.postId) ? ChevronUp : ChevronDown"
+                    class="w-4 h-4"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="bg-[#1A1A1A] rounded-lg p-3 mb-3">
+            <p class="text-white text-sm leading-relaxed">{{ party.content }}</p>
+          </div>
+          <!-- 펼쳐졌을 때 보이는 포지션별 참가자 정보 -->
+          <div v-if="expandedParties.has(party.postId)"
+               class="mt-3 space-y-2">
+            <div v-for="participant in party.participantList"
+                 :key="participant.position"
+                 class="bg-[#1A1A1A] rounded-lg p-2 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img :src="getPositionImage(participant.position)" :alt="participant.position" class="w-5 h-5"/>
+                <span class="text-gray-400 text-sm">{{ participant.position }}</span>
+              </div>
+              <div v-if="participant.summonerInfoDto" class="flex items-center gap-1">
+                <span class="text-white text-sm">
+                  {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
+                </span>
+                <span class="text-gray-400 text-xs">
+                  #{{ participant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
+                </span>
+              </div>
+              <div v-else class="text-gray-500 text-sm">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 참가했던 파티 -->
+        <div v-if="activeHistoryTab === 'participated' && participatedPartyHistory"
+             v-for="party in participatedPartyHistory"
+             :key="party.postId"
+             class="bg-[#141414] rounded-xl p-4"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex flex-col">
+              <span class="text-sm text-gray-400">{{ formatTimeAgo(party.regDt) }}</span>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-white font-medium">{{ getGameModeName(party.gameMode) }}</span>
+                <span class="text-sm text-emerald-500">참가 완료</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <!-- 신청인원 표시를 상단으로 이동 -->
+              <div class="flex items-center gap-1">
+                <Users class="w-4 h-4 text-gray-400" />
+                <span class="text-gray-400 text-sm">{{ party.participantCount }}/{{party.recruitCount}}</span>
+              </div>
+              <div class="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-gray-300"
+                   @click="togglePartyDetails(party.postId)">
+                <component
+                    :is="expandedParties.has(party.postId) ? ChevronUp : ChevronDown"
+                    class="w-4 h-4"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="bg-[#1A1A1A] rounded-lg p-3 mb-3">
+            <p class="text-white text-sm leading-relaxed">{{ party.content }}</p>
+          </div>
+          <!-- 펼쳐졌을 때 보이는 포지션별 참가자 정보 -->
+          <div v-if="expandedParties.has(party.postId)"
+               class="mt-3 space-y-2">
+            <div v-for="participant in party.participantList"
+                 :key="participant.position"
+                 class="bg-[#1A1A1A] rounded-lg p-2 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img :src="getPositionImage(participant.position)" :alt="participant.position" class="w-5 h-5"/>
+                <span class="text-gray-400 text-sm">{{ participant.position }}</span>
+              </div>
+              <div v-if="participant.summonerInfoDto" class="flex items-center gap-1">
+                <span class="text-white text-sm">
+                  {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
+                </span>
+                        <span class="text-gray-400 text-xs">
+                  #{{ participant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
+                </span>
+              </div>
+              <div v-else class="text-gray-500 text-sm">-</div>
             </div>
           </div>
         </div>
 
         <!-- 신청했던 파티 -->
-        <div class="bg-[#141414] rounded-xl p-4">
-          <h3 class="text-white text-lg mb-4 flex items-center gap-2">
-            <History class="w-5 h-5"/>
-            신청했던 파티
-          </h3>
-          <div class="space-y-3">
-            <div v-for="party in appliedParties" :key="party.id"
-                 class="bg-[#1A1A1A] rounded-lg p-3">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-gray-400 text-sm">{{ formatTimeAgo(party.createdAt) }}</span>
-                <span :class="getStatusColor(party.status)" class="text-sm">
-                  {{ party.status }}
+        <div v-if="activeHistoryTab === 'applied' && appliedPartyHistory"
+             v-for="party in appliedPartyHistory"
+             :key="party.postId"
+             class="bg-[#141414] rounded-xl p-4"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex flex-col">
+              <span class="text-sm text-gray-400">{{ formatTimeAgo(party.regDt) }}</span>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-white font-medium">{{ getGameModeName(party.gameMode) }}</span>
+                <span :class="getStatusColor(party.postStatus)" class="text-sm">
+                  {{ getPostStatusName(party.postStatus) }}
                 </span>
               </div>
-              <p class="text-white mb-2">{{ party.content }}</p>
-              <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-400">{{ getGameModeName(party.gameMode) }}</span>
-                <span class="text-gray-400">신청 포지션: {{ party.position }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <!-- 신청인원 표시를 포지션 정보 옆으로 이동 -->
+              <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 px-3 py-1.5 bg-[#1A1A1A] rounded-lg">
+                  <img :src="getPositionImage(party.applicantDto.position)" :alt="party.applicantDto.position" class="w-4 h-4"/>
+                  <span class="text-gray-400 text-sm">{{ party.applicantDto.position }}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <Users class="w-4 h-4 text-gray-400" />
+                  <span class="text-gray-400 text-sm">{{ party.participantCount }}/{{party.recruitCount}}</span>
+                </div>
               </div>
+              <div class="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-gray-300"
+                   @click="togglePartyDetails(party.postId)">
+                <component
+                    :is="expandedParties.has(party.postId) ? ChevronUp : ChevronDown"
+                    class="w-4 h-4"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="bg-[#1A1A1A] rounded-lg p-3 mb-3">
+            <p class="text-white text-sm leading-relaxed">{{ party.content }}</p>
+          </div>
+          <!-- 펼쳐졌을 때 보이는 포지션별 참가자 정보 -->
+          <div v-if="expandedParties.has(party.postId)"
+               class="mt-3 space-y-2">
+            <div v-for="participant in party.participantList"
+                 :key="participant.position"
+                 class="bg-[#1A1A1A] rounded-lg p-2 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img :src="getPositionImage(participant.position)" :alt="participant.position" class="w-5 h-5"/>
+                <span class="text-gray-400 text-sm">{{ participant.position }}</span>
+              </div>
+              <div v-if="participant.summonerInfoDto" class="flex items-center gap-1">
+                <span class="text-white text-sm">
+                  {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
+                </span>
+                        <span class="text-gray-400 text-xs">
+                  #{{ participant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
+                </span>
+              </div>
+              <div v-else class="text-gray-500 text-sm">-</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Pagination -->
-      <div v-if="activeTab === 'history' && (hostedParties.length > 0 || appliedParties.length > 0)"
+<!--      <div v-if="activeTab === 'history' && (hostedPartyHistory.length > 0 || appliedPartyHistory.length > 0)"
            class="flex justify-center mt-6 gap-2">
         <button
             v-if="paging.hasPrevious"
@@ -347,7 +513,7 @@
         >
           >
         </button>
-      </div>
+      </div>-->
     </div>
   </div>
 </template>
@@ -357,18 +523,21 @@ import {ref, computed, onMounted, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {
   ThumbsUp, ThumbsDown, Mic, MicOff, ChevronDown, ChevronUp,
-  UserCheck, UserX, History, Users, X
+  UserCheck, UserX, History, Users, X, Clock
 } from 'lucide-vue-next'
 import {createInitialPaging, formatTimeAgo, getPageNumbers} from '@/utils/common'
 import {useToast} from 'vue-toastification'
 import {useImageUrl} from '@/utils/imageUtil'
 import {communityApi} from '@/api/community'
-import type {MyPartyPostDto} from "@/types/community.ts";
+import type {MyPartyPostDto, PartyCommunityAppliedHistoryDto, PartyCommunityHistoryDto} from "@/types/community.ts";
+import {assignWith} from "lodash";
 
 const {getPositionImage} = useImageUrl()
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const activeHistoryTab = ref('hosted')
+const expandedParties = ref(new Set<number>())
 
 const activeTab = ref('current')
 const showApplicants = ref<{ [key in 'TOP' | 'JG' | 'MID' | 'BOT' | 'SUP']: boolean }>({
@@ -380,60 +549,9 @@ const showApplicants = ref<{ [key in 'TOP' | 'JG' | 'MID' | 'BOT' | 'SUP']: bool
 })
 
 const myActivePost = ref<MyPartyPostDto | null>(null)
-
-const hostedParties = ref([
-  {
-    id: 1,
-    content: "솔랭 파티 구합니다",
-    gameMode: "SOLO_RANK",
-    createdAt: "2024-02-20T15:00:00",
-    status: "마감",
-    participantCount: 5
-  },
-  {
-    id: 2,
-    content: "자랭 같이 하실 분~",
-    gameMode: "FLEX_RANK",
-    createdAt: "2024-02-19T10:00:00",
-    status: "마감",
-    participantCount: 3
-  },
-  {
-    id: 3,
-    content: "빠른대전 한판 고?",
-    gameMode: "NORMAL",
-    createdAt: "2024-02-18T20:00:00",
-    status: "취소",
-    participantCount: 2
-  }
-])
-
-const appliedParties = ref([
-  {
-    id: 1,
-    content: "칼바람 한판 고고",
-    gameMode: "ARAM",
-    createdAt: "2024-02-20T14:30:00",
-    status: "승인",
-    position: "MID"
-  },
-  {
-    id: 2,
-    content: "일반 같이 하실 분",
-    gameMode: "NORMAL",
-    createdAt: "2024-02-19T09:30:00",
-    status: "거절",
-    position: "TOP"
-  },
-  {
-    id: 3,
-    content: "솔랭 파티 구해요",
-    gameMode: "SOLO_RANK",
-    createdAt: "2024-02-18T18:30:00",
-    status: "대기중",
-    position: "JG"
-  }
-])
+const hostedPartyHistory = ref<PartyCommunityHistoryDto[] | null>(null)
+const participatedPartyHistory = ref<PartyCommunityHistoryDto[] | null>(null)
+const appliedPartyHistory = ref<PartyCommunityAppliedHistoryDto[] | null>(null)
 
 const paging = ref(createInitialPaging())
 
@@ -448,15 +566,38 @@ const getParticipantByPosition = computed(() => {
   }, {} as Record<string, any>);
 });
 
-const getStatusColor = (status) => {
+const setActiveHistoryTab = async (tab: string) => {
+  activeHistoryTab.value = tab
+  await fetchHistoryData(tab)
+}
+
+const togglePartyDetails = (partyId: number) => {
+  if (expandedParties.value.has(partyId)) {
+    expandedParties.value.delete(partyId)
+  } else {
+    expandedParties.value.add(partyId)
+  }
+}
+
+const getStatusColor = (status: string) => {
   const colors = {
-    '승인': 'text-[#4CAF50]',
-    '거절': 'text-[#FF5252]',
-    '마감': 'text-[#2979FF]',
-    '취소': 'text-[#FF5252]',
-    '대기중': 'text-gray-400'
+    'OPEN': 'text-[#4CAF50]',
+    'CLOSE': 'text-[#2979FF]',
+    'CANCEL': 'text-[#FF5252]',
   }
   return colors[status] || 'text-gray-400'
+}
+
+const getPostStatusName = (postStatus: string) => {
+  if (postStatus === 'OPEN') {
+    return '대기중'
+  } else if (postStatus === 'CLOSE') {
+    return '마감'
+  } else if (postStatus === 'CANCEL') {
+    return '취소'
+  } else {
+    return ''
+  }
 }
 
 const getGameModeName = (code) => {
@@ -485,15 +626,15 @@ const handlePageChange = async (page) => {
   })
 }
 
-const handlePrevPage = () => {
+/*const handlePrevPage = () => {
   paging.value.currentPage = paging.value.startPage - 1
   fetchParties()
-}
+}*/
 
-const handleNextPage = () => {
+/*const handleNextPage = () => {
   paging.value.currentPage = paging.value.endPage + 1
   fetchParties()
-}
+}*/
 
 const handleApprove = async (postId: number, applicantSeq: number, position: string) => {
   await communityApi.approvePartyApplicant(postId, applicantSeq, position)
@@ -519,19 +660,20 @@ const handleUpdatePartyStatus = (postId: number, status: string) => {
   }
 }
 
-const fetchParties = async () => {
-  try {
-    if (activeTab.value === 'current') {
-      const response = await communityApi.getCurrentParty()
-      currentParty.value = response.data
-    } else {
-      const response = await communityApi.getPartyHistory(paging.value.currentPage)
-      hostedParties.value = response.data.hostedParties
-      appliedParties.value = response.data.appliedParties
-      paging.value = response.data.paging
-    }
-  } catch (error) {
-    toast.error('데이터를 불러오는 중 오류가 발생했습니다.')
+const fetchHistoryData = async (type: string) => {
+  switch (type) {
+    case 'hosted':
+      const hostedResponse = await communityApi.getPartyHostedHistory()
+      hostedPartyHistory.value = hostedResponse.data
+      break
+    case 'participated':
+      const participatedResponse = await communityApi.getPartyParticipatedHistory()
+      participatedPartyHistory.value = participatedResponse.data
+      break
+    case 'applied':
+      const appliedResponse = await communityApi.getPartyAppliedHistory()
+      appliedPartyHistory.value = appliedResponse.data
+      break
   }
 }
 
@@ -548,8 +690,6 @@ onMounted(() => {
     paging.value.currentPage = parseInt(route.query.page as string)
   }
 
-  fetchParties()
-
   watch(
       () => route.query,
       (query) => {
@@ -559,10 +699,15 @@ onMounted(() => {
         if (query.page) {
           paging.value.currentPage = parseInt(query.page as string)
         }
-        fetchParties()
       }
   )
 })
+
+watch([activeTab, activeHistoryTab], ([newTab, newHistoryTab]) => {
+  if (newTab === 'history') {
+    fetchHistoryData(newHistoryTab)
+  }
+}, { immediate: true })
 
 onMounted(async () => {
   await fetchMyPartyPost();

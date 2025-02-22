@@ -5,10 +5,7 @@ import gg.updown.backend.main.api.community.common.CommunityServiceFactory;
 import gg.updown.backend.main.api.community.common.model.CommunityPostDto;
 import gg.updown.backend.main.api.community.common.model.CommunityPostSubmitReqDto;
 import gg.updown.backend.main.api.community.common.service.CommunityInterface;
-import gg.updown.backend.main.api.community.party.model.MyPartyDto;
-import gg.updown.backend.main.api.community.party.model.PartyCommunityApplicantDto;
-import gg.updown.backend.main.api.community.party.model.PartyCommunityApplyReqDto;
-import gg.updown.backend.main.api.community.party.model.PartyCommunityApproveReqDto;
+import gg.updown.backend.main.api.community.party.model.*;
 import gg.updown.backend.main.api.community.party.service.PartyCommunityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -114,6 +111,27 @@ public class CommunityController {
     ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
         partyCommunityService.updatePartyStatus(postId, puuid, "CANCEL");
+    }
+
+    @GetMapping("/party/history/hosted")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<PartyCommunityHistoryDto>> getPartyHostedHistory(@AuthenticationPrincipal UserDetails userDetails) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        return ResponseEntity.ok(partyCommunityService.getPartyHostedHistory(puuid));
+    }
+
+    @GetMapping("/party/history/participated")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<PartyCommunityHistoryDto>> getPartyParticipatedHistory(@AuthenticationPrincipal UserDetails userDetails) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        return ResponseEntity.ok(partyCommunityService.getPartyParticipatedHistory(puuid));
+    }
+
+    @GetMapping("/party/history/applied")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<PartyCommunityAppliedHistoryDto>> getPartyAppliedHistory(@AuthenticationPrincipal UserDetails userDetails) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        return ResponseEntity.ok(partyCommunityService.getPartyAppliedHistory(puuid));
     }
 
     @GetMapping("/party/my")

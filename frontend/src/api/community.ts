@@ -2,7 +2,7 @@ import apiClient from "@/api/axios.ts";
 import type {
     CommunityPostDto,
     DuoPostCardDto, MyPartyPostDto,
-    PartyCommunityApplicantDto,
+    PartyCommunityApplicantDetailDto, PartyCommunityAppliedHistoryDto, PartyCommunityHistoryDto,
     PartyPostCardDto,
     SearchFilter
 } from "@/types/community.ts";
@@ -41,7 +41,7 @@ export const communityApi = {
         }),
 
     getApplyList: (postIds: number[]) =>
-        apiClient.post<PartyCommunityApplicantDto[]>('/api/v1/community/party/apply/list', postIds),
+        apiClient.post<PartyCommunityApplicantDetailDto[]>('/api/v1/community/party/apply/list', postIds),
 
     getMyPartyPost: () =>
         apiClient.get<MyPartyPostDto>('/api/v1/community/party/my'),
@@ -65,4 +65,13 @@ export const communityApi = {
 
     cancelParty: (postId: number) =>
         apiClient.post<void>(`/api/v1/community/party/cancel/${postId}`),
+
+    getPartyHostedHistory: () =>
+        apiClient.get<PartyCommunityHistoryDto[]>('/api/v1/community/party/history/hosted'),
+
+    getPartyParticipatedHistory: () =>
+        apiClient.get<PartyCommunityHistoryDto[]>('/api/v1/community/party/history/participated'),
+
+    getPartyAppliedHistory: () =>
+        apiClient.get<PartyCommunityAppliedHistoryDto[]>('/api/v1/community/party/history/applied'),
 }

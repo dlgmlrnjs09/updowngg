@@ -214,6 +214,24 @@ public class PartyCommunityService implements CommunityInterface {
         partyCommunityMapper.updatePartyStatus(postId, status);
     }
 
+    public List<PartyCommunityHistoryDto> getPartyHostedHistory(String puuid) {
+        List<PartyCommunityHistoryDto> hostedPartyList = partyCommunityMapper.getPartyHostedHistory(puuid);
+        this.setParticipantListByPartyList(hostedPartyList);
+        return hostedPartyList;
+    }
+
+    public List<PartyCommunityHistoryDto> getPartyParticipatedHistory(String puuid) {
+        List<PartyCommunityHistoryDto> participatedList = partyCommunityMapper.getPartyParticipatedHistory(puuid);
+        this.setParticipantListByPartyList(participatedList);
+        return participatedList;
+    }
+
+    public List<PartyCommunityAppliedHistoryDto> getPartyAppliedHistory(String puuid) {
+        List<PartyCommunityAppliedHistoryDto> appliedHistoryList = partyCommunityMapper.getPartyAppliedHistory(puuid);
+        this.setParticipantListByPartyList(appliedHistoryList);
+        return appliedHistoryList;
+    }
+
 
 
 
@@ -270,38 +288,25 @@ public class PartyCommunityService implements CommunityInterface {
                 .build();
     }
 
-    /*private PartyCommunityParticipantDto createParticipantDto(PartyPostCardDto postDto, SiteMatchPosition position) {
-        PartyCommunityParticipantDto innerDto = new PartyCommunityParticipantDto();
-
-        String puuid = null;
-        switch (position){
-            case TOP:
-                puuid = postDto.getTopPuuid();
-                break;
-            case JUNGLE:
-                puuid = postDto.getJunglePuuid();
-                break;
-            case MIDDLE:
-                puuid = postDto.getMidPuuid();
-                break;
-            case BOTTOM:
-                puuid = postDto.getAdPuuid();
-                break;
-            case UTILITY:
-                puuid = postDto.getSupPuuid();
-                break;
-        }
-
+    private PartyCommunityParticipantDto createParticipantDtoOnlyBasicInfo(SiteMatchPosition position, String puuid, Boolean isOpen) {
         if (puuid == null) {
-            return null;
+            return PartyCommunityParticipantDto.builder()
+                    .position(position.getCode())
+                    .isOpenPosition(isOpen)
+                    .build();
         }
 
-        innerDto.setPosition(position.getCode());
-        innerDto.setIsOpenPosition(postDto.getIsOpenTop());
-        innerDto.setSummonerInfoDto(this.getSummonerInfo(puuid));
+        DuoSummonerInfoDto summonerInfoDto = new DuoSummonerInfoDto();
+        SummonerBasicInfoDto summonerDto = lolSummonerService.getSummonerBasicInfoByPuuid(puuid);
+        summonerDto.setProfileIconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, summonerDto.getProfileIconId()));
+        summonerInfoDto.setSummonerBasicInfoDto(summonerDto);
 
-        return innerDto;
-    }*/
+        return PartyCommunityParticipantDto.builder()
+                .isOpenPosition(isOpen)
+                .position(position.getCode())
+                .summonerInfoDto(summonerInfoDto)
+                .build();
+    }
 
     private List<PartyCommunityApplicantDetailDto> sortApplicantsByPosition(
             SiteMatchPosition position,
@@ -326,5 +331,49 @@ public class PartyCommunityService implements CommunityInterface {
                     return resultDto;
                 })
                 .toList();
+    }
+
+    private int getRecruitCount(PartyCommunityHistoryBaseDto historyDto) {
+        int count = 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenTop()) ? 1 : 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenJungle()) ? 1 : 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenMid()) ? 1 : 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenAd()) ? 1 : 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenSup()) ? 1 : 0;
+
+        return count + 1; // 본인포함
+    }
+
+    private int getParticipantCount(PartyCommunityHistoryBaseDto historyDto) {
+        int count = 0;
+        count += historyDto.getTopPuuid() != null ? 1 : 0;
+        count += historyDto.getJunglePuuid() != null ? 1 : 0;
+        count += historyDto.getMidPuuid() != null ? 1 : 0;
+        count += historyDto.getAdPuuid() != null ? 1 : 0;
+        count += historyDto.getSupPuuid() != null ? 1 : 0;
+
+        return count;
+    }
+
+    private <T extends PartyCommunityHistoryBaseDto> void setParticipantListByPartyList(List<T> partyList) {
+        for (T party : partyList) {
+            List<PartyCommunityParticipantDto> participantList = new ArrayList<>();
+
+            PartyCommunityParticipantDto topDto = this.createParticipantDtoOnlyBasicInfo(SiteMatchPosition.TOP, party.getTopPuuid(), party.getIsOpenTop());
+            PartyCommunityParticipantDto jungleDto = this.createParticipantDtoOnlyBasicInfo(SiteMatchPosition.JUNGLE, party.getJunglePuuid(), party.getIsOpenJungle());
+            PartyCommunityParticipantDto midDto = this.createParticipantDtoOnlyBasicInfo(SiteMatchPosition.MIDDLE, party.getMidPuuid(), party.getIsOpenMid());
+            PartyCommunityParticipantDto adDto = this.createParticipantDtoOnlyBasicInfo(SiteMatchPosition.BOTTOM, party.getAdPuuid(), party.getIsOpenAd());
+            PartyCommunityParticipantDto supDto = this.createParticipantDtoOnlyBasicInfo(SiteMatchPosition.UTILITY, party.getSupPuuid(), party.getIsOpenSup());
+
+            participantList.add(topDto);
+            participantList.add(jungleDto);
+            participantList.add(midDto);
+            participantList.add(adDto);
+            participantList.add(supDto);
+
+            party.setRecruitCount(this.getRecruitCount(party));
+            party.setParticipantCount(this.getParticipantCount(party));
+            party.setParticipantList(participantList);
+        }
     }
 }

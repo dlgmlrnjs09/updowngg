@@ -84,6 +84,13 @@ export interface PartyPostCardDto {
 
 export interface PartyCommunityApplicantDto {
     postId: number;
+    puuid: string;
+    position: string;
+    isApprove: string;
+}
+
+export interface PartyCommunityApplicantDetailDto {
+    postId: number;
     applicantSeq: number;
     applicantPuuid: string;
     position: string;
@@ -94,5 +101,34 @@ export interface PartyCommunityApplicantDto {
 
 export interface MyPartyPostDto {
     postCardDto: PartyPostCardDto
-    applicantByPositionMap: Record<string, PartyCommunityApplicantDto[]>;
+    applicantByPositionMap: Record<string, PartyCommunityApplicantDetailDto[]>;
+}
+
+interface PartyCommunityHistoryBaseDto {
+    postId: number;
+    gameMode: string;
+    content: string;
+    isOpenTop: boolean;
+    isOpenJungle: boolean;
+    isOpenMid: boolean;
+    isOpenAd: boolean;
+    isOpenSup: boolean;
+    topPuuid: string;
+    junglePuuid: string;
+    midPuuid: string;
+    adPuuid: string;
+    supPuuid: string;
+    postStatus: string;
+    regDt: string;
+
+    recruitCount: number;
+    participantCount: number;
+    participantList: PartyParticipantDto[];
+}
+
+export interface PartyCommunityHistoryDto extends PartyCommunityHistoryBaseDto{
+}
+
+export interface PartyCommunityAppliedHistoryDto extends PartyCommunityHistoryBaseDto{
+    applicantDto: PartyCommunityApplicantDto
 }

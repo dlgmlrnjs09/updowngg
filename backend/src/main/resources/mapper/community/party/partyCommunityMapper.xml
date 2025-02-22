@@ -339,4 +339,126 @@
                 and scp2.post_status = 'OPEN'
         )
     </select>
+
+    <select id="getPartyHostedHistory" parameterType="String" resultType="PartyCommunityHistoryDto">
+        select
+            scp.post_id,
+            "content",
+            scp.reg_dt ,
+            game_mode,
+            scp2.is_open_top ,
+            scp2.is_open_jungle ,
+            scp2.is_open_mid ,
+            scp2.is_open_ad ,
+            scp2.is_open_sup ,
+            post_status,
+            scpp.top_puuid,
+            scpp.jungle_puuid,
+            scpp.mid_puuid,
+            scpp.ad_puuid,
+            scpp.sup_puuid
+        from
+            site_community_post scp
+                inner join site_community_party scp2 on (scp.post_id = scp2.post_id)
+                inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+        where
+            scp.writer_puuid = #{puuid}
+          and scp2.post_status in ('CANCEL', 'CLOSE')
+          and scp.del_dt is null
+          and scp2.del_dt is null
+        order by
+            scp.post_id desc
+    </select>
+
+    <select id="getPartyParticipatedHistory" parameterType="String" resultType="PartyCommunityHistoryDto">
+        select
+            scp.post_id,
+            "content",
+            scp.reg_dt ,
+            game_mode,
+            scp2.is_open_top ,
+            scp2.is_open_jungle ,
+            scp2.is_open_mid ,
+            scp2.is_open_ad ,
+            scp2.is_open_sup ,
+            post_status,
+            scpp.top_puuid,
+            scpp.jungle_puuid,
+            scpp.mid_puuid,
+            scpp.ad_puuid,
+            scpp.sup_puuid
+        from
+            site_community_post scp
+            inner join site_community_party scp2 on (scp.post_id = scp2.post_id)
+            inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+        where
+            scp.del_dt is null
+            and scp2.del_dt is null
+            and scp.writer_puuid != #{puuid}
+            and (
+            scpp.top_puuid = #{puuid}
+                or scpp.jungle_puuid = #{puuid}
+                or scpp.mid_puuid = #{puuid}
+                or scpp.ad_puuid = #{puuid}
+                or scpp.sup_puuid = #{puuid}
+            )
+    </select>
+
+    <resultMap id="AppliedHistoryResultMap" type="PartyCommunityAppliedHistoryDto">
+        <id property="postId" column="post_id"/>
+        <result property="gameMode" column="game_mode"/>
+        <result property="content" column="content"/>
+        <result property="isOpenTop" column="is_open_top"/>
+        <result property="isOpenJungle" column="is_open_jungle"/>
+        <result property="isOpenMid" column="is_open_mid"/>
+        <result property="isOpenAd" column="is_open_ad"/>
+        <result property="isOpenSup" column="is_open_sup"/>
+        <result property="topPuuid" column="top_puuid"/>
+        <result property="junglePuuid" column="jungle_puuid"/>
+        <result property="midPuuid" column="mid_puuid"/>
+        <result property="adPuuid" column="ad_puuid"/>
+        <result property="supPuuid" column="sup_puuid"/>
+        <result property="postStatus" column="post_status"/>
+        <result property="regDt" column="reg_dt"/>
+
+        <association property="applicantDto" javaType="PartyCommunityApplicantDto">
+            <result property="postId" column="post_id"/>
+            <result property="puuid" column="applicant_puuid"/>
+            <result property="position" column="position"/>
+            <result property="isApprove" column="is_approve"/>
+        </association>
+    </resultMap>
+
+    <select id="getPartyAppliedHistory" parameterType="String" resultMap="AppliedHistoryResultMap">
+        select
+            scp.post_id,
+            "content",
+            scp.reg_dt ,
+            game_mode,
+            scp2.is_open_top ,
+            scp2.is_open_jungle ,
+            scp2.is_open_mid ,
+            scp2.is_open_ad ,
+            scp2.is_open_sup ,
+            post_status,
+            scpp.top_puuid,
+            scpp.jungle_puuid,
+            scpp.mid_puuid,
+            scpp.ad_puuid,
+            scpp.sup_puuid,
+            scpa.applicant_puuid,
+            scpa.position,
+            scpa.is_approve,
+            scpa.reg_dt
+        from
+            site_community_post scp
+                inner join site_community_party scp2 on (scp.post_id = scp2.post_id)
+                inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+                inner join site_community_party_applicant scpa on (scp.post_id = scpa.post_id)
+        where
+            scp.del_dt is null
+            and scp2.del_dt is null
+            and scpa.del_dt is null
+            and scpa.applicant_puuid = #{puuid}
+    </select>
 </mapper>
