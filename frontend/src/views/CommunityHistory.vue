@@ -29,8 +29,8 @@
       </div>
 
       <!-- Current Party Section -->
-      <div v-if="activeTab === 'current'" class="space-y-4 min-h-[600px]">
-        <div v-if="myActivePost" class="bg-[#141414] rounded-xl border border-[#ffffff1a] p-4">
+      <div v-if="activeTab === 'current'" class="space-y-4 min-h-[600px] place-items-center">
+        <div v-if="myActivePost" class="bg-[#141414] rounded-xl border border-[#ffffff1a] p-4 w-[60%]">
           <!-- 파티 상단 버튼들 -->
           <div class="flex justify-end gap-2 mb-4">
             <button
@@ -133,8 +133,8 @@
 
                 <!-- 참여자가 없는 경우 -->
                 <template v-else>
-                  <div class="text-gray-500 text-xs flex-1">
-                    {{ myActivePost?.postCardDto.participantDtoList.find(p => p.position === position)?.isOpenPosition ? '대기 중' : '-' }}
+                  <div class="text-gray-500 text-xs flex-1 text-center">
+                    {{ myActivePost?.postCardDto.participantDtoList.find(p => p.position === position)?.isOpenPosition ? '대기중' : '-' }}
                   </div>
                 </template>
 
