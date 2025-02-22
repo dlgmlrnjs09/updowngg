@@ -71,6 +71,16 @@ public class PartyCommunityService implements CommunityInterface {
 
     @Override
     public void insertPost(String communityCode, CommunityPostSubmitReqDto post) {
+
+        if (partyCommunityMapper.checkAlreadyMyParty(post.getWriterPuuid())) {
+            throw new SiteCommonException(
+                    HttpStatus.CONFLICT,
+                    SiteErrorMessage.ALREADY_MY_PARTY.getMessage(),
+                    SiteErrorMessage.ALREADY_MY_PARTY.getMessage(),
+                    SiteErrorMessage.ALREADY_MY_PARTY.getMessage()
+            );
+        }
+
         PartyCommunityEntity partyCommunityEntity = new PartyCommunityEntity();
         PartyCommunityParticipantEntity participantEntity = new PartyCommunityParticipantEntity();
         BeanUtils.copyProperties(post, partyCommunityEntity);

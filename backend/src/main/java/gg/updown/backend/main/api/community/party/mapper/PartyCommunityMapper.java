@@ -24,6 +24,8 @@ public interface PartyCommunityMapper {
     boolean checkPartyReader(@Param("postId") long postId, @Param("puuid")String puuid);
     boolean checkAlreadyByPosition(@Param("postId") long postId, @Param("position")String position);
     boolean checkParticipateAnotherPosition(@Param("postId")long postId, @Param("puuid") String puuid);
+    boolean checkAlreadyMyParty(String puuid);
+
     void updateApplicantStatus(@Param("postId") long postId, @Param("applicantSeq") long applicantSeq, @Param("isApproval")boolean isApproval);
     void updateParticipant(PartyCommunityParticipantEntity paramEntity);
     void deleteAnotherApplicant(PartyCommunityApplicantEntity paramEntity);

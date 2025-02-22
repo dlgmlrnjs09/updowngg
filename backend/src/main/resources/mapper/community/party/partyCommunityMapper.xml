@@ -326,4 +326,17 @@
         WHERE
             post_id = #{postId}
     </update>
+
+    <select id="checkAlreadyMyParty" parameterType="String" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM site_community_post scp
+                inner join site_community_party scp2 on (scp.post_id = scp2.post_id)
+            WHERE
+                scp.writer_puuid = #{puuid}
+                and scp.del_dt is null
+                and scp2.del_dt is null
+                and scp2.post_status = 'OPEN'
+        )
+    </select>
 </mapper>
