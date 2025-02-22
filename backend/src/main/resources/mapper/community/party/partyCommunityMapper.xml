@@ -32,6 +32,8 @@
         where
             scp.del_dt is null
             and scp.community_code = 'party'
+            and scd.post_status = 'OPEN'
+            and scd.del_dt is null
             <if test="gameMode != null">
                 and game_mode = #{gameMode}
             </if>
