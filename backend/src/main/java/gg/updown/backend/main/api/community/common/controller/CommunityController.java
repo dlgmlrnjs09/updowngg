@@ -96,6 +96,26 @@ public class CommunityController {
         partyCommunityService.updateApplicantStatus(reqDto, puuid, false);
     }
 
+    @PostMapping("/party/close/{postId}")
+    @PreAuthorize("isAuthenticated()")
+    public void close(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        partyCommunityService.updatePartyStatus(postId, puuid, "CLOSE");
+    }
+
+    @PostMapping("/party/cancel/{postId}")
+    @PreAuthorize("isAuthenticated()")
+    public void cancel(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        partyCommunityService.updatePartyStatus(postId, puuid, "CANCEL");
+    }
+
     @GetMapping("/party/my")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MyPartyDto> getMyParty(

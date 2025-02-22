@@ -27,4 +27,5 @@ public interface PartyCommunityMapper {
     void updateApplicantStatus(@Param("postId") long postId, @Param("applicantSeq") long applicantSeq, @Param("isApproval")boolean isApproval);
     void updateParticipant(PartyCommunityParticipantEntity paramEntity);
     void deleteAnotherApplicant(PartyCommunityApplicantEntity paramEntity);
+    void updatePartyStatus(@Param("postId")long postId, @Param("postStatus")String postStatus);
 }

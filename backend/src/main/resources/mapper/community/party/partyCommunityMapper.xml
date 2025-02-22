@@ -314,4 +314,14 @@
             AND applicant_puuid = #{applicantPuuid}
             AND applicant_seq != #{applicantSeq}
     </update>
+
+    <update id="updatePartyStatus" parameterType="map">
+        UPDATE
+            site_community_party
+        SET
+            post_status = #{postStatus},
+            upd_dt = current_timestamp
+        WHERE
+            post_id = #{postId}
+    </update>
 </mapper>

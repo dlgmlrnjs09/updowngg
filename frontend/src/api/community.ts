@@ -59,4 +59,10 @@ export const communityApi = {
             applicantSeq: applicantSeq,
             position: position
         }),
+
+    closeParty: (postId: number) =>
+        apiClient.post<void>(`/api/v1/community/party/close/${postId}`),
+
+    cancelParty: (postId: number) =>
+        apiClient.post<void>(`/api/v1/community/party/cancel/${postId}`),
 }

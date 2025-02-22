@@ -188,6 +188,22 @@ public class PartyCommunityService implements CommunityInterface {
         return resDto;
     }
 
+    public void updatePartyStatus(long postId, String puuid, String status) {
+
+        // 파티장 본인인지 확인
+        boolean isPartyReader = partyCommunityMapper.checkPartyReader(postId, puuid);
+        if (!isPartyReader) {
+            throw new SiteCommonException(
+                    HttpStatus.FORBIDDEN
+                    , SiteErrorMessage.NOT_PARTY_READER.getMessage()
+                    , SiteErrorMessage.NOT_PARTY_READER.getMessage()
+                    , SiteErrorMessage.NOT_PARTY_READER.getMessage()
+            );
+        }
+
+        partyCommunityMapper.updatePartyStatus(postId, status);
+    }
+
 
 
 

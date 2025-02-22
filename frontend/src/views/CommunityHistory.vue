@@ -34,14 +34,14 @@
           <!-- 파티 상단 버튼들 -->
           <div class="flex justify-end gap-2 mb-4">
             <button
-                @click="handleCloseRecruitment"
+                @click="handleUpdatePartyStatus(myActivePost?.postCardDto.postId, 'CLOSE')"
                 class="bg-[#2979FF] hover:bg-[#2565D1] text-white px-3 py-1.5 rounded flex items-center gap-1 text-sm"
             >
               <Users class="w-4 h-4"/>
               모집 마감
             </button>
             <button
-                @click="handleCancelParty"
+                @click="handleUpdatePartyStatus(myActivePost?.postCardDto.postId, 'CANCEL')"
                 class="bg-[#FF5252] hover:bg-[#D32F2F] text-white px-3 py-1.5 rounded flex items-center gap-1 text-sm"
             >
               <X class="w-4 h-4"/>
@@ -173,19 +173,19 @@
                            class="w-10 h-10 rounded-lg"/>
                       <div>
                         <div class="flex items-center gap-1">
-            <span class="text-white text-sm font-medium">
-              {{ applicant.summonerInfoDto.summonerBasicInfoDto.gameName }}
-            </span>
+                          <span class="text-white text-sm font-medium">
+                            {{ applicant.summonerInfoDto.summonerBasicInfoDto.gameName }}
+                          </span>
                           <span class="text-gray-400 text-xs">
-              #{{ applicant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
-            </span>
+                            #{{ applicant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
+                          </span>
                         </div>
                         <div class="flex gap-1 mt-1">
-            <span v-for="tag in applicant.summonerInfoDto.frequentTagDtoList"
-                  :key="tag.tagCode"
-                  class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1.5 py-0.5 rounded">
-              {{ tag.tagValue }}
-            </span>
+                          <span v-for="tag in applicant.summonerInfoDto.frequentTagDtoList"
+                                :key="tag.tagCode"
+                                class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1.5 py-0.5 rounded">
+                            {{ tag.tagValue }}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -193,25 +193,25 @@
                     <!-- 평가 정보 -->
                     <div class="w-[140px] flex flex-col">
                       <div class="flex items-center gap-2">
-          <span class="text-[#2979FF] text-sm font-medium">
-            {{ applicant.summonerInfoDto.reviewStatsDto.score ?? 0 }}점
-          </span>
+                        <span class="text-[#2979FF] text-sm font-medium">
+                          {{ applicant.summonerInfoDto.reviewStatsDto.score ?? 0 }}점
+                        </span>
                         <span class="text-gray-400 text-xs">
-            ({{ applicant.summonerInfoDto.reviewStatsDto.totalReviewCnt }}회)
-          </span>
+                          ({{ applicant.summonerInfoDto.reviewStatsDto.totalReviewCnt }}회)
+                        </span>
                       </div>
                       <div class="flex items-center gap-3 mt-1">
                         <div class="flex items-center gap-1">
                           <ThumbsUp class="w-3 h-3 text-[#4CAF50]"/>
                           <span class="text-[#4CAF50] text-xs">
-              {{ applicant.summonerInfoDto.reviewStatsDto.upCount }}
-            </span>
+                            {{ applicant.summonerInfoDto.reviewStatsDto.upCount }}
+                          </span>
                         </div>
                         <div class="flex items-center gap-1">
                           <ThumbsDown class="w-3 h-3 text-[#FF5252]"/>
                           <span class="text-[#FF5252] text-xs">
-              {{ applicant.summonerInfoDto.reviewStatsDto.downCount }}
-            </span>
+                            {{ applicant.summonerInfoDto.reviewStatsDto.downCount }}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -505,6 +505,18 @@ const handleReject = async (postId: number, applicantSeq: number, position: stri
   await communityApi.rejectPartyApplicant(postId, applicantSeq, position)
   toast.success('거절되었습니다.')
   await fetchMyPartyPost()
+}
+
+const handleUpdatePartyStatus = (postId: number, status: string) => {
+  if (status === 'CLOSE') {
+    communityApi.closeParty(postId);
+    toast.success('모집 마감되었습니다.')
+    myActivePost.value = null
+  } else {
+    communityApi.cancelParty(postId);
+    toast.success('모집 취소되었습니다.')
+    myActivePost.value = null
+  }
 }
 
 const fetchParties = async () => {
