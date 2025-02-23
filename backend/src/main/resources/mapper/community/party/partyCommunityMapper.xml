@@ -269,6 +269,63 @@
             and scd.post_status = 'OPEN'
     </select>
 
+    <select id="getMyParticipantPost" parameterType="String" resultType="PartyPostCardDto">
+        select
+            scp.post_id,
+            scp.community_code ,
+            scp.title ,
+            scp."content" ,
+            scp.reg_dt ,
+            scp.upd_dt ,
+            scp.writer_site_code ,
+            scp.writer_puuid,
+            scd.game_mode ,
+            scd.is_open_top,
+            scd.is_open_jungle,
+            scd.is_open_mid,
+            scd.is_open_ad,
+            scd.is_open_sup,
+            scd.post_status,
+            scd.is_use_mic,
+            scpp.top_puuid,
+            scpp.jungle_puuid,
+            scpp.mid_puuid,
+            scpp.ad_puuid,
+            scpp.sup_puuid
+        from
+            site_community_post scp
+                inner join site_community_party scd on (scp.post_id = scd.post_id)
+                inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+        where
+            scp.del_dt is null
+            and scd.post_status = 'OPEN'
+            and (
+                top_puuid = #{puuid}
+                or jungle_puuid = #{puuid}
+                or mid_puuid = #{puuid}
+                or ad_puuid = #{puuid}
+                or sup_puuid = #{puuid}
+            )
+    </select>
+
+    <select id="checkMyOpenParticipantPost" parameterType="String" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+           FROM site_community_post scp
+            inner join site_community_party scd on (scp.post_id = scd.post_id)
+            inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+            WHERE scp.del_dt is null
+                 and scd.post_status = 'OPEN'
+                 and (
+                   top_puuid = #{puuid}
+                       or jungle_puuid = #{puuid}
+                       or mid_puuid = #{puuid}
+                       or ad_puuid = #{puuid}
+                       or sup_puuid = #{puuid}
+                   )
+        )
+    </select>
+
     <select id="getWaitingApplicantList" resultType="PartyCommunityApplicantEntity" parameterType="long">
         SELECT
             post_id,

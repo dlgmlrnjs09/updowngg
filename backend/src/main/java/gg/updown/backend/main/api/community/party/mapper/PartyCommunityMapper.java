@@ -13,6 +13,8 @@ public interface PartyCommunityMapper {
     PartyCommunityParticipantEntity selectParticipantWithLock(long postId);
     List<PartyCommunityApplicantEntity> getApplicantList(@Param("puuid")String puuid, @Param("postIds")List<Long> postIds);
     PartyPostCardDto getPartyActivePost(String puuid);
+    PartyPostCardDto getMyParticipantPost(String puuid);
+    boolean checkMyOpenParticipantPost(String puuid);
     PartyCommunityApplicantEntity getApplicant(@Param("postId") long postId, @Param("applicantSeq") long applicantSeq);
     List<PartyCommunityApplicantEntity> getWaitingApplicantList(long postId);
     long getNextApplicantSeq(long postId);

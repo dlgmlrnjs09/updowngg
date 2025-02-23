@@ -17,6 +17,9 @@ public class PartyCommunityApproveReqDto {
     @NotNull(message = "position은 필수값입니다.")
     private String position;
 
+    @NotNull(message = "applicantPuuid는 필수값입니다.")
+    private String applicantPuuid;
+
     @NotNull(message = "applicantSeq는 필수값입니다.")
     private long applicantSeq;
 }

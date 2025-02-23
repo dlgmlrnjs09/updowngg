@@ -72,14 +72,11 @@ public class PartyCommunityService implements CommunityInterface {
     @Override
     public void insertPost(String communityCode, CommunityPostSubmitReqDto post) {
 
-        if (partyCommunityMapper.checkAlreadyMyParty(post.getWriterPuuid())) {
-            throw new SiteCommonException(
-                    HttpStatus.CONFLICT,
-                    SiteErrorMessage.ALREADY_MY_PARTY.getMessage(),
-                    SiteErrorMessage.ALREADY_MY_PARTY.getMessage(),
-                    SiteErrorMessage.ALREADY_MY_PARTY.getMessage()
-            );
-        }
+        this.isExistMyActivePartyAndThrowException(
+                post.getWriterPuuid(),
+                SiteErrorMessage.ALREADY_MY_PARTY.getMessage(),
+                SiteErrorMessage.PARTICIPATED_ANOTHER_PARTY.getMessage()
+        );
 
         PartyCommunityEntity partyCommunityEntity = new PartyCommunityEntity();
         PartyCommunityParticipantEntity participantEntity = new PartyCommunityParticipantEntity();
@@ -115,8 +112,7 @@ public class PartyCommunityService implements CommunityInterface {
 
     public void apply(String puuid, long postId, String position) {
         // 이미 참가한 포지션이 있는지 확인
-        boolean isParticipateAnotherPosition = partyCommunityMapper.checkParticipateAnotherPosition(postId, puuid);
-        if (isParticipateAnotherPosition) {
+        if (partyCommunityMapper.checkParticipateAnotherPosition(postId, puuid)) {
             throw new SiteCommonException(
                     HttpStatus.CONFLICT
                     , SiteErrorMessage.PARTICIPATED_ANOTHER_POSITION.getMessage()
@@ -124,6 +120,12 @@ public class PartyCommunityService implements CommunityInterface {
                     , SiteErrorMessage.PARTICIPATED_ANOTHER_POSITION.getMessage()
             );
         }
+
+        this.isExistMyActivePartyAndThrowException(
+                puuid,
+                SiteErrorMessage.ALREADY_MY_PARTY.getMessage(),
+                SiteErrorMessage.PARTICIPATED_ANOTHER_PARTY.getMessage()
+        );
 
         transactionService.applyPartyCommunityPost(postId, position, puuid);
     }
@@ -151,6 +153,12 @@ public class PartyCommunityService implements CommunityInterface {
             );
         }
 
+        this.isExistMyActivePartyAndThrowException(
+                reqDto.getApplicantPuuid(),
+                SiteErrorMessage.PARTICIPATED_ANOTHER_PARTY_APPLICANT.getMessage(),
+                SiteErrorMessage.PARTICIPATED_ANOTHER_PARTY_APPLICANT.getMessage()
+        );
+
         transactionService.updateApplicantAndParticipant(reqDto.getPostId(), reqDto.getApplicantSeq(), isApproval);
     }
 
@@ -168,12 +176,7 @@ public class PartyCommunityService implements CommunityInterface {
     public MyPartyDto getMyActivePartyPost(String puuid) {
         MyPartyDto resDto = new MyPartyDto();
 
-        PartyPostCardDto postDto = partyCommunityMapper.getPartyActivePost(puuid);
-        if (postDto == null) {
-            // 등록된 모집중인 글이 없음
-            return null;
-        }
-
+        PartyPostCardDto postDto = this.getMyActiveParty(puuid);
         // 참여자 목록 조회
         List<PartyCommunityParticipantDto> participantDtoList = new ArrayList<>();
         participantDtoList.add(this.createParticipantDto(SiteMatchPosition.TOP, postDto.getTopPuuid(), postDto.getIsOpenTop()));
@@ -182,18 +185,20 @@ public class PartyCommunityService implements CommunityInterface {
         participantDtoList.add(this.createParticipantDto(SiteMatchPosition.BOTTOM, postDto.getAdPuuid(), postDto.getIsOpenAd()));
         participantDtoList.add(this.createParticipantDto(SiteMatchPosition.UTILITY, postDto.getSupPuuid(), postDto.getIsOpenSup()));
         postDto.setParticipantDtoList(participantDtoList);
-
-        // 신청자 목록 조회
-        List<PartyCommunityApplicantEntity> applicantEntities = partyCommunityMapper.getWaitingApplicantList(postDto.getPostId());
         resDto.setPostCardDto(postDto);
 
-        LinkedHashMap<String, List<PartyCommunityApplicantDetailDto>> innerMap = new LinkedHashMap<>();
-        innerMap.put(SiteMatchPosition.TOP.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.TOP, applicantEntities));
-        innerMap.put(SiteMatchPosition.JUNGLE.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.JUNGLE, applicantEntities));
-        innerMap.put(SiteMatchPosition.MIDDLE.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.MIDDLE, applicantEntities));
-        innerMap.put(SiteMatchPosition.BOTTOM.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.BOTTOM, applicantEntities));
-        innerMap.put(SiteMatchPosition.UTILITY.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.UTILITY, applicantEntities));
-        resDto.setApplicantByPositionMap(innerMap);
+        // 내가 등록한 파티의 경우에만 신청자 목록 조회
+        if (postDto.getWriterPuuid().equals(puuid)) {
+            List<PartyCommunityApplicantEntity> applicantEntities = partyCommunityMapper.getWaitingApplicantList(postDto.getPostId());
+
+            LinkedHashMap<String, List<PartyCommunityApplicantDetailDto>> innerMap = new LinkedHashMap<>();
+            innerMap.put(SiteMatchPosition.TOP.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.TOP, applicantEntities));
+            innerMap.put(SiteMatchPosition.JUNGLE.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.JUNGLE, applicantEntities));
+            innerMap.put(SiteMatchPosition.MIDDLE.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.MIDDLE, applicantEntities));
+            innerMap.put(SiteMatchPosition.BOTTOM.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.BOTTOM, applicantEntities));
+            innerMap.put(SiteMatchPosition.UTILITY.getCode(), this.sortApplicantsByPosition(SiteMatchPosition.UTILITY, applicantEntities));
+            resDto.setApplicantByPositionMap(innerMap);
+        }
 
         return resDto;
     }
@@ -386,6 +391,56 @@ public class PartyCommunityService implements CommunityInterface {
             party.setRecruitCount(this.getRecruitCount(party));
             party.setParticipantCount(this.getParticipantCount(party));
             party.setParticipantList(participantList);
+        }
+    }
+
+    private PartyPostCardDto getMyActiveParty(String puuid) {
+        PartyPostCardDto postDto = partyCommunityMapper.getPartyActivePost(puuid);
+        if (postDto == null) {
+            // 등록된 모집중인 글이 없다면 참가한 파티 조회
+            postDto = partyCommunityMapper.getMyParticipantPost(puuid);
+            if (postDto == null) {
+                // 등록했거나 참가중인 파티가 없음
+                throw new SiteCommonException(
+                        HttpStatus.NO_CONTENT
+                        , SiteErrorMessage.NOT_EXIST_PARTY.getMessage()
+                        , SiteErrorMessage.NOT_EXIST_PARTY.getMessage()
+                        , SiteErrorMessage.NOT_EXIST_PARTY.getMessage()
+                );
+            }
+        }
+
+        return postDto;
+    }
+
+    /**
+     * 등록했거나 참가한 파티가 있는지 확인(OPEN 상태인 파티)
+     * @param puuid
+     * @return
+     */
+    private void isExistMyActivePartyAndThrowException(
+            String puuid,
+            String alreadyPartyErrorMsg,
+            String participantErrorMsg
+    ) {
+        // 이미 등록한 파티가 있는지 확인
+        if (partyCommunityMapper.checkAlreadyMyParty(puuid)) {
+            throw new SiteCommonException(
+                    HttpStatus.CONFLICT,
+                    alreadyPartyErrorMsg,
+                    alreadyPartyErrorMsg,
+                    alreadyPartyErrorMsg
+            );
+        }
+
+        // 이미 참가한 파티가 있는지 확인
+        if (partyCommunityMapper.checkMyOpenParticipantPost(puuid)) {
+            throw new SiteCommonException(
+                    HttpStatus.CONFLICT,
+                    participantErrorMsg,
+                    participantErrorMsg,
+                    participantErrorMsg
+            );
         }
     }
 }

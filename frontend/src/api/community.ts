@@ -49,16 +49,18 @@ export const communityApi = {
     getMyPartyPost: () =>
         apiClient.get<MyPartyPostDto>('/api/v1/community/party/my'),
 
-    approvePartyApplicant: (postId: number, applicantSeq: number, position: string) =>
+    approvePartyApplicant: (postId: number, applicantPuuid: string, applicantSeq: number, position: string) =>
         apiClient.post<boolean>('/api/v1/community/party/approve', {
             postId: postId,
+            applicantPuuid: applicantPuuid,
             applicantSeq: applicantSeq,
             position: position
         }),
 
-    rejectPartyApplicant: (postId: number, applicantSeq: number, position: string) =>
+    rejectPartyApplicant: (postId: number, applicantPuuid: string, applicantSeq: number, position: string) =>
         apiClient.post<boolean>('/api/v1/community/party/reject', {
             postId: postId,
+            applicantPuuid: applicantPuuid,
             applicantSeq: applicantSeq,
             position: position
         }),

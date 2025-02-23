@@ -230,11 +230,11 @@
 
                     <!-- 승인/거절 버튼 -->
                     <div class="flex-1 flex justify-end gap-2">
-                      <button @click="handleApprove(applicant.postId, applicant.applicantSeq, position)"
+                      <button @click="handleApprove(applicant.postId, applicant.applicantPuuid, applicant.applicantSeq, position)"
                               class="bg-[#2979FF] hover:bg-[#2565D1] text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-colors">
                         <UserCheck class="w-4 h-4"/>
                       </button>
-                      <button @click="handleReject(applicant.postId, applicant.applicantSeq, position)"
+                      <button @click="handleReject(applicant.postId, applicant.applicantPuuid, applicant.applicantSeq, position)"
                               class="bg-[#FF5252] hover:bg-[#D32F2F] text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-colors">
                         <UserX class="w-4 h-4"/>
                       </button>
@@ -660,13 +660,13 @@ const handleNextPage = () => {
   fetchHistoryData(activeHistoryTab.value);
 }
 
-const handleApprove = async (postId: number, applicantSeq: number, position: string) => {
+const handleApprove = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
   await communityApi.approvePartyApplicant(postId, applicantSeq, position)
   toast.success('승인되었습니다.')
   await fetchMyPartyPost()
 }
 
-const handleReject = async (postId: number, applicantSeq: number, position: string) => {
+const handleReject = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
   await communityApi.rejectPartyApplicant(postId, applicantSeq, position)
   toast.success('거절되었습니다.')
   await fetchMyPartyPost()
