@@ -533,14 +533,11 @@ import {useToast} from 'vue-toastification'
 import {useImageUrl} from '@/utils/imageUtil'
 import {communityApi} from '@/api/community'
 import {
-  createInitialPartyCommunityHistoryResponse,
   type MyPartyPostDto,
   type PartyCommunityAppliedHistoryDto,
   type PartyCommunityHistoryDto,
   type PartyCommunityHistoryResponse
 } from "@/types/community.ts";
-import {assignWith} from "lodash";
-import type {ReviewHistoryDto, ReviewHistoryResponse} from "@/types/review.ts";
 
 const {getPositionImage} = useImageUrl()
 const route = useRoute()
@@ -661,13 +658,13 @@ const handleNextPage = () => {
 }
 
 const handleApprove = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
-  await communityApi.approvePartyApplicant(postId, applicantSeq, position)
+  await communityApi.approvePartyApplicant(postId, applicantPuuid, applicantSeq, position)
   toast.success('승인되었습니다.')
   await fetchMyPartyPost()
 }
 
 const handleReject = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
-  await communityApi.rejectPartyApplicant(postId, applicantSeq, position)
+  await communityApi.rejectPartyApplicant(postId, applicantPuuid, applicantSeq, position)
   toast.success('거절되었습니다.')
   await fetchMyPartyPost()
 }

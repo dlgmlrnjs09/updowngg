@@ -258,7 +258,8 @@
             scpp.jungle_puuid,
             scpp.mid_puuid,
             scpp.ad_puuid,
-            scpp.sup_puuid
+            scpp.sup_puuid,
+            scd.post_status
         from
             site_community_post scp
             inner join site_community_party scd on (scp.post_id = scd.post_id)
@@ -291,7 +292,8 @@
             scpp.jungle_puuid,
             scpp.mid_puuid,
             scpp.ad_puuid,
-            scpp.sup_puuid
+            scpp.sup_puuid,
+            scd.post_status
         from
             site_community_post scp
                 inner join site_community_party scd on (scp.post_id = scd.post_id)

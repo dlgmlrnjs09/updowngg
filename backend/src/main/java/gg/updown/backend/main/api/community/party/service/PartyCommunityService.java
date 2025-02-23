@@ -185,6 +185,8 @@ public class PartyCommunityService implements CommunityInterface {
         participantDtoList.add(this.createParticipantDto(SiteMatchPosition.BOTTOM, postDto.getAdPuuid(), postDto.getIsOpenAd()));
         participantDtoList.add(this.createParticipantDto(SiteMatchPosition.UTILITY, postDto.getSupPuuid(), postDto.getIsOpenSup()));
         postDto.setParticipantDtoList(participantDtoList);
+        postDto.setParticipantCount(this.getParticipantCount(postDto));
+        postDto.setRecruitCount(this.getRecruitCount(postDto));
         resDto.setPostCardDto(postDto);
 
         // 내가 등록한 파티의 경우에만 신청자 목록 조회
@@ -362,6 +364,28 @@ public class PartyCommunityService implements CommunityInterface {
     }
 
     private int getParticipantCount(PartyCommunityHistoryBaseDto historyDto) {
+        int count = 0;
+        count += historyDto.getTopPuuid() != null ? 1 : 0;
+        count += historyDto.getJunglePuuid() != null ? 1 : 0;
+        count += historyDto.getMidPuuid() != null ? 1 : 0;
+        count += historyDto.getAdPuuid() != null ? 1 : 0;
+        count += historyDto.getSupPuuid() != null ? 1 : 0;
+
+        return count;
+    }
+
+    private int getRecruitCount(PartyPostCardDto historyDto) {
+        int count = 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenTop()) ? 1 : 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenJungle()) ? 1 : 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenMid()) ? 1 : 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenAd()) ? 1 : 0;
+        count += Boolean.TRUE.equals(historyDto.getIsOpenSup()) ? 1 : 0;
+
+        return count + 1; // 본인포함
+    }
+
+    private int getParticipantCount(PartyPostCardDto historyDto) {
         int count = 0;
         count += historyDto.getTopPuuid() != null ? 1 : 0;
         count += historyDto.getJunglePuuid() != null ? 1 : 0;

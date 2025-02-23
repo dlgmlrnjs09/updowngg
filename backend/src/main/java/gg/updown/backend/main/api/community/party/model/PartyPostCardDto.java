@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PartyPostCardDto extends CommunityPostDto {
     // 게시글 상세정보
+    private String postStatus;
     private String gameMode;
     private String positionSelf;
     private Boolean isUseMic;
@@ -27,6 +28,11 @@ public class PartyPostCardDto extends CommunityPostDto {
     private String midPuuid;
     private String adPuuid;
     private String supPuuid;
+
+    // 참가자 수
+    private int participantCount;
+    // 모집인원 수
+    private int recruitCount;
 
     private List<PartyCommunityParticipantDto> participantDtoList;
 }

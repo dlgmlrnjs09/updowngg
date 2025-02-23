@@ -73,6 +73,355 @@
         </button>
       </div>
 
+      <!-- 내 파티 미니바 -->
+      <div v-if="myActiveParty" class="max-w-6xl mx-auto mb-8">
+        <div class="bg-[#141414] rounded-xl border border-[#2979FF] p-4">
+          <!-- PC/태블릿 뷰 -->
+          <div class="hidden sm:flex items-center justify-between">
+            <!-- 좌측: 기본 정보 -->
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2">
+                <span class="text-[#2979FF] text-sm font-medium">
+                  {{ myActiveParty.postCardDto.writerPuuid === myPuuid ? '모집중' : '참가중' }}
+                </span>
+                <span class="text-white text-sm">
+                  {{ getGameModeName(myActiveParty.postCardDto.gameMode) }}
+                </span>
+              </div>
+              <div class="h-4 w-[1px] bg-gray-700"></div>
+              <div class="flex items-center gap-2">
+                <Users class="w-4 h-4 text-gray-400" />
+                <span class="text-white text-sm">
+                  {{ myActiveParty.postCardDto.participantCount}} / {{ myActiveParty.postCardDto.recruitCount }}
+                </span>
+              </div>
+              <div class="h-4 w-[1px] bg-gray-700"></div>
+              <!-- 포지션 정보 -->
+              <div class="flex items-center gap-2">
+                <template v-for="participant in myActiveParty.postCardDto.participantDtoList" :key="participant.position">
+                  <div class="relative flex items-center gap-1 bg-[#1A1A1A] px-2 py-1 rounded-lg border border-gray-700">
+                    <img :src="getPositionImage(participant.position)" :alt="participant.position" class="w-4 h-4">
+                    <template v-if="participant.summonerInfoDto">
+                      <span class="text-white text-xs truncate max-w-[80px]">
+                        {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
+                      </span>
+                    </template>
+                    <template v-else>
+                      <span class="text-[#2979FF] text-xs">대기중</span>
+                      <!-- 신청자 -->
+                      <template
+                          v-if="myActiveParty.postCardDto.writerPuuid === myPuuid"
+                          v-for="position in POSITION_ORDER"
+                          :key="position"
+                      >
+                        <template v-if="myActiveParty?.applicantByPositionMap?.[position]?.length > 0">
+                          <button
+                              @click="toggleApplicants(participant.position)"
+                              class="flex items-center gap-1 ml-1 text-[#2979FF] text-xs"
+                          >
+                          <span>
+                            ({{ myActiveParty.applicantByPositionMap[position].length }})
+                          </span>
+                            <component
+                                :is="showApplicants[position] ? ChevronUp : ChevronDown"
+                                class="w-3 h-3"
+                            />
+                          </button>
+                        </template>
+                      </template>
+                    </template>
+
+                    <!-- 신청자 목록 팝오버 -->
+                    <div v-if="showApplicants[participant.position] && myActiveParty.applicantByPositionMap[participant.position] && myActiveParty.postCardDto.writerPuuid === myPuuid"
+                         class="absolute top-full left-0 mt-2 w-[300px] bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-700 z-10">
+                      <div v-for="applicant in myActiveParty.applicantByPositionMap[participant.position]"
+                           :key="applicant.applicantSeq"
+                           class="p-3 border-b border-gray-700 last:border-0">
+                        <div class="flex items-center gap-3">
+                          <img
+                              :src="applicant.summonerInfoDto.summonerBasicInfoDto.profileIconUrl"
+                              :alt="applicant.summonerInfoDto.summonerBasicInfoDto.gameName"
+                              class="w-10 h-10 rounded-lg"
+                          />
+                          <div class="flex-1">
+                            <div class="flex items-center gap-1">
+                              <span class="text-white text-sm">
+                                {{ applicant.summonerInfoDto.summonerBasicInfoDto.gameName }}
+                              </span>
+                              <span class="text-gray-400 text-xs">
+                                #{{ applicant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
+                              </span>
+                            </div>
+                            <div class="flex gap-1 mt-1">
+                               <span
+                                   v-for="tag in applicant.summonerInfoDto.frequentTagDtoList"
+                                   :key="tag.tagCode"
+                                   class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
+                               >
+                                 {{ tag.tagValue }}
+                               </span>
+                            </div>
+                          </div>
+                          <div class="flex items-center gap-1">
+                            <button
+                                @click="handleApprove(myActiveParty.postCardDto.postId, applicant.summonerInfoDto.summonerBasicInfoDto.puuid, applicant.applicantSeq, participant.position)"
+                                class="bg-[#2979FF] hover:bg-[#2565D1] text-white p-1.5 rounded">
+                              <UserCheck class="w-4 h-4" />
+                            </button>
+                            <button
+                                @click="handleReject(myActiveParty.postCardDto.postId, applicant.summonerInfoDto.summonerBasicInfoDto.puuid, applicant.applicantSeq, participant.position)"
+                                class="bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1.5 rounded">
+                              <UserX class="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- 우측: 액션 버튼 -->
+            <div class="flex items-center gap-2">
+              <component
+                  :is="myActiveParty.postCardDto.isUseMic ? MicIcon : MicOffIcon"
+                  :class="myActiveParty.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
+                  class="w-4 h-4"
+              />
+              <template v-if="myActiveParty.postCardDto.writerPuuid === myPuuid">
+                <button
+                    @click="handleUpdatePartyStatus(myActiveParty.postCardDto.postId, 'CLOSE')"
+                    class="bg-[#1A1A1A] hover:bg-[#242424] text-white px-3 py-1.5 rounded-lg text-xs"
+                >
+                  마감
+                </button>
+                <button
+                    @click="handleUpdatePartyStatus(myActiveParty.postCardDto.postId, 'CANCEL')"
+                    class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
+                >
+                  취소
+                </button>
+              </template>
+              <template v-else>
+                <button
+                    @click="handleLeaveParty(myActiveParty.postCardDto.postId)"
+                    class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
+                >
+                  나가기
+                </button>
+              </template>
+            </div>
+          </div>
+
+          <!-- 모바일 뷰 -->
+          <div class="sm:hidden space-y-4">
+            <!-- 상태 및 기본 정보 -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[#2979FF] text-sm font-medium">
+                  {{ myActiveParty.postCardDto.writerPuuid === myPuuid ? '모집중' : '참가중' }}
+                </span>
+                <span class="text-white text-sm">{{ getGameModeName(myActiveParty.postCardDto.gameMode) }}</span>
+              </div>
+              <component
+                  :is="myActiveParty.postCardDto.isUseMic ? MicIcon : MicOffIcon"
+                  :class="myActiveParty.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
+                  class="w-4 h-4"
+              />
+            </div>
+
+            <!-- 포지션 정보 -->
+            <div class="grid grid-cols-1 gap-2">
+              <div v-for="participant in myActiveParty.postCardDto.participantDtoList"
+                   :key="participant.position"
+                   class="bg-[#1A1A1A] rounded-lg p-2 flex items-center justify-between text-center h-[52px] w-full"
+                   :class="{
+                     'border-2 border-[#2979FF]': myActiveParty.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid,
+                     'border border-[#333]': participant.isOpenPosition && !participant.summonerInfoDto,
+                     'border border-gray-700': participant.summonerInfoDto && myActiveParty.postCardDto.writerPuuid !== participant.summonerInfoDto.summonerBasicInfoDto.puuid,
+                     'border border-[#383838]': !(myActiveParty.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid) && !participant.isOpenPosition,
+                     'opacity-50': !(myActiveParty.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid) && !participant.isOpenPosition
+                   }"
+              >
+                <!-- 포지션 채워진 경우 -->
+                <template v-if="participant.summonerInfoDto">
+                  <div class="flex items-center gap-2">
+                    <img
+                        :src="getPositionImage(participant.position)"
+                        :alt="participant.position"
+                        class="w-5 h-5"
+                    >
+                  </div>
+
+                  <div class="flex-1 text-left ml-2 min-w-0">
+                    <div class="flex items-center gap-1">
+                      <div class="text-xs font-medium text-white hover:text-[#2979FF] cursor-pointer truncate max-w-full">
+                        {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
+                      </div>
+                      <div class="text-[10px] text-gray-400 truncate">
+                        #{{ participant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
+                      </div>
+                    </div>
+
+                    <div class="flex gap-1 mt-0.5">
+                      <span
+                          v-for="tag in participant.summonerInfoDto.frequentTagDtoList"
+                          :key="tag.tagCode"
+                          class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
+                      >
+                         {{ tag.tagValue }}
+                       </span>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col items-end">
+                    <div class="flex items-center gap-1 text-[10px] mb-0.5">
+                      <span class="text-gray-400">평가</span>
+                      <span class="text-[#2979FF] font-medium">
+                        {{ participant.summonerInfoDto.reviewStatsDto.score?.toFixed(1) ?? 0 }}점
+                      </span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <div class="flex items-center gap-1">
+                        <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
+                        <span class="text-[#4CAF50] text-[10px]">
+                          {{ participant.summonerInfoDto.reviewStatsDto.upCount }}
+                        </span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
+                        <span class="text-[#FF5252] text-[10px]">
+                          {{ participant.summonerInfoDto.reviewStatsDto.downCount }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex gap-1 ml-2">
+                    <div v-for="(champion, index) in participant.summonerInfoDto.mostChampionDto.slice(0, 2)"
+                         :key="index"
+                         class="bg-[#141414] rounded-lg p-1 flex flex-col items-center">
+                      <img
+                          :src="champion.iconUrl"
+                          :alt="champion.nameUs"
+                          class="w-5 h-5 rounded mb-0.5"
+                      >
+                      <span class="text-[9px] text-[#4CAF50]">
+                        {{ champion.winRate }}%
+                      </span>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- 대기 중인 경우 -->
+                <template v-else>
+                  <div class="flex items, center gap-2">
+                    <img
+                        :src="getPositionImage(participant.position)"
+                        :alt="participant.position"
+                        class="w-5 h-5"
+                    >
+                    <div class="text-gray-500 text-xs">
+                      {{ participant.isOpenPosition ? '대기 중' : '-' }}
+                    </div>
+                  </div>
+                  <template v-if="myActiveParty.postCardDto.writerPuuid === myPuuid && myActiveParty.applicantByPositionMap[participant.position]?.length > 0">
+                    <button
+                        @click="toggleApplicants(participant.position)"
+                        class="flex items-center gap-1 text-[#2979FF] text-sm"
+                    >
+                      신청자 ({{ myActiveParty.applicantByPositionMap[participant.position].length }})
+                      <component
+                          :is="showApplicants[participant.position] ? ChevronUp : ChevronDown"
+                          class="w-4 h-4"
+                      />
+                    </button>
+                  </template>
+                </template>
+              </div>
+
+              <!-- 신청자 목록 (모바일) -->
+              <template
+                  v-if="myActiveParty.postCardDto.writerPuuid === myPuuid"
+                  v-for="(applicants, position) in myActiveParty.applicantByPositionMap"
+                  :key="`applicants-${position}`"
+              >
+                <div v-if="showApplicants[position] && myActiveParty.applicantByPositionMap[position]"
+                     class="space-y-2">
+                  <div v-for="applicant in applicants"
+                       :key="applicant.summonerInfoDto.summonerBasicInfoDto.puuid"
+                       class="bg-[#141414] rounded-lg p-3">
+                    <div class="flex items-center gap-3">
+                      <img
+                          :src="applicant.summonerInfoDto.summonerBasicInfoDto.profileIconUrl"
+                          :alt="applicant.summonerInfoDto.summonerBasicInfoDto.gameName"
+                          class="w-10 h-10 rounded-lg"
+                      />
+                      <div class="flex-1">
+                        <div class="flex items-center gap-1">
+                          <span class="text-white text-sm">
+                            {{ applicant.summonerInfoDto.summonerBasicInfoDto.gameName }}
+                          </span>
+                          <span class="text-gray-400 text-xs">
+                            #{{ applicant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
+                          </span>
+                        </div>
+                        <div class="flex gap-1 mt-1">
+                        <span v-for="tag in applicant.summonerInfoDto.frequentTagDtoList"
+                              :key="tag.tagCode"
+                              class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded">
+                          {{ tag.tagValue }}
+                        </span>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <button
+                            @click="handleApprove(myActiveParty.postCardDto.postId, applicant.applicantPuuid, applicant.applicantSeq, position)"
+                            class="bg-[#2979FF] hover:bg-[#2565D1] text-white p-1.5 rounded">
+                          <UserCheck class="w-4 h-4" />
+                        </button>
+                        <button
+                            @click="handleReject(myActiveParty.postCardDto.postId, applicant.applicantPuuid, applicant.applicantSeq, position)"
+                            class="bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1.5 rounded">
+                          <UserX class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <!-- 액션 버튼 -->
+            <div class="flex justify-end gap-2">
+              <template v-if="myActiveParty.postCardDto.writerPuuid === myPuuid">
+                <button
+                    @click="handleUpdatePartyStatus(myActiveParty.postCardDto.postId, 'CLOSE')"
+                    class="bg-[#1A1A1A] hover:bg-[#242424] text-white px-3 py-1.5 rounded-lg text-xs"
+                >
+                  마감
+                </button>
+                <button
+                    @click="handleUpdatePartyStatus(myActiveParty.postCardDto.postId, 'CANCEL')"
+                    class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
+                >
+                  취소
+                </button>
+              </template>
+              <template v-else>
+                <button
+                    @click="handleLeaveParty(myActiveParty.postCardDto.postId)"
+                    class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
+                >
+                  나가기
+                </button>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 듀오 카드 그리드 -->
       <transition-group
           name="card-transition"
@@ -253,10 +602,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted } from 'vue'
-import { ThumbsUp, ThumbsDown, MicIcon, MicOffIcon, RefreshCcw } from 'lucide-vue-next'
+import { ThumbsUp, ThumbsDown, MicIcon, MicOffIcon, RefreshCcw, Users, ChevronUp, ChevronDown, UserX, UserCheck } from 'lucide-vue-next'
 import WriteModal from '@/components/community/party/WriteModal.vue'
 import type {
-  CommunityPostDto,
+  CommunityPostDto, MyPartyPostDto,
   PartyCommunityApplicantDetailDto,
   PartyPostCardDto,
   SearchFilter
@@ -288,11 +637,168 @@ const countdownInterval = ref<number>()
 
 const toast = useToast()
 const authStore = useAuthStore();
+const myPuuid = authStore.user?.puuid;
+
+const myActiveParty = ref<MyPartyPostDto | null>(null)
+
+const POSITION_ORDER = ['TOP', 'JUNGLE', 'MID', 'AD', 'SUP'] as const;
+
+const handleUpdatePartyStatus = (postId: number, status: string) => {
+  if (status === 'CLOSE') {
+    communityApi.closeParty(postId);
+    toast.success('모집 마감되었습니다.')
+    myActiveParty.value = null
+  } else {
+    communityApi.cancelParty(postId);
+    toast.success('모집 취소되었습니다.')
+    myActiveParty.value = null
+  }
+}
+
+const handleApprove = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
+  await communityApi.approvePartyApplicant(postId, applicantPuuid, applicantSeq, position)
+  toast.success('승인되었습니다.')
+  await fetchMyPartyPost()
+}
+
+const handleReject = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
+  await communityApi.rejectPartyApplicant(postId, applicantPuuid, applicantSeq, position)
+  toast.success('거절되었습니다.')
+  await fetchMyPartyPost()
+}
+
+const getParticipantByPosition = computed(() => {
+  if (!myActiveParty.value?.postCardDto.participantDtoList) return {};
+
+  return myActiveParty.value.postCardDto.participantDtoList.reduce((acc, participant) => {
+    acc[participant.position] = participant;
+    return acc;
+  }, {} as Record<string, any>);
+});
+
+// 신청자 포함된 목업 데이터
+/*const myActiveParty = {
+  postId: 1,
+  content: "같이 솔랭 가실 서폿 구합니다",
+  gameMode: "SOLO_RANK",
+  isUseMic: true,
+  isWriter: true,
+  writerPuuid: "writer-123",
+  // 신청자 정보를 포지션별로 관리
+  applicantByPositionMap: {
+    "SUP": [
+      {
+        applicantSeq: 1,
+        postId: 1,
+        position: "SUP",
+        summonerInfoDto: {
+          summonerBasicInfoDto: {
+            puuid: "applicant-1",
+            gameName: "서폿신청자1",
+            tagLine: "KR1",
+            profileIconUrl: "/icons/4.png"
+          },
+          frequentTagDtoList: [
+            { tagCode: "P001", tagValue: "겜잘함" }
+          ],
+          reviewStatsDto: {
+            score: 4.2,
+            upCount: 42,
+            downCount: 8,
+            totalReviewCnt: 50
+          },
+          mostChampionDto: [
+            {
+              iconUrl: "/champions/lulu.png",
+              nameKr: "룰루",
+              nameUs: "Lulu",
+              winRate: 62
+            }
+          ]
+        }
+      },
+      {
+        applicantSeq: 2,
+        postId: 1,
+        position: "SUP",
+        summonerInfoDto: {
+          summonerBasicInfoDto: {
+            puuid: "applicant-2",
+            gameName: "서폿신청자2",
+            tagLine: "KR1",
+            profileIconUrl: "/icons/5.png"
+          },
+          frequentTagDtoList: [
+            { tagCode: "P002", tagValue: "실력자" }
+          ],
+          reviewStatsDto: {
+            score: 4.5,
+            upCount: 45,
+            downCount: 5,
+            totalReviewCnt: 50
+          },
+          mostChampionDto: [
+            {
+              iconUrl: "/champions/thresh.png",
+              nameKr: "쓰레쉬",
+              nameUs: "Thresh",
+              winRate: 58
+            }
+          ]
+        }
+      }
+    ]
+  },
+  participantDtoList: [
+    {
+      position: "MID",
+      isOpenPosition: false,
+      summonerInfoDto: {
+        summonerBasicInfoDto: {
+          puuid: "writer-123",
+          gameName: "모크리",
+          tagLine: "KR1",
+          profileIconUrl: "/icons/1.png"
+        },
+        frequentTagDtoList: [
+          { tagCode: "P001", tagValue: "겜잘함" },
+          { tagCode: "P002", tagValue: "실력자" }
+        ],
+        reviewStatsDto: {
+          score: 4.5,
+          upCount: 45,
+          downCount: 5,
+          totalReviewCnt: 50
+        },
+        mostChampionDto: [
+          {
+            iconUrl: "/champions/ahri.png",
+            nameKr: "아리",
+            nameUs: "Ahri",
+            winRate: 55
+          },
+          {
+            iconUrl: "/champions/lux.png",
+            nameKr: "럭스",
+            nameUs: "Lux",
+            winRate: 58
+          }
+        ]
+      }
+    },
+    {
+      position: "SUP",
+      isOpenPosition: true,
+      summonerInfoDto: null
+    }
+  ]
+}*/
 
 onMounted(async () => {
   setupVisibilityHandler()
   await fetchPosts({})
   await fetchAppliedPositions()
+  await fetchMyPartyPost()
   startCountdown()
 
   // 10초마다 전체 업데이트
@@ -377,6 +883,13 @@ const fetchPosts = async (filter: SearchFilter) => {
   isLoading.value = false
 
   return response.data
+}
+
+const fetchMyPartyPost = async () => {
+  if (authStore.isAuthenticated) {
+    const response = await communityApi.getMyPartyPost();
+    myActiveParty.value = response.data
+  }
 }
 
 const onFilterUpdate = () => {
@@ -476,6 +989,35 @@ const shouldShowApplyButton = (card: PartyPostCardDto, currentParticipant: any) 
 
   // 해당 포지션이 신청 가능한 상태인 경우에만 버튼 표시
   return currentParticipant.isOpenPosition && !currentParticipant.summonerInfoDto;
+}
+
+
+const showApplicants = ref<{[key: string]: boolean}>({
+  'TOP': false,
+  'JG': false,
+  'MID': false,
+  'AD': false,
+  'SUP': false
+})
+
+
+// 신청자 목록 토글
+const toggleApplicants = (position: string) => {
+  showApplicants.value[position] = !showApplicants.value[position]
+}
+
+// 파티 나가기
+const handleLeaveParty = async (postId: number) => {
+  try {
+    await communityApi.leaveParty(postId)
+    toast.success('파티에서 나왔습니다.')
+
+    // 파티 정보 새로고침
+    await checkUpdates()
+  } catch (error) {
+    console.error('파티 나가기 실패:', error)
+    toast.error('파티 나가기에 실패했습니다.')
+  }
 }
 
 const getGameModeName = (code: string) => {

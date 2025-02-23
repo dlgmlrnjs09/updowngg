@@ -62,6 +62,7 @@ export interface PartyParticipantDto {
 }
 
 export interface PartyPostCardDto {
+    postStatus: string
     postId: number;
     writerSiteCode: number;
     writerPuuid: string;
@@ -81,6 +82,8 @@ export interface PartyPostCardDto {
     midPuuid: string | null;
     adPuuid: string | null;
     supPuuid: string | null;
+    participantCount: number;
+    recruitCount: number;
     participantDtoList: PartyParticipantDto[];
 }
 
