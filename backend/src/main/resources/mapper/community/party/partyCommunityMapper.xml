@@ -340,7 +340,7 @@
         )
     </select>
 
-    <select id="getPartyHostedHistory" parameterType="String" resultType="PartyCommunityHistoryDto">
+    <select id="getPartyHostedHistory" parameterType="map" resultType="PartyCommunityHistoryDto">
         select
             scp.post_id,
             "content",
@@ -368,9 +368,24 @@
           and scp2.del_dt is null
         order by
             scp.post_id desc
+        LIMIT #{limit} OFFSET (#{page} - 1) * #{limit}
     </select>
 
-    <select id="getPartyParticipatedHistory" parameterType="String" resultType="PartyCommunityHistoryDto">
+    <select id="getPartyHostedHistoryCount" parameterType="String" resultType="int">
+        select
+            count(*)
+        from
+            site_community_post scp
+                inner join site_community_party scp2 on (scp.post_id = scp2.post_id)
+                inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+        where
+            scp.writer_puuid = #{puuid}
+          and scp2.post_status in ('CANCEL', 'CLOSE')
+          and scp.del_dt is null
+          and scp2.del_dt is null
+    </select>
+
+    <select id="getPartyParticipatedHistory" parameterType="map" resultType="PartyCommunityHistoryDto">
         select
             scp.post_id,
             "content",
@@ -396,6 +411,29 @@
             and scp2.del_dt is null
             and scp.writer_puuid != #{puuid}
             and (
+            scpp.top_puuid = #{puuid}
+                or scpp.jungle_puuid = #{puuid}
+                or scpp.mid_puuid = #{puuid}
+                or scpp.ad_puuid = #{puuid}
+                or scpp.sup_puuid = #{puuid}
+            )
+        order by
+            scp.post_id desc
+        LIMIT #{limit} OFFSET (#{page} - 1) * #{limit}
+    </select>
+
+    <select id="getPartyParticipatedHistoryCount" parameterType="String" resultType="int">
+        select
+            count(*)
+        from
+            site_community_post scp
+                inner join site_community_party scp2 on (scp.post_id = scp2.post_id)
+                inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+        where
+            scp.del_dt is null
+          and scp2.del_dt is null
+          and scp.writer_puuid != #{puuid}
+          and (
             scpp.top_puuid = #{puuid}
                 or scpp.jungle_puuid = #{puuid}
                 or scpp.mid_puuid = #{puuid}
@@ -429,7 +467,7 @@
         </association>
     </resultMap>
 
-    <select id="getPartyAppliedHistory" parameterType="String" resultMap="AppliedHistoryResultMap">
+    <select id="getPartyAppliedHistory" parameterType="map" resultMap="AppliedHistoryResultMap">
         select
             scp.post_id,
             "content",
@@ -460,5 +498,23 @@
             and scp2.del_dt is null
             and scpa.del_dt is null
             and scpa.applicant_puuid = #{puuid}
+        order by
+            scp.post_id desc
+        LIMIT #{limit} OFFSET (#{page} - 1) * #{limit}
+    </select>
+
+    <select id="getPartyAppliedHistoryCount" parameterType="String" resultType="int">
+        select
+            count(*)
+        from
+            site_community_post scp
+                inner join site_community_party scp2 on (scp.post_id = scp2.post_id)
+                inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+                inner join site_community_party_applicant scpa on (scp.post_id = scpa.post_id)
+        where
+            scp.del_dt is null
+          and scp2.del_dt is null
+          and scpa.del_dt is null
+          and scpa.applicant_puuid = #{puuid}
     </select>
 </mapper>

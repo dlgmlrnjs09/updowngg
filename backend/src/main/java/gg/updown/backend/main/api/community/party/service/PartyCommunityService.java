@@ -214,22 +214,34 @@ public class PartyCommunityService implements CommunityInterface {
         partyCommunityMapper.updatePartyStatus(postId, status);
     }
 
-    public List<PartyCommunityHistoryDto> getPartyHostedHistory(String puuid) {
-        List<PartyCommunityHistoryDto> hostedPartyList = partyCommunityMapper.getPartyHostedHistory(puuid);
+    public List<PartyCommunityHistoryDto> getPartyHostedHistory(String puuid, int page, int limit) {
+        List<PartyCommunityHistoryDto> hostedPartyList = partyCommunityMapper.getPartyHostedHistory(puuid, page, limit);
         this.setParticipantListByPartyList(hostedPartyList);
         return hostedPartyList;
     }
 
-    public List<PartyCommunityHistoryDto> getPartyParticipatedHistory(String puuid) {
-        List<PartyCommunityHistoryDto> participatedList = partyCommunityMapper.getPartyParticipatedHistory(puuid);
+    public int getPartyHostedHistoryCount(String puuid) {
+        return partyCommunityMapper.getPartyHostedHistoryCount(puuid);
+    }
+
+    public List<PartyCommunityHistoryDto> getPartyParticipatedHistory(String puuid, int page, int limit) {
+        List<PartyCommunityHistoryDto> participatedList = partyCommunityMapper.getPartyParticipatedHistory(puuid, page, limit);
         this.setParticipantListByPartyList(participatedList);
         return participatedList;
     }
 
-    public List<PartyCommunityAppliedHistoryDto> getPartyAppliedHistory(String puuid) {
-        List<PartyCommunityAppliedHistoryDto> appliedHistoryList = partyCommunityMapper.getPartyAppliedHistory(puuid);
+    public int getPartyParticipatedHistoryCount(String puuid) {
+        return partyCommunityMapper.getPartyParticipatedHistoryCount(puuid);
+    }
+
+    public List<PartyCommunityAppliedHistoryDto> getPartyAppliedHistory(String puuid, int page, int limit) {
+        List<PartyCommunityAppliedHistoryDto> appliedHistoryList = partyCommunityMapper.getPartyAppliedHistory(puuid, page, limit);
         this.setParticipantListByPartyList(appliedHistoryList);
         return appliedHistoryList;
+    }
+
+    public int getPartyAppliedHistoryCount(String puuid) {
+        return partyCommunityMapper.getPartyAppliedHistoryCount(puuid);
     }
 
 

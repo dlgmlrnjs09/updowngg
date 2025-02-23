@@ -16,9 +16,12 @@ public interface PartyCommunityMapper {
     PartyCommunityApplicantEntity getApplicant(@Param("postId") long postId, @Param("applicantSeq") long applicantSeq);
     List<PartyCommunityApplicantEntity> getWaitingApplicantList(long postId);
     long getNextApplicantSeq(long postId);
-    List<PartyCommunityHistoryDto> getPartyHostedHistory(String puuid);
-    List<PartyCommunityHistoryDto> getPartyParticipatedHistory(String puuid);
-    List<PartyCommunityAppliedHistoryDto> getPartyAppliedHistory(String puuid);
+    List<PartyCommunityHistoryDto> getPartyHostedHistory(@Param("puuid") String puuid, @Param("page") int page, @Param("limit") int limit);
+    int getPartyHostedHistoryCount(String puuid);
+    List<PartyCommunityHistoryDto> getPartyParticipatedHistory(@Param("puuid") String puuid, @Param("page") int page, @Param("limit") int limit);
+    int getPartyParticipatedHistoryCount(String puuid);
+    List<PartyCommunityAppliedHistoryDto> getPartyAppliedHistory(@Param("puuid") String puuid, @Param("page") int page, @Param("limit") int limit);
+    int getPartyAppliedHistoryCount(String puuid);
 
     void insertPartyPost(PartyCommunityEntity paramEntity);
     void insertPartyParticipant(PartyCommunityParticipantEntity paramEntity);

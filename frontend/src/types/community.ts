@@ -1,6 +1,8 @@
 import type {LolSummonerMostChampionDto} from "@/types/summoner.ts";
 import type {ReviewStatsDto, ReviewTagDto} from "@/types/review.ts";
 import type {SummonerBasicInfoDto} from "@/types/ranking.ts";
+import type {PagingDTO} from "@/types/common.ts";
+import {createInitialPaging} from "@/utils/common.ts";
 
 export interface CommunityPostDto {
     postId?: number;
@@ -129,6 +131,14 @@ interface PartyCommunityHistoryBaseDto {
 export interface PartyCommunityHistoryDto extends PartyCommunityHistoryBaseDto{
 }
 
+export interface PartyCommunityHistoryResponse extends PagingDTO<PartyCommunityHistoryDto> {}
+
 export interface PartyCommunityAppliedHistoryDto extends PartyCommunityHistoryBaseDto{
     applicantDto: PartyCommunityApplicantDto
 }
+
+export interface PartyCommunityAppliedHistoryResponse extends PagingDTO<PartyCommunityAppliedHistoryDto> {}
+
+export const createInitialPartyCommunityHistoryResponse = (): PartyCommunityHistoryResponse => ({
+    ...createInitialPaging<PartyCommunityHistoryDto>(),
+});

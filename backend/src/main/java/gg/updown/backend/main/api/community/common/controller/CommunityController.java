@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.community.common.controller;
 
+import gg.updown.backend.common.model.PagingDto;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.community.common.CommunityServiceFactory;
 import gg.updown.backend.main.api.community.common.model.CommunityPostDto;
@@ -24,6 +25,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/community")
 public class CommunityController {
+
+    private static final int DISPLAY_PAGE_COUNT = 5;
 
     private final CommunityServiceFactory communityServiceFactory;
     private final PartyCommunityService partyCommunityService;
@@ -115,23 +118,62 @@ public class CommunityController {
 
     @GetMapping("/party/history/hosted")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<PartyCommunityHistoryDto>> getPartyHostedHistory(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<PagingDto<PartyCommunityHistoryDto>> getPartyHostedHistory(
+            @Valid PartyCommunityHistoryReqDto reqDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
-        return ResponseEntity.ok(partyCommunityService.getPartyHostedHistory(puuid));
+
+        int totalCount = partyCommunityService.getPartyHostedHistoryCount(puuid);
+        List<PartyCommunityHistoryDto> historyDtoList = partyCommunityService.getPartyHostedHistory(puuid, reqDto.getPage(), reqDto.getLimit());
+        PagingDto<PartyCommunityHistoryDto> responseDto = new PagingDto<>(
+                historyDtoList,
+                reqDto.getPage(),
+                reqDto.getLimit(),
+                totalCount,
+                DISPLAY_PAGE_COUNT
+        );
+        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/party/history/participated")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<PartyCommunityHistoryDto>> getPartyParticipatedHistory(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<PagingDto<PartyCommunityHistoryDto>> getPartyParticipatedHistory(
+            PartyCommunityHistoryReqDto reqDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
-        return ResponseEntity.ok(partyCommunityService.getPartyParticipatedHistory(puuid));
+
+        int totalCount = partyCommunityService.getPartyParticipatedHistoryCount(puuid);
+        List<PartyCommunityHistoryDto> historyDtoList = partyCommunityService.getPartyParticipatedHistory(puuid, reqDto.getPage(), reqDto.getLimit());
+        PagingDto<PartyCommunityHistoryDto> responseDto = new PagingDto<>(
+                historyDtoList,
+                reqDto.getPage(),
+                reqDto.getLimit(),
+                totalCount,
+                DISPLAY_PAGE_COUNT
+        );
+        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/party/history/applied")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<PartyCommunityAppliedHistoryDto>> getPartyAppliedHistory(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<PagingDto<PartyCommunityAppliedHistoryDto>> getPartyAppliedHistory(
+            PartyCommunityHistoryReqDto reqDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
-        return ResponseEntity.ok(partyCommunityService.getPartyAppliedHistory(puuid));
+
+        int totalCount = partyCommunityService.getPartyAppliedHistoryCount(puuid);
+        List<PartyCommunityAppliedHistoryDto> historyDtoList = partyCommunityService.getPartyAppliedHistory(puuid, reqDto.getPage(), reqDto.getLimit());
+        PagingDto<PartyCommunityAppliedHistoryDto> responseDto = new PagingDto<>(
+                historyDtoList,
+                reqDto.getPage(),
+                reqDto.getLimit(),
+                totalCount,
+                DISPLAY_PAGE_COUNT
+        );
+        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/party/my")

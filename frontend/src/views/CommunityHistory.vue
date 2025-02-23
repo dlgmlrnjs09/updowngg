@@ -259,7 +259,7 @@
           </div>
         </div>
         <div v-else class="flex-1 flex flex-col items-center justify-center">
-          <img class="w-28 h-28 text-gray-600 mb-4" src="@/assets/icon/emoji/crying_bee.png" alt="crying_bee">
+          <img class="w-28 h-28 text-gray-600 mb-4" src="@/assets/icon/emoji/pengu.webp" alt="crying_bee">
           <h3 class="text-lg font-medium text-gray-200 mb-2">현재 등록된 파티가 없습니다</h3>
           <p class="text-gray-400 text-sm">새로운 파티를 등록해보세요!</p>
         </div>
@@ -313,6 +313,7 @@
              :key="party.postId"
              class="bg-[#141414] rounded-xl p-4"
         >
+          {{party.postId}}
           <div class="flex justify-between items-start mb-4">
             <div class="flex flex-col">
               <span class="text-sm text-gray-400">{{ formatTimeAgo(party.regDt) }}</span>
@@ -438,10 +439,6 @@
             <div class="flex items-center gap-2">
               <!-- 신청인원 표시를 포지션 정보 옆으로 이동 -->
               <div class="flex items-center gap-2">
-                <div class="flex items-center gap-1 px-3 py-1.5 bg-[#1A1A1A] rounded-lg">
-                  <img :src="getPositionImage(party.applicantDto.position)" :alt="party.applicantDto.position" class="w-4 h-4"/>
-                  <span class="text-gray-400 text-sm">{{ party.applicantDto.position }}</span>
-                </div>
                 <div class="flex items-center gap-1">
                   <Users class="w-4 h-4 text-gray-400" />
                   <span class="text-gray-400 text-sm">{{ party.participantCount }}/{{party.recruitCount}}</span>
@@ -484,11 +481,17 @@
       </div>
 
       <!-- Pagination -->
-<!--      <div v-if="activeTab === 'history' && (hostedPartyHistory.length > 0 || appliedPartyHistory.length > 0)"
-           class="flex justify-center mt-6 gap-2">
+      <div
+          v-if="activeTab === 'history' && (
+              (activeHistoryTab === 'hosted' && hostedPartyHistory?.length > 0) ||
+              (activeHistoryTab === 'participated' && participatedPartyHistory?.length > 0) ||
+              (activeHistoryTab === 'applied' && appliedPartyHistory?.length > 0)
+          )"
+          class="flex justify-center mt-6 gap-2"
+      >
         <button
-            v-if="paging.hasPrevious"
-            @click="handlePrevPage"
+            v-if="currentPaging.hasPrevious"
+            @click="handlePrevPage(activeTab)"
             class="px-3 h-8 rounded-lg text-sm font-medium bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]"
         >
           <
@@ -499,7 +502,7 @@
             @click="handlePageChange(page)"
             :class="[
             'w-8 h-8 rounded-lg text-sm font-medium transition-colors',
-            paging.currentPage === page
+            currentPaging.currentPage === page
               ? 'bg-[#2979FF] text-white'
               : 'bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]'
           ]"
@@ -507,13 +510,13 @@
           {{ page }}
         </button>
         <button
-            v-if="paging.hasNext"
-            @click="handleNextPage"
+            v-if="currentPaging.hasNext"
+            @click="handleNextPage(activeTab)"
             class="px-3 h-8 rounded-lg text-sm font-medium bg-[#1A1A1A] text-gray-400 hover:bg-[#242424]"
         >
           >
         </button>
-      </div>-->
+      </div>
     </div>
   </div>
 </template>
@@ -529,8 +532,15 @@ import {createInitialPaging, formatTimeAgo, getPageNumbers} from '@/utils/common
 import {useToast} from 'vue-toastification'
 import {useImageUrl} from '@/utils/imageUtil'
 import {communityApi} from '@/api/community'
-import type {MyPartyPostDto, PartyCommunityAppliedHistoryDto, PartyCommunityHistoryDto} from "@/types/community.ts";
+import {
+  createInitialPartyCommunityHistoryResponse,
+  type MyPartyPostDto,
+  type PartyCommunityAppliedHistoryDto,
+  type PartyCommunityHistoryDto,
+  type PartyCommunityHistoryResponse
+} from "@/types/community.ts";
 import {assignWith} from "lodash";
+import type {ReviewHistoryDto, ReviewHistoryResponse} from "@/types/review.ts";
 
 const {getPositionImage} = useImageUrl()
 const route = useRoute()
@@ -538,6 +548,7 @@ const router = useRouter()
 const toast = useToast()
 const activeHistoryTab = ref('hosted')
 const expandedParties = ref(new Set<number>())
+const ITEMS_PER_PAGE = 10;
 
 const activeTab = ref('current')
 const showApplicants = ref<{ [key in 'TOP' | 'JG' | 'MID' | 'BOT' | 'SUP']: boolean }>({
@@ -552,10 +563,23 @@ const myActivePost = ref<MyPartyPostDto | null>(null)
 const hostedPartyHistory = ref<PartyCommunityHistoryDto[] | null>(null)
 const participatedPartyHistory = ref<PartyCommunityHistoryDto[] | null>(null)
 const appliedPartyHistory = ref<PartyCommunityAppliedHistoryDto[] | null>(null)
+const hostedPaging = ref<PartyCommunityHistoryResponse>(createInitialPaging());
+const participatedPaging = ref<PartyCommunityHistoryResponse>(createInitialPaging());
+const appliedPaging = ref<PartyCommunityHistoryResponse>(createInitialPaging());
+const pageNumbers = computed(() => getPageNumbers(currentPaging.value));
 
-const paging = ref(createInitialPaging())
-
-const pageNumbers = computed(() => getPageNumbers(paging.value))
+const currentPaging = computed(() => {
+  switch (activeHistoryTab.value) {
+    case 'hosted':
+      return hostedPaging.value;
+    case 'participated':
+      return participatedPaging.value;
+    case 'applied':
+      return appliedPaging.value;
+    default:
+      return hostedPaging.value;
+  }
+});
 
 const getParticipantByPosition = computed(() => {
   if (!myActivePost.value?.postCardDto.participantDtoList) return {};
@@ -600,7 +624,7 @@ const getPostStatusName = (postStatus: string) => {
   }
 }
 
-const getGameModeName = (code) => {
+const getGameModeName = (code: string) => {
   const gameModeMap = {
     'ARAM': '칼바람나락',
     'NORMAL': '일반게임',
@@ -614,27 +638,27 @@ const toggleApplicants = (position: 'TOP' | 'JG' | 'MID' | 'BOT' | 'SUP') => {
   showApplicants.value[position] = !showApplicants.value[position]
 }
 
-const handleTabChange = async (tab) => {
+const handleTabChange = async (tab: string) => {
   await router.push({
     query: {...route.query, tab, page: '1'}
   })
 }
 
-const handlePageChange = async (page) => {
+const handlePageChange = async (page: number) => {
   await router.push({
     query: {...route.query, page: page.toString()}
-  })
+  });
 }
 
-/*const handlePrevPage = () => {
-  paging.value.currentPage = paging.value.startPage - 1
-  fetchParties()
-}*/
+const handlePrevPage = () => {
+  currentPaging.value.currentPage = currentPaging.value.startPage - 1;
+  fetchHistoryData(activeHistoryTab.value);
+}
 
-/*const handleNextPage = () => {
-  paging.value.currentPage = paging.value.endPage + 1
-  fetchParties()
-}*/
+const handleNextPage = () => {
+  currentPaging.value.currentPage = currentPaging.value.endPage + 1;
+  fetchHistoryData(activeHistoryTab.value);
+}
 
 const handleApprove = async (postId: number, applicantSeq: number, position: string) => {
   await communityApi.approvePartyApplicant(postId, applicantSeq, position)
@@ -661,19 +685,26 @@ const handleUpdatePartyStatus = (postId: number, status: string) => {
 }
 
 const fetchHistoryData = async (type: string) => {
+  const page = currentPaging.value.currentPage;
   switch (type) {
-    case 'hosted':
-      const hostedResponse = await communityApi.getPartyHostedHistory()
-      hostedPartyHistory.value = hostedResponse.data
+    case 'hosted': {
+      const hostedResponse = await communityApi.getPartyHostedHistory(page, ITEMS_PER_PAGE)
+      hostedPartyHistory.value = hostedResponse.data.items
+      hostedPaging.value = hostedResponse.data
       break
-    case 'participated':
-      const participatedResponse = await communityApi.getPartyParticipatedHistory()
-      participatedPartyHistory.value = participatedResponse.data
+    }
+    case 'participated': {
+      const participatedResponse = await communityApi.getPartyParticipatedHistory(page, ITEMS_PER_PAGE)
+      participatedPartyHistory.value = participatedResponse.data.items
+      participatedPaging.value = participatedResponse.data
       break
-    case 'applied':
-      const appliedResponse = await communityApi.getPartyAppliedHistory()
-      appliedPartyHistory.value = appliedResponse.data
+    }
+    case 'applied': {
+      const appliedResponse = await communityApi.getPartyAppliedHistory(page, ITEMS_PER_PAGE)
+      appliedPartyHistory.value = appliedResponse.data.items
+      appliedPaging.value = appliedResponse.data
       break
+    }
   }
 }
 
@@ -687,7 +718,7 @@ onMounted(() => {
     activeTab.value = route.query.tab as string
   }
   if (route.query.page) {
-    paging.value.currentPage = parseInt(route.query.page as string)
+    currentPaging.value.currentPage = parseInt(route.query.page as string)
   }
 
   watch(
@@ -697,17 +728,20 @@ onMounted(() => {
           activeTab.value = query.tab as string
         }
         if (query.page) {
-          paging.value.currentPage = parseInt(query.page as string)
+          currentPaging.value.currentPage = parseInt(query.page as string)
+          if (activeTab.value === 'history') {
+            fetchHistoryData(activeHistoryTab.value)
+          }
         }
-      }
+      }, { immediate: true }
   )
 })
 
-watch([activeTab, activeHistoryTab], ([newTab, newHistoryTab]) => {
+/*watch([activeTab, activeHistoryTab], ([newTab, newHistoryTab]) => {
   if (newTab === 'history') {
     fetchHistoryData(newHistoryTab)
   }
-}, { immediate: true })
+}, { immediate: true })*/
 
 onMounted(async () => {
   await fetchMyPartyPost();
