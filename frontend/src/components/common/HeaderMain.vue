@@ -8,10 +8,10 @@
           <span>updownGG</span>
         </RouterLink>
         <nav class="nav">
-          <RouterLink to="/">홈</RouterLink>
           <RouterLink to="/ranking">랭킹</RouterLink>
           <RouterLink to="/stats">통계</RouterLink>
-          <RouterLink to="/community/duo">커뮤니티</RouterLink>
+          <RouterLink to="/community/duo">듀오찾기</RouterLink>
+          <RouterLink to="/community/party">파티찾기</RouterLink>
         </nav>
 
         <div class="user-actions" v-if="authStore.isAuthenticated">
@@ -30,6 +30,7 @@
               <button class="dropdown-item" @click="handleProfile">프로필</button>
               <button class="dropdown-item" @click="navigateToAccountSettings">계정 설정</button>
               <button class="dropdown-item" @click="navigateToReviewHistory">평가 내역</button>
+              <button class="dropdown-item" @click="navigateToCommunityHistory">커뮤니티 활동내역</button>
               <div class="dropdown-divider"></div>
               <button class="dropdown-item logout" @click="handleLogout">로그아웃</button>
             </div>
@@ -89,6 +90,11 @@ const navigateToAccountSettings = () => {
 const navigateToReviewHistory = () => {
   isDropdownOpen.value = false;
   router.push('/review/history');
+};
+
+const navigateToCommunityHistory = () => {
+  isDropdownOpen.value = false;
+  router.push('/community/history');
 };
 
 const toggleDropdown = () => {
@@ -180,6 +186,7 @@ onUnmounted(() => {
   font-size: 15px;
   font-weight: 500;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 
 .nav a:hover,
@@ -307,11 +314,11 @@ onUnmounted(() => {
   .nav {
     display: flex;
     gap: 16px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .nav a {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .user-actions {
@@ -327,7 +334,7 @@ onUnmounted(() => {
   .login-btn,
   .profile-btn {
     padding: 0 12px;
-    font-size: 13px;
+    font-size: 12px;
     height: 32px;
   }
 
