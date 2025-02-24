@@ -31,7 +31,7 @@
               <button class="dropdown-item" @click="handleProfile">프로필</button>
               <button class="dropdown-item" @click="navigateToAccountSettings">계정 설정</button>
               <button class="dropdown-item" @click="navigateToReviewHistory">평가 내역</button>
-              <button class="dropdown-item" @click="navigateToCommunityHistory">커뮤니티 활동내역</button>
+              <button class="dropdown-item" @click="navigateToCommunityHistory">파티 내역</button>
               <div class="dropdown-divider"></div>
               <button class="dropdown-item logout" @click="handleLogout">로그아웃</button>
             </div>
