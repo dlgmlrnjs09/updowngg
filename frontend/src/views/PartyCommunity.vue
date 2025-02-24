@@ -106,7 +106,7 @@
               <!-- 포지션 정보 -->
               <div class="flex items-center gap-2">
                 <template v-for="participant in myActiveParty.postCardDto.participantDtoList" :key="participant.position">
-                  <div class="relative flex items-center gap-1 bg-[#1A1A1A] px-2 py-1 rounded-lg border border-gray-700">
+                  <div v-if="participant.isOpenPosition" class="relative flex items-center gap-1 bg-[#1A1A1A] px-2 py-1 rounded-lg border border-gray-700">
                     <img :src="getPositionImage(participant.position)" :alt="participant.position" class="w-4 h-4">
                     <template v-if="participant.summonerInfoDto">
                       <span class="text-white text-xs truncate max-w-[80px]">
@@ -119,13 +119,13 @@
                           class="flex items-center gap-2 hover:bg-[#1A1A1A] rounded transition-colors applicant-button"
                           @click="toggleApplicants(participant.position, $event)"
                       >
-                        <span class="text-gray-500 text-xs">{{ participant.isOpenPosition ? '대기 중' : '-' }}</span>
+                        <span class="text-gray-500 text-xs">대기 중</span>
                         <span class="text-[#2979FF] text-xs flex items-center gap-1">
                           ({{ myActiveParty.applicantByPositionMap[participant.position].length }})
                           <component :is="showApplicants[participant.position] ? ChevronUp : ChevronDown" class="w-3 h-3" />
                         </span>
                       </button>
-                      <span v-else class="text-gray-500 text-xs">{{ participant.isOpenPosition ? '대기 중' : '-' }}</span>
+                      <span v-else class="text-gray-500 text-xs">대기 중</span>
                     </template>
 
                     <!-- 신청자 목록 팝오버 -->

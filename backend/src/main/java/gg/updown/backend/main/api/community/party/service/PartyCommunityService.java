@@ -87,18 +87,23 @@ public class PartyCommunityService implements CommunityInterface {
         switch(position) {
             case TOP:
                 participantEntity.setTopPuuid(post.getWriterPuuid());
+                partyCommunityEntity.setIsOpenTop(true);
                 break;
             case JUNGLE:
                 participantEntity.setJunglePuuid(post.getWriterPuuid());
+                partyCommunityEntity.setIsOpenJungle(true);
                 break;
             case MIDDLE:
                 participantEntity.setMidPuuid(post.getWriterPuuid());
+                partyCommunityEntity.setIsOpenMid(true);
                 break;
             case BOTTOM:
                 participantEntity.setAdPuuid(post.getWriterPuuid());
+                partyCommunityEntity.setIsOpenAd(true);
                 break;
             case UTILITY:
                 participantEntity.setSupPuuid(post.getWriterPuuid());
+                partyCommunityEntity.setIsOpenSup(true);
                 break;
         }
 
@@ -379,7 +384,7 @@ public class PartyCommunityService implements CommunityInterface {
         count += Boolean.TRUE.equals(historyDto.getIsOpenAd()) ? 1 : 0;
         count += Boolean.TRUE.equals(historyDto.getIsOpenSup()) ? 1 : 0;
 
-        return count + 1; // 본인포함
+        return count /*+ 1*/; // 본인포함
     }
 
     private int getParticipantCount(PartyCommunityHistoryBaseDto historyDto) {
@@ -401,7 +406,7 @@ public class PartyCommunityService implements CommunityInterface {
         count += Boolean.TRUE.equals(historyDto.getIsOpenAd()) ? 1 : 0;
         count += Boolean.TRUE.equals(historyDto.getIsOpenSup()) ? 1 : 0;
 
-        return count + 1; // 본인포함
+        return count /*+ 1*/; // 본인포함
     }
 
     private int getParticipantCount(PartyPostCardDto historyDto) {
