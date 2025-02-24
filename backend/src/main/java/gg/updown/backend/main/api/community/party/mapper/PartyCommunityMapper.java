@@ -38,4 +38,5 @@ public interface PartyCommunityMapper {
     void updateParticipant(PartyCommunityParticipantEntity paramEntity);
     void deleteAnotherApplicant(PartyCommunityApplicantEntity paramEntity);
     void updatePartyStatus(@Param("postId")long postId, @Param("postStatus")String postStatus);
+    void leaveMyParty(@Param("postId")long postId, @Param("puuid")String puuid);
 }

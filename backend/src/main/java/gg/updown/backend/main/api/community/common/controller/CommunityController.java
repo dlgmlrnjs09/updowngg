@@ -96,6 +96,16 @@ public class CommunityController {
         partyCommunityService.updateApplicantStatus(reqDto, puuid, false);
     }
 
+    @PostMapping("/party/leave")
+    @PreAuthorize("isAuthenticated()")
+    public void leave(
+            @RequestBody @Valid PartyCommunityLeaveReqDto reqDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        partyCommunityService.leaveMyParty(reqDto.getPostId(), puuid);
+    }
+
     @PostMapping("/party/close/{postId}")
     @PreAuthorize("isAuthenticated()")
     public void close(

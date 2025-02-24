@@ -162,6 +162,21 @@ public class PartyCommunityService implements CommunityInterface {
         transactionService.updateApplicantAndParticipant(reqDto.getPostId(), reqDto.getApplicantSeq(), isApproval);
     }
 
+    public void leaveMyParty(long postId, String puuid) {
+        boolean isParticipantParty = partyCommunityMapper.checkParticipateAnotherPosition(postId, puuid);
+        if (!isParticipantParty) {
+            // 등록했거나 참가중인 파티가 없음
+            throw new SiteCommonException(
+                    HttpStatus.NO_CONTENT
+                    , SiteErrorMessage.NOT_EXIST_PARTY.getMessage()
+                    , SiteErrorMessage.NOT_EXIST_PARTY.getMessage()
+                    , SiteErrorMessage.NOT_EXIST_PARTY.getMessage()
+            );
+        }
+
+        partyCommunityMapper.leaveMyParty(postId, puuid);
+    }
+
     public List<PartyCommunityApplicantDto> getApplicantList(String puuid, List<Long> postIds) {
         List<PartyCommunityApplicantDto> resDtoList = new ArrayList<>();
         partyCommunityMapper.getApplicantList(puuid, postIds).forEach(dto -> {

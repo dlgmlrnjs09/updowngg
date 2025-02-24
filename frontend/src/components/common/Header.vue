@@ -9,9 +9,10 @@
             <span>updownGG</span>
           </RouterLink>
           <nav class="nav">
+            <RouterLink to="/">홈</RouterLink>
             <RouterLink to="/ranking">랭킹</RouterLink>
             <RouterLink to="/stats">통계</RouterLink>
-            <RouterLink to="/community/duo">듀오찾기</RouterLink>
+<!--            <RouterLink to="/community/duo">듀오찾기</RouterLink>-->
             <RouterLink to="/community/party">파티찾기</RouterLink>
           </nav>
           <div class="user-actions">

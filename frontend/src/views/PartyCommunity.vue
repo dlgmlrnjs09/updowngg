@@ -1008,16 +1008,10 @@ const toggleApplicants = (position: string) => {
 
 // 파티 나가기
 const handleLeaveParty = async (postId: number) => {
-  try {
-    await communityApi.leaveParty(postId)
-    toast.success('파티에서 나왔습니다.')
-
-    // 파티 정보 새로고침
-    await checkUpdates()
-  } catch (error) {
-    console.error('파티 나가기 실패:', error)
-    toast.error('파티 나가기에 실패했습니다.')
-  }
+  await communityApi.leaveMyParty(postId)
+  toast.success('파티 탈퇴되었습니다.')
+  await checkUpdates();
+  await fetchMyPartyPost();
 }
 
 const getGameModeName = (code: string) => {

@@ -65,6 +65,11 @@ export const communityApi = {
             position: position
         }),
 
+    leaveMyParty: (postId: number) =>
+        apiClient.post<boolean>('/api/v1/community/party/leave', {
+            postId: postId
+        }),
+
     closeParty: (postId: number) =>
         apiClient.post<void>(`/api/v1/community/party/close/${postId}`),
 
