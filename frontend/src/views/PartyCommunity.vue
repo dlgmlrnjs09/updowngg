@@ -705,18 +705,18 @@ watch(() => myActiveParty.value, (newVal, oldVal) => {
   }
 });
 
-const handleUpdatePartyStatus = (postId: number, status: string) => {
+const handleUpdatePartyStatus = async (postId: number, status: string) => {
   if (status === 'CLOSE') {
-    communityApi.closeParty(postId);
+    await communityApi.closeParty(postId);
     toast.success('모집 마감되었습니다.')
     myActiveParty.value = null
   } else {
-    communityApi.cancelParty(postId);
+    await communityApi.cancelParty(postId);
     toast.success('모집 취소되었습니다.')
     myActiveParty.value = null
   }
 
-  checkUpdates();
+  await checkUpdates();
 }
 
 const handleApprove = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
