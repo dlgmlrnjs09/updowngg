@@ -109,25 +109,19 @@
                     <template v-else>
                       <span class="text-[#2979FF] text-xs">대기중</span>
                       <!-- 신청자 -->
-                      <template
-                          v-if="myActiveParty.postCardDto.writerPuuid === myPuuid"
-                          v-for="position in POSITION_ORDER"
-                          :key="position"
-                      >
-                        <template v-if="myActiveParty?.applicantByPositionMap?.[position]?.length > 0">
-                          <button
-                              @click="toggleApplicants(participant.position)"
-                              class="flex items-center gap-1 ml-1 text-[#2979FF] text-xs"
-                          >
+                      <template v-if="myActiveParty.postCardDto.writerPuuid === myPuuid && myActiveParty?.applicantByPositionMap?.[participant.position]?.length > 0">
+                        <button
+                            @click="toggleApplicants(participant.position)"
+                            class="flex items-center gap-1 ml-1 text-[#2979FF] text-xs"
+                        >
                           <span>
-                            ({{ myActiveParty.applicantByPositionMap[position].length }})
+                            ({{ myActiveParty.applicantByPositionMap[participant.position].length }})
                           </span>
-                            <component
-                                :is="showApplicants[position] ? ChevronUp : ChevronDown"
-                                class="w-3 h-3"
-                            />
-                          </button>
-                        </template>
+                          <component
+                              :is="showApplicants[participant.position] ? ChevronUp : ChevronDown"
+                              class="w-3 h-3"
+                          />
+                        </button>
                       </template>
                     </template>
 
@@ -653,18 +647,20 @@ const handleUpdatePartyStatus = (postId: number, status: string) => {
     toast.success('모집 취소되었습니다.')
     myActiveParty.value = null
   }
+
+  checkUpdates();
 }
 
 const handleApprove = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
   await communityApi.approvePartyApplicant(postId, applicantPuuid, applicantSeq, position)
   toast.success('승인되었습니다.')
-  await fetchMyPartyPost()
+  await checkUpdates();
 }
 
 const handleReject = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
   await communityApi.rejectPartyApplicant(postId, applicantPuuid, applicantSeq, position)
   toast.success('거절되었습니다.')
-  await fetchMyPartyPost()
+  await checkUpdates();
 }
 
 const getParticipantByPosition = computed(() => {
@@ -675,124 +671,6 @@ const getParticipantByPosition = computed(() => {
     return acc;
   }, {} as Record<string, any>);
 });
-
-// 신청자 포함된 목업 데이터
-/*const myActiveParty = {
-  postId: 1,
-  content: "같이 솔랭 가실 서폿 구합니다",
-  gameMode: "SOLO_RANK",
-  isUseMic: true,
-  isWriter: true,
-  writerPuuid: "writer-123",
-  // 신청자 정보를 포지션별로 관리
-  applicantByPositionMap: {
-    "SUP": [
-      {
-        applicantSeq: 1,
-        postId: 1,
-        position: "SUP",
-        summonerInfoDto: {
-          summonerBasicInfoDto: {
-            puuid: "applicant-1",
-            gameName: "서폿신청자1",
-            tagLine: "KR1",
-            profileIconUrl: "/icons/4.png"
-          },
-          frequentTagDtoList: [
-            { tagCode: "P001", tagValue: "겜잘함" }
-          ],
-          reviewStatsDto: {
-            score: 4.2,
-            upCount: 42,
-            downCount: 8,
-            totalReviewCnt: 50
-          },
-          mostChampionDto: [
-            {
-              iconUrl: "/champions/lulu.png",
-              nameKr: "룰루",
-              nameUs: "Lulu",
-              winRate: 62
-            }
-          ]
-        }
-      },
-      {
-        applicantSeq: 2,
-        postId: 1,
-        position: "SUP",
-        summonerInfoDto: {
-          summonerBasicInfoDto: {
-            puuid: "applicant-2",
-            gameName: "서폿신청자2",
-            tagLine: "KR1",
-            profileIconUrl: "/icons/5.png"
-          },
-          frequentTagDtoList: [
-            { tagCode: "P002", tagValue: "실력자" }
-          ],
-          reviewStatsDto: {
-            score: 4.5,
-            upCount: 45,
-            downCount: 5,
-            totalReviewCnt: 50
-          },
-          mostChampionDto: [
-            {
-              iconUrl: "/champions/thresh.png",
-              nameKr: "쓰레쉬",
-              nameUs: "Thresh",
-              winRate: 58
-            }
-          ]
-        }
-      }
-    ]
-  },
-  participantDtoList: [
-    {
-      position: "MID",
-      isOpenPosition: false,
-      summonerInfoDto: {
-        summonerBasicInfoDto: {
-          puuid: "writer-123",
-          gameName: "모크리",
-          tagLine: "KR1",
-          profileIconUrl: "/icons/1.png"
-        },
-        frequentTagDtoList: [
-          { tagCode: "P001", tagValue: "겜잘함" },
-          { tagCode: "P002", tagValue: "실력자" }
-        ],
-        reviewStatsDto: {
-          score: 4.5,
-          upCount: 45,
-          downCount: 5,
-          totalReviewCnt: 50
-        },
-        mostChampionDto: [
-          {
-            iconUrl: "/champions/ahri.png",
-            nameKr: "아리",
-            nameUs: "Ahri",
-            winRate: 55
-          },
-          {
-            iconUrl: "/champions/lux.png",
-            nameKr: "럭스",
-            nameUs: "Lux",
-            winRate: 58
-          }
-        ]
-      }
-    },
-    {
-      position: "SUP",
-      isOpenPosition: true,
-      summonerInfoDto: null
-    }
-  ]
-}*/
 
 onMounted(async () => {
   setupVisibilityHandler()
@@ -960,6 +838,7 @@ const checkUpdates = async () => {
     const response = await communityApi.getPartyPost('party', currentFilter)
     postCards.value = response.data
     await fetchAppliedPositions()
+    await fetchMyPartyPost()
   } catch (error) {
     console.error('업데이트 체크 중 오류:', error)
   } finally {
@@ -969,8 +848,9 @@ const checkUpdates = async () => {
 
 const applyForPosition = async (postId: number, position: string) => {
   await communityApi.applyParty(postId, position);
-    appliedPositions.value.set(`${postId}-${position}`, true);
-    toast.success("참가신청이 완료되었습니다.")
+  appliedPositions.value.set(`${postId}-${position}`, true);
+  toast.success("참가신청이 완료되었습니다.")
+  await checkUpdates();
 }
 
 const shouldShowApplyButton = (card: PartyPostCardDto, currentParticipant: any) => {

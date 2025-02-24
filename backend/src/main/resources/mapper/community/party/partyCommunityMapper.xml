@@ -230,6 +230,8 @@
             site_community_party_applicant
         WHERE
             applicant_puuid = #{puuid}
+            AND del_dt is null
+            AND is_approve is null /* 승인/거절/취소되지 않은 상태 */
             AND post_id IN
             <foreach item="postId" collection="postIds" open="(" separator="," close=")">
                 #{postId}

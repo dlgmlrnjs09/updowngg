@@ -192,6 +192,10 @@ public class PartyCommunityService implements CommunityInterface {
         MyPartyDto resDto = new MyPartyDto();
 
         PartyPostCardDto postDto = this.getMyActiveParty(puuid);
+        if (postDto == null) {
+            return null;
+        }
+
         // 참여자 목록 조회
         List<PartyCommunityParticipantDto> participantDtoList = new ArrayList<>();
         participantDtoList.add(this.createParticipantDto(SiteMatchPosition.TOP, postDto.getTopPuuid(), postDto.getIsOpenTop()));
@@ -440,12 +444,13 @@ public class PartyCommunityService implements CommunityInterface {
             postDto = partyCommunityMapper.getMyParticipantPost(puuid);
             if (postDto == null) {
                 // 등록했거나 참가중인 파티가 없음
-                throw new SiteCommonException(
+                /*throw new SiteCommonException(
                         HttpStatus.NO_CONTENT
                         , SiteErrorMessage.NOT_EXIST_PARTY.getMessage()
                         , SiteErrorMessage.NOT_EXIST_PARTY.getMessage()
                         , SiteErrorMessage.NOT_EXIST_PARTY.getMessage()
-                );
+                );*/
+                return null;
             }
         }
 
