@@ -1,5 +1,7 @@
+<!-- PartyCommunity-backup.vue -->
 <template>
   <div class="min-h-screen bg-[#0A0A0A] p-4 sm:p-6">
+    <!-- 듀오 등록 모달 -->
     <WriteModal
         v-if="showWriteModal"
         @submit="handleDuoSubmit"
@@ -14,10 +16,10 @@
             @click="manualRefresh"
             class="bg-[#141414] text-[#2979FF] p-2 rounded-lg transition-colors"
             :class="{
-              'animate-spin': isPolling,
-              'hover:bg-[#1A1A1A]': countdown <= 5 && !isPolling,
-              'opacity-50 cursor-not-allowed': countdown > 5 || isPolling
-            }"
+            'animate-spin': isPolling,
+            'hover:bg-[#1A1A1A]': countdown <= 5 && !isPolling,
+            'opacity-50 cursor-not-allowed': countdown > 5 || isPolling
+          }"
             :disabled="countdown > 5 || isPolling"
         >
           <RefreshCcw class="w-5 h-5" />
@@ -27,581 +29,47 @@
 
     <div class="max-w-6xl mx-auto mb-8">
       <!-- 필터 영역 -->
-      <div class="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center mb-8 sm:mb-14">
-        <div class="grid grid-cols-2 gap-2 sm:bg-[#141414] sm:p-3 sm:rounded-xl sm:flex sm:gap-3 sm:flex-1 sm:mr-4">
-          <select
-              v-model="selectedGameMode"
-              class="bg-[#1A1A1A] text-white text-sm px-3 py-2.5 sm:py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF]"
-              @change="onFilterUpdate"
-          >
-            <option value="">모든 큐</option>
-            <option value="SOLO_RANK">솔로랭크</option>
-            <option value="FLEX_RANK">자유랭크</option>
-            <option value="NORMAL">일반게임</option>
-            <option value="ARAM">칼바람나락</option>
-          </select>
-          <select
-              v-model="selectedPosition"
-              class="bg-[#1A1A1A] text-white text-sm px-3 py-2.5 sm:py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF]"
-              @change="onFilterUpdate"
-          >
-            <option value="">모든 포지션</option>
-            <option value="TOP">탑</option>
-            <option value="JG">정글</option>
-            <option value="MID">미드</option>
-            <option value="AD">원딜</option>
-            <option value="SUP">서포터</option>
-          </select>
-          <select
-              v-model="selectedTier"
-              class="bg-[#1A1A1A] text-white text-sm px-3 py-2.5 sm:py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF] col-span-2 sm:col-span-1"
-              @change="onFilterUpdate"
-          >
-            <option value="">모든 티어</option>
-            <option value="IRON">아이언</option>
-            <option value="BRONZE">브론즈</option>
-            <option value="SILVER">실버</option>
-            <option value="GOLD">골드</option>
-            <option value="PLATINUM">플래티넘</option>
-          </select>
-        </div>
-        <button
-            @click="showWriteModal = true"
-            class="w-full sm:w-auto bg-[#2979FF] text-white px-4 py-3 sm:py-1.5 rounded-lg hover:bg-[#2565D1] transition-colors text-sm font-medium sm:h-12"
-        >
-          {{ isMobile ? '듀오 등록' : '듀오 등록하기' }}
-        </button>
-      </div>
+      <PartyFilter
+          :initial-game-mode="selectedGameMode"
+          :initial-position="selectedPosition"
+          :initial-tier="selectedTier"
+          @filter-update="onFilterUpdate"
+          @write="showWriteModal = true"
+      />
 
       <!-- 내 파티 미니바 -->
-      <div
+      <MyActiveParty
           v-if="myActiveParty"
-          class="max-w-6xl mx-auto mb-8"
-          :class="{ 'highlight-effect': hasNewApplicant }"
-      >
-        <div class="bg-[#141414] rounded-xl border border-[#2979FF] p-4">
-          <!-- PC/태블릿 뷰 -->
-          <div class="hidden sm:flex items-center justify-between">
-            <!-- 좌측: 기본 정보 -->
-            <div class="flex items-center gap-4">
-              <div class="flex items-center gap-2">
-                <span class="text-[#2979FF] text-sm font-medium">
-                  {{ myActiveParty.postCardDto.writerPuuid === myPuuid ? '모집중' : '참가중' }}
-                </span>
-                <span class="text-white text-sm">
-                  {{ getGameModeName(myActiveParty.postCardDto.gameMode) }}
-                </span>
-              </div>
-              <div class="h-4 w-[1px] bg-gray-700"></div>
-              <div
-                  class="flex items-center gap-2"
-                  :class="{ 'participant-highlight': participantCount === myActiveParty?.postCardDto?.participantCount }"
-              >
-                <Users class="w-4 h-4 text-gray-400" />
-                <span class="text-white text-sm">
-                  {{ myActiveParty.postCardDto.participantCount}} / {{ myActiveParty.postCardDto.recruitCount }}
-                </span>
-              </div>
-              <div class="h-4 w-[1px] bg-gray-700"></div>
-              <!-- 포지션 정보 -->
-              <div class="flex items-center gap-2">
-                <template v-for="participant in myActiveParty.postCardDto.participantDtoList" :key="participant.position">
-                  <div v-if="participant.isOpenPosition" class="relative flex items-center gap-1 bg-[#1A1A1A] px-2 py-1 rounded-lg border border-gray-700">
-                    <img :src="getPositionImage(participant.position)" :alt="participant.position" class="w-4 h-4">
-                    <template v-if="participant.summonerInfoDto">
-                      <span class="text-white text-xs truncate max-w-[80px]">
-                        {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
-                      </span>
-                    </template>
-                    <template v-else>
-                      <button
-                          v-if="myActiveParty.postCardDto.writerPuuid === myPuuid && myActiveParty.applicantByPositionMap[participant.position]?.length > 0"
-                          class="flex items-center gap-2 hover:bg-[#1A1A1A] rounded transition-colors applicant-button"
-                          @click="toggleApplicants(participant.position, $event)"
-                      >
-                        <span class="text-gray-500 text-xs">대기 중</span>
-                        <span class="text-[#2979FF] text-xs flex items-center gap-1">
-                          ({{ myActiveParty.applicantByPositionMap[participant.position].length }})
-                          <component :is="showApplicants[participant.position] ? ChevronUp : ChevronDown" class="w-3 h-3" />
-                        </span>
-                      </button>
-                      <span v-else class="text-gray-500 text-xs">대기 중</span>
-                    </template>
-
-                    <!-- 신청자 목록 팝오버 -->
-                    <div
-                        v-if="showApplicants[participant.position] && myActiveParty.applicantByPositionMap[participant.position]"
-                        :ref="el => applicantPopovers[participant.position] = el"
-                        class="absolute top-full left-0 mt-2 w-[300px] bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-700 z-10"
-                    >
-                      <div v-for="applicant in myActiveParty.applicantByPositionMap[participant.position]"
-                           :key="applicant.applicantSeq"
-                           class="p-3 border-b border-gray-700 last:border-0">
-                        <div class="flex items-center gap-3">
-                          <img
-                              :src="applicant.summonerInfoDto.summonerBasicInfoDto.profileIconUrl"
-                              :alt="applicant.summonerInfoDto.summonerBasicInfoDto.gameName"
-                              class="w-10 h-10 rounded-lg"
-                          />
-                          <div class="flex-1">
-                            <div class="flex items-center gap-1">
-                              <span class="text-white text-sm">
-                                {{ applicant.summonerInfoDto.summonerBasicInfoDto.gameName }}
-                              </span>
-                              <span class="text-gray-400 text-xs">
-                                #{{ applicant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
-                              </span>
-                            </div>
-                            <div class="flex gap-1 mt-1">
-                              <span
-                                  v-for="tag in applicant.summonerInfoDto.frequentTagDtoList"
-                                  :key="tag.tagCode"
-                                  class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
-                              >
-                                {{ tag.tagValue }}
-                              </span>
-                            </div>
-                          </div>
-                          <div class="flex items-center gap-1">
-                            <button
-                                @click="handleApprove(myActiveParty.postCardDto.postId, applicant.summonerInfoDto.summonerBasicInfoDto.puuid, applicant.applicantSeq, participant.position)"
-                                class="bg-[#2979FF] hover:bg-[#2565D1] text-white p-1.5 rounded">
-                              <UserCheck class="w-4 h-4" />
-                            </button>
-                            <button
-                                @click="handleReject(myActiveParty.postCardDto.postId, applicant.summonerInfoDto.summonerBasicInfoDto.puuid, applicant.applicantSeq, participant.position)"
-                                class="bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1.5 rounded">
-                              <UserX class="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </div>
-
-            <!-- 우측: 액션 버튼 -->
-            <div class="flex items-center gap-2">
-              <component
-                  :is="myActiveParty.postCardDto.isUseMic ? MicIcon : MicOffIcon"
-                  :class="myActiveParty.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
-                  class="w-4 h-4"
-              />
-              <template v-if="myActiveParty.postCardDto.writerPuuid === myPuuid">
-                <button
-                    @click="handleUpdatePartyStatus(myActiveParty.postCardDto.postId, 'CLOSE')"
-                    class="bg-[#1A1A1A] hover:bg-[#242424] text-white px-3 py-1.5 rounded-lg text-xs"
-                >
-                  마감
-                </button>
-                <button
-                    @click="handleUpdatePartyStatus(myActiveParty.postCardDto.postId, 'CANCEL')"
-                    class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
-                >
-                  취소
-                </button>
-              </template>
-              <template v-else>
-                <button
-                    @click="handleLeaveParty(myActiveParty.postCardDto.postId)"
-                    class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
-                >
-                  나가기
-                </button>
-              </template>
-            </div>
-          </div>
-
-          <!-- 모바일 뷰 -->
-          <div class="sm:hidden space-y-4">
-            <!-- 상태 및 기본 정보 -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-[#2979FF] text-sm font-medium">
-                  {{ myActiveParty.postCardDto.writerPuuid === myPuuid ? '모집중' : '참가중' }}
-                </span>
-                <span class="text-white text-sm">{{ getGameModeName(myActiveParty.postCardDto.gameMode) }}</span>
-              </div>
-              <component
-                  :is="myActiveParty.postCardDto.isUseMic ? MicIcon : MicOffIcon"
-                  :class="myActiveParty.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
-                  class="w-4 h-4"
-              />
-            </div>
-
-            <!-- 포지션 정보 -->
-            <div class="grid grid-cols-1 gap-2">
-              <div v-for="participant in myActiveParty.postCardDto.participantDtoList"
-                   :key="participant.position"
-                   class="bg-[#1A1A1A] rounded-lg p-2 flex items-center justify-between text-center h-[52px] w-full"
-                   :class="{
-                     'border-2 border-[#2979FF]': myActiveParty.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid,
-                     'border border-[#333]': participant.isOpenPosition && !participant.summonerInfoDto,
-                     'border border-gray-700': participant.summonerInfoDto && myActiveParty.postCardDto.writerPuuid !== participant.summonerInfoDto.summonerBasicInfoDto.puuid,
-                     'border border-[#383838]': !(myActiveParty.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid) && !participant.isOpenPosition,
-                     'opacity-50': !(myActiveParty.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid) && !participant.isOpenPosition
-                   }"
-              >
-                <!-- 포지션 채워진 경우 -->
-                <template v-if="participant.summonerInfoDto">
-                  <div class="flex items-center gap-2">
-                    <img
-                        :src="getPositionImage(participant.position)"
-                        :alt="participant.position"
-                        class="w-5 h-5"
-                    >
-                  </div>
-
-                  <div class="flex-1 text-left ml-2 min-w-0">
-                    <div class="flex items-center gap-1">
-                      <div class="text-xs font-medium text-white hover:text-[#2979FF] cursor-pointer truncate max-w-full">
-                        {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
-                      </div>
-                      <div class="text-[10px] text-gray-400 truncate">
-                        #{{ participant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
-                      </div>
-                    </div>
-
-                    <div class="flex gap-1 mt-0.5">
-                      <span
-                          v-for="tag in participant.summonerInfoDto.frequentTagDtoList"
-                          :key="tag.tagCode"
-                          class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
-                      >
-                         {{ tag.tagValue }}
-                       </span>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-col items-end">
-                    <div class="flex items-center gap-1 text-[10px] mb-0.5">
-                      <span class="text-gray-400">평가</span>
-                      <span class="text-[#2979FF] font-medium">
-                        {{ participant.summonerInfoDto.reviewStatsDto.score?.toFixed(1) ?? 0 }}점
-                      </span>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                      <div class="flex items-center gap-1">
-                        <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
-                        <span class="text-[#4CAF50] text-[10px]">
-                          {{ participant.summonerInfoDto.reviewStatsDto.upCount }}
-                        </span>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
-                        <span class="text-[#FF5252] text-[10px]">
-                          {{ participant.summonerInfoDto.reviewStatsDto.downCount }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex gap-1 ml-2">
-                    <div v-for="(champion, index) in participant.summonerInfoDto.mostChampionDto.slice(0, 2)"
-                         :key="index"
-                         class="bg-[#141414] rounded-lg p-1 flex flex-col items-center">
-                      <img
-                          :src="champion.iconUrl"
-                          :alt="champion.nameUs"
-                          class="w-5 h-5 rounded mb-0.5"
-                      >
-                      <span class="text-[9px] text-[#4CAF50]">
-                        {{ champion.winRate }}%
-                      </span>
-                    </div>
-                  </div>
-                </template>
-
-                <!-- 대기 중인 경우 -->
-                <template v-else>
-                  <div class="flex items-center gap-2">
-                    <img
-                        :src="getPositionImage(participant.position)"
-                        :alt="participant.position"
-                        class="w-5 h-5"
-                    >
-                    <div class="text-gray-500 text-xs">
-                      {{ participant.isOpenPosition ? '대기 중' : '-' }}
-                    </div>
-                  </div>
-                  <template v-if="myActiveParty.postCardDto.writerPuuid === myPuuid && myActiveParty.applicantByPositionMap[participant.position]?.length > 0">
-                    <button
-                        @click="toggleApplicants(participant.position)"
-                        class="flex items-center gap-1 text-[#2979FF] text-xs"
-                    >
-                      ({{ myActiveParty.applicantByPositionMap[participant.position].length }})
-                      <component
-                          :is="showApplicants[participant.position] ? ChevronUp : ChevronDown"
-                          class="w-3 h-3"
-                      />
-                    </button>
-                  </template>
-                </template>
-              </div>
-
-              <!-- 신청자 목록 (모바일) -->
-              <template
-                  v-if="myActiveParty.postCardDto.writerPuuid === myPuuid"
-                  v-for="(applicants, position) in myActiveParty.applicantByPositionMap"
-                  :key="`applicants-${position}`"
-              >
-                <div v-if="showApplicants[position] && myActiveParty.applicantByPositionMap[position]"
-                     class="space-y-2">
-                  <div v-for="applicant in applicants"
-                       :key="applicant.summonerInfoDto.summonerBasicInfoDto.puuid"
-                       class="bg-[#141414] rounded-lg p-3">
-                    <div class="flex items-center gap-3">
-                      <img
-                          :src="applicant.summonerInfoDto.summonerBasicInfoDto.profileIconUrl"
-                          :alt="applicant.summonerInfoDto.summonerBasicInfoDto.gameName"
-                          class="w-10 h-10 rounded-lg"
-                      />
-                      <div class="flex-1">
-                        <div class="flex items-center gap-1">
-                          <span class="text-white text-sm">
-                            {{ applicant.summonerInfoDto.summonerBasicInfoDto.gameName }}
-                          </span>
-                          <span class="text-gray-400 text-xs">
-                            #{{ applicant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
-                          </span>
-                        </div>
-                        <div class="flex gap-1 mt-1">
-                        <span v-for="tag in applicant.summonerInfoDto.frequentTagDtoList"
-                              :key="tag.tagCode"
-                              class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded">
-                          {{ tag.tagValue }}
-                        </span>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <button
-                            @click="handleApprove(myActiveParty.postCardDto.postId, applicant.applicantPuuid, applicant.applicantSeq, position)"
-                            class="bg-[#2979FF] hover:bg-[#2565D1] text-white p-1.5 rounded">
-                          <UserCheck class="w-4 h-4" />
-                        </button>
-                        <button
-                            @click="handleReject(myActiveParty.postCardDto.postId, applicant.applicantPuuid, applicant.applicantSeq, position)"
-                            class="bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1.5 rounded">
-                          <UserX class="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </template>
-            </div>
-
-            <!-- 액션 버튼 -->
-            <div class="flex justify-end gap-2">
-              <template v-if="myActiveParty.postCardDto.writerPuuid === myPuuid">
-                <button
-                    @click="handleUpdatePartyStatus(myActiveParty.postCardDto.postId, 'CLOSE')"
-                    class="bg-[#1A1A1A] hover:bg-[#242424] text-white px-3 py-1.5 rounded-lg text-xs"
-                >
-                  마감
-                </button>
-                <button
-                    @click="handleUpdatePartyStatus(myActiveParty.postCardDto.postId, 'CANCEL')"
-                    class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
-                >
-                  취소
-                </button>
-              </template>
-              <template v-else>
-                <button
-                    @click="handleLeaveParty(myActiveParty.postCardDto.postId)"
-                    class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
-                >
-                  나가기
-                </button>
-              </template>
-            </div>
-          </div>
-        </div>
-      </div>
+          :party="myActiveParty"
+          :my-puuid="myPuuid"
+          :has-new-applicant="hasNewApplicant"
+          :participant-count="participantCount"
+          @update-status="handleUpdatePartyStatus"
+          @approve-applicant="handleApprove"
+          @reject-applicant="handleReject"
+          @leave-party="handleLeaveParty"
+      />
 
       <!-- 듀오 카드 그리드 -->
-      <transition-group
-          name="card-transition"
-          tag="div"
-          class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-      >
-        <div
-            v-for="card in postCards"
-            :key="card.postId"
-            class="bg-[#141414] rounded-xl p-4 border border-[#2979FF1A]"
-        >
-          <!-- 본문 -->
-          <div class="bg-[#1A1A1A] p-3 rounded-lg mb-4 border-l-4 border-l-[#2979FF] min-h-[102px]">
-            <p class="text-white leading-relaxed line-clamp-3 whitespace-pre-wrap break-words">
-              {{ card.content }}
-            </p>
-          </div>
-          <!-- 포지션 그리드 -->
-          <div class="grid grid-cols-1 gap-2 mb-4">
-            <!-- 각 포지션 슬롯 -->
-            <div
-                v-for="participant in card.participantDtoList"
-                :key="participant.position"
-                class="bg-[#1A1A1A] rounded-lg p-2 flex items-center justify-between text-center h-[52px] w-full"
-                :class="{
-                      'border-2 border-[#2979FF]': card.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid,
-                      'border border-[#333]': participant.isOpenPosition && !participant.summonerInfoDto,
-                      'border border-gray-700': participant.summonerInfoDto && card.writerPuuid !== participant.summonerInfoDto.summonerBasicInfoDto.puuid,
-                      'border border-[#383838]': !(card.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid) && !participant.isOpenPosition,
-                      'opacity-50': !(card.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid) && !participant.isOpenPosition
-                  }"
-            >
-              <!-- 포지션 채워진 경우 -->
-              <template v-if="participant.summonerInfoDto">
-                <div class="flex items-center gap-2">
-                  <img
-                      :src="getPositionImage(participant.position)"
-                      :alt="participant.position"
-                      class="w-5 h-5"
-                  >
-                </div>
-
-                <div class="flex-1 text-left ml-2 min-w-0">
-                  <div class="flex items-center gap-1">
-                    <div
-                        class="text-xs font-medium text-white hover:text-[#2979FF] cursor-pointer truncate max-w-full"
-                        @click="goSelectedSummonerProfile(
-                            participant.summonerInfoDto.summonerBasicInfoDto.gameName,
-                            participant.summonerInfoDto.summonerBasicInfoDto.tagLine
-                          )"
-                    >
-                      {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
-                    </div>
-                    <div class="text-[10px] text-gray-400 truncate">
-                      #{{ participant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
-                    </div>
-                  </div>
-
-                  <div class="flex gap-1 mt-0.5">
-                    <span
-                        v-for="tag in participant.summonerInfoDto.frequentTagDtoList"
-                        :key="tag.tagCode"
-                        class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
-                    >
-                      {{ tag.tagValue }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="flex flex-col items-end">
-                  <div class="flex items-center gap-1 text-[10px] mb-0.5">
-                    <span class="text-gray-400">평가</span>
-                    <span class="text-[#2979FF] font-medium">
-                        {{ participant.summonerInfoDto.reviewStatsDto.score?.toFixed(1) ?? 0 }}점
-                      </span>
-                  </div>
-
-                  <div class="flex items-center gap-2">
-                    <div class="flex items-center gap-1">
-                      <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
-                      <span class="text-[#4CAF50] text-[10px]">
-                          {{ participant.summonerInfoDto.reviewStatsDto.upCount }}
-                        </span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                      <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
-                      <span class="text-[#FF5252] text-[10px]">
-                          {{ participant.summonerInfoDto.reviewStatsDto.downCount }}
-                        </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="flex gap-1 ml-2">
-                  <div
-                      v-for="(champion, index) in participant.summonerInfoDto.mostChampionDto.slice(0, 2)"
-                      :key="index"
-                      class="bg-[#141414] rounded-lg p-1 flex flex-col items-center"
-                  >
-                    <img
-                        :src="champion.iconUrl"
-                        :alt="champion.nameUs"
-                        class="w-5 h-5 rounded mb-0.5"
-                    >
-                    <span class="text-[9px] text-[#4CAF50]">
-                        {{ champion.winRate }}%
-                      </span>
-                  </div>
-                </div>
-              </template>
-
-              <!-- 대기 중인 경우 -->
-              <template v-else>
-                <img
-                    :src="getPositionImage(participant.position)"
-                    :alt="participant.position"
-                    class="w-5 h-5"
-                >
-                <div class="text-gray-500 text-xs flex-1">
-                  {{ participant.isOpenPosition ? '대기 중' : '-' }}
-                </div>
-                <button
-                    v-if="shouldShowApplyButton(card, participant)"
-                    @click="applyForPosition(card.postId, participant.position)"
-                    :class="[
-                        'text-[10px] px-2 py-0.5 rounded',
-                        appliedPositions.get(`${card.postId}-${participant.position}`)
-                          ? 'bg-gray-500 cursor-not-allowed'
-                          : 'bg-[#2979FF]'
-                      ]"
-                    :disabled="appliedPositions.get(`${card.postId}-${participant.position}`)"
-                >
-                  {{ appliedPositions.get(`${card.postId}-${participant.position}`) ? '신청완료' : '신청' }}
-                </button>
-              </template>
-            </div>
-          </div>
-
-          <!-- 추가 정보 -->
-          <div class="bg-[#1A1A1A] rounded-lg p-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-              <span class="text-gray-400 text-xs">큐타입</span>
-              <span class="text-white text-sm">
-                {{ getGameModeName(card.gameMode) }}
-              </span>
-            </div>
-            <div>
-              <MicIcon
-                  v-if="card.isUseMic"
-                  class="w-4 h-4 text-[#2979FF]"
-              />
-              <MicOffIcon
-                  v-else
-                  class="w-4 h-4 text-gray-500"
-              />
-            </div>
-          </div>
-        </div>
-      </transition-group>
-
-      <!-- 더보기 버튼 -->
-      <div v-if="showReadMore" class="max-w-7xl mx-auto mb-20">
-        <button
-            class="w-full bg-[#141414] border border-[#2979FF] text-[#2979FF] py-3 rounded-lg text-sm font-medium hover:bg-[rgba(41,121,255,0.1)] transition-all disabled:opacity-70 disabled:cursor-not-allowed disabled:border-[#4a4a4a] disabled:text-[#4a4a4a]"
-            @click="onLoadMore"
-            :disabled="isLoading"
-        >
-          <div class="flex justify-center items-center h-5">
-            <span v-if="!isLoading">더보기</span>
-            <div v-else class="spinner"></div>
-          </div>
-        </button>
-      </div>
+      <PartyGrid
+          :cards="postCards"
+          :my-puuid="myPuuid"
+          :applied-positions="appliedPositions"
+          :is-loading="isLoading"
+          :show-read-more="showReadMore"
+          @apply="applyForPosition"
+          @load-more="onLoadMore"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
-import { ThumbsUp, ThumbsDown, MicIcon, MicOffIcon, RefreshCcw, Users, ChevronUp, ChevronDown, UserX, UserCheck } from 'lucide-vue-next'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { RefreshCcw } from 'lucide-vue-next'
+import PartyFilter from '@/components/community/party/PartyFilter.vue'
+import MyActiveParty from '@/components/community/party/MyActiveParty.vue'
+import PartyGrid from '@/components/community/party/PartyGrid.vue'
 import WriteModal from '@/components/community/party/WriteModal.vue'
 import type {
   CommunityPostDto, MyPartyPostDto,
@@ -611,11 +79,9 @@ import type {
 } from "@/types/community.ts"
 import { communityApi } from "@/api/community.ts"
 import { useToast } from "vue-toastification"
-import { goSelectedSummonerProfile } from "@/utils/common.ts"
-import { useImageUrl } from "@/utils/imageUtil.ts"
-import { useAuthStore } from "@/stores/auth.ts";
+import { useAuthStore } from "@/stores/auth.ts"
 
-const { getPositionImage } = useImageUrl()
+// 상태 관리
 const selectedPosition = ref('')
 const selectedGameMode = ref('')
 const selectedTier = ref('')
@@ -625,27 +91,19 @@ const isLoading = ref(false)
 const isPolling = ref(false)
 const currentStartIndex = ref(0)
 const isMobile = computed(() => window.innerWidth < 640)
-const postCards = ref<PartyPostCardDto[]>()
-const appliedPositions = ref(new Map());
+const postCards = ref<PartyPostCardDto[]>([])
+const appliedPositions = ref(new Map())
 const updateInterval = ref<number>()
 const UPDATE_INTERVAL = 10000
 const countdown = ref(10)
 const countdownInterval = ref<number>()
 
 const toast = useToast()
-const authStore = useAuthStore();
-const myPuuid = authStore.user?.puuid;
+const authStore = useAuthStore()
+const myPuuid = computed(() => authStore.user?.puuid)
 const myActiveParty = ref<MyPartyPostDto | null>(null)
-const highlightedPositions = ref(new Set<string>());
-const hasNewApplicant = ref(false);
-const participantCount = ref<number | null>(null);
-const applicantPopovers = ref<{ [key: string]: HTMLElement | null }>({
-  'TOP': null,
-  'JG': null,
-  'MID': null,
-  'AD': null,
-  'SUP': null
-});
+const hasNewApplicant = ref(false)
+const participantCount = ref<number | null>(null)
 
 onMounted(async () => {
   setupVisibilityHandler()
@@ -653,7 +111,6 @@ onMounted(async () => {
   await fetchAppliedPositions()
   await fetchMyPartyPost()
   startCountdown()
-  document.addEventListener('click', handleClickOutside);
 
   // 10초마다 전체 업데이트
   updateInterval.value = window.setInterval(async () => {
@@ -670,75 +127,71 @@ onUnmounted(() => {
     clearInterval(countdownInterval.value)
   }
   document.removeEventListener('visibilitychange', visibilityHandler)
-  document.removeEventListener('click', handleClickOutside);
 })
 
 // 파티 인원수 변화 감지
 watch(() => myActiveParty.value?.postCardDto?.participantCount, (newCount, oldCount) => {
   if (oldCount !== undefined && newCount !== undefined && newCount > oldCount) {
-    participantCount.value = newCount;
-    setTimeout(() => participantCount.value = null, 2000); // 2초 후 null로 리셋
+    participantCount.value = newCount
+    setTimeout(() => participantCount.value = null, 2000) // 2초 후 null로 리셋
   }
-});
+})
 
 // 신청자 변화 감지
 watch(() => myActiveParty.value?.applicantByPositionMap, (newVal, oldVal) => {
-  if (!oldVal || !newVal) return;
+  if (!oldVal || !newVal) return
+
+  let hasNewApplicants = false
 
   // 각 포지션별로 신청자 수 변화 확인
   Object.keys(newVal).forEach(position => {
-    const newCount = newVal[position]?.length || 0;
-    const oldCount = oldVal[position]?.length || 0;
+    const newCount = newVal[position]?.length || 0
+    const oldCount = oldVal[position]?.length || 0
 
     if (newCount > oldCount) {
-      highlightedPositions.value.add(position);
-      setTimeout(() => highlightedPositions.value.delete(position), 2000); // 2초 후 효과 제거
+      hasNewApplicants = true
     }
-  });
-}, { deep: true });
+  })
+
+  if (hasNewApplicants) {
+    hasNewApplicant.value = true
+    setTimeout(() => hasNewApplicant.value = false, 2000) // 2초 후 효과 제거
+  }
+}, { deep: true })
 
 // 내 파티 생성/참가 감지
 watch(() => myActiveParty.value, (newVal, oldVal) => {
   if (!oldVal && newVal) {
-    hasNewApplicant.value = true;
-    setTimeout(() => hasNewApplicant.value = false, 2000); // 2초 후 효과 제거
+    hasNewApplicant.value = true
+    setTimeout(() => hasNewApplicant.value = false, 2000) // 2초 후 효과 제거
   }
-});
+})
 
 const handleUpdatePartyStatus = async (postId: number, status: string) => {
   if (status === 'CLOSE') {
-    await communityApi.closeParty(postId);
+    await communityApi.closeParty(postId)
     toast.success('모집 마감되었습니다.')
     myActiveParty.value = null
   } else {
-    await communityApi.cancelParty(postId);
+    await communityApi.cancelParty(postId)
     toast.success('모집 취소되었습니다.')
     myActiveParty.value = null
   }
 
-  await checkUpdates();
+  await checkUpdates()
 }
 
 const handleApprove = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
   await communityApi.approvePartyApplicant(postId, applicantPuuid, applicantSeq, position)
   toast.success('승인되었습니다.')
-  await checkUpdates();
+  await checkUpdates()
 }
 
 const handleReject = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
   await communityApi.rejectPartyApplicant(postId, applicantPuuid, applicantSeq, position)
   toast.success('거절되었습니다.')
-  await checkUpdates();
+  await checkUpdates()
 }
-
-const getParticipantByPosition = computed(() => {
-  if (!myActiveParty.value?.postCardDto.participantDtoList) return {};
-
-  return myActiveParty.value.postCardDto.participantDtoList.reduce((acc, participant) => {
-    acc[participant.position] = participant;
-    return acc;
-  }, {} as Record<string, any>);
-});
 
 // 카운트다운 시작 함수
 const startCountdown = () => {
@@ -764,12 +217,12 @@ const manualRefresh = async () => {
 }
 
 const fetchAppliedPositions = async() => {
-  const postIds = postCards.value?.map(p => p.postId);
+  const postIds = postCards.value?.map(p => p.postId)
   if (postIds && postIds.length > 0 && authStore.isAuthenticated) {
-    const response = await communityApi.getApplyList(postIds);
+    const response = await communityApi.getApplyList(postIds)
     response.data.forEach((application: PartyCommunityApplicantDetailDto) => {
-      appliedPositions.value.set(`${application.postId}-${application.position}`, true);
-    });
+      appliedPositions.value.set(`${application.postId}-${application.position}`, true)
+    })
   }
 }
 
@@ -777,14 +230,6 @@ const handleDuoSubmit = async (formData: CommunityPostDto) => {
   await communityApi.insertPost('party', formData)
   showWriteModal.value = false
   toast.success('게시글 등록에 성공했습니다!')
-
-  const currentFilter: SearchFilter = {
-    gameMode: selectedGameMode.value,
-    tier: selectedTier.value,
-    positionSelf: selectedPosition.value,
-    offset: 0,
-    limit: 15
-  }
   await checkUpdates()
 }
 
@@ -795,7 +240,7 @@ const fetchPosts = async (filter: SearchFilter) => {
   if (filter.offset === 0) {
     postCards.value = response.data
   } else {
-    postCards.value = [...(postCards.value || []), ...response.data];
+    postCards.value = [...(postCards.value || []), ...response.data]
   }
 
   showReadMore.value = response.data.length >= 15
@@ -806,20 +251,26 @@ const fetchPosts = async (filter: SearchFilter) => {
 
 const fetchMyPartyPost = async () => {
   if (authStore.isAuthenticated) {
-    const response = await communityApi.getMyPartyPost();
+    const response = await communityApi.getMyPartyPost()
     myActiveParty.value = response.data
   }
 }
 
-const onFilterUpdate = () => {
+const onFilterUpdate = (filter: { gameMode: string; position: string; tier: string }) => {
+  selectedGameMode.value = filter.gameMode
+  selectedPosition.value = filter.position
+  selectedTier.value = filter.tier
+
   currentStartIndex.value = 0
+
   const reqDto: SearchFilter = {
-    gameMode: selectedGameMode.value,
-    tier: selectedTier.value,
-    positionSelf: selectedPosition.value,
+    gameMode: filter.gameMode,
+    tier: filter.tier,
+    positionSelf: filter.position,
     offset: currentStartIndex.value,
     limit: 15
   }
+
   fetchPosts(reqDto)
 }
 
@@ -886,196 +337,19 @@ const checkUpdates = async () => {
 }
 
 const applyForPosition = async (postId: number, position: string) => {
-  await communityApi.applyParty(postId, position);
-  appliedPositions.value.set(`${postId}-${position}`, true);
+  await communityApi.applyParty(postId, position)
+  appliedPositions.value.set(`${postId}-${position}`, true)
   toast.success("참가신청이 완료되었습니다.")
-  await checkUpdates();
+  await checkUpdates()
 }
 
-const shouldShowApplyButton = (card: PartyPostCardDto, currentParticipant: any) => {
-  if (card.writerPuuid === authStore.user?.puuid) {
-    return false;
-  }
-
-  const isAlreadyParticipant = card.participantDtoList.some(participant =>
-      participant.summonerInfoDto?.summonerBasicInfoDto?.puuid === authStore.user?.puuid
-  );
-  if (isAlreadyParticipant) {
-    return false;
-  }
-
-  return currentParticipant.isOpenPosition && !currentParticipant.summonerInfoDto;
-}
-
-const showApplicants = ref<{[key: string]: boolean}>({
-  'TOP': false,
-  'JG': false,
-  'MID': false,
-  'AD': false,
-  'SUP': false
-})
-
-// 신청자 목록 토글
-const toggleApplicants = (position: string, event?: MouseEvent) => {
-  if (event) {
-    event.stopPropagation();
-  }
-
-  Object.keys(showApplicants.value).forEach(key => {
-    if (key !== position) {
-      showApplicants.value[key] = false;
-    }
-  });
-
-  showApplicants.value[position] = !showApplicants.value[position];
-};
-
-// 클릭 이벤트 핸들러
-const handleClickOutside = (event: MouseEvent) => {
-  Object.entries(applicantPopovers.value).forEach(([position, popover]) => {
-    if (popover && !popover.contains(event.target as Node) &&
-        !(event.target as HTMLElement).closest('.applicant-button')) {
-      showApplicants.value[position] = false;
-    }
-  });
-};
-
-// 파티 나가기
 const handleLeaveParty = async (postId: number) => {
   await communityApi.leaveMyParty(postId)
   toast.success('파티 탈퇴되었습니다.')
-  await checkUpdates();
-  await fetchMyPartyPost();
-}
-
-const getGameModeName = (code: string) => {
-  const gameModeMap: {[key: string]: string} = {
-    'ARAM': '칼바람나락',
-    'NORMAL': '일반게임',
-    'SOLO_RANK': '개인랭크',
-    'FLEX_RANK': '자유랭크'
-  }
-  return gameModeMap[code] || code
+  await checkUpdates()
 }
 </script>
 
 <style scoped>
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.spinner {
-  border: 2px solid transparent;
-  border-top: 2px solid #2979FF;
-  border-right: 2px solid #2979FF;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  animation: spin 1s linear infinite;
-}
-
-.card-transition-move {
-  transition: transform 0.5s ease;
-}
-
-.card-transition-enter-active {
-  transition: all 0.5s ease;
-}
-
-.card-transition-leave-active {
-  transition: all 0.5s ease;
-  position: absolute;
-  width: calc(100% - 1rem);
-}
-
-.card-transition-enter-from,
-.card-transition-leave-to {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.applicant-button {
-  position: relative;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.applicant-button:hover {
-  background-color: rgba(41, 121, 255, 0.1);
-}
-
-.applicant-popover {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
-  right: 0;
-  z-index: 50;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.applicant-popover-enter-active,
-.applicant-popover-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.applicant-popover-enter-from,
-.applicant-popover-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes highlight {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(41, 121, 255, 0.4);
-  }
-  50% {
-    transform: scale(1.02);
-    box-shadow: 0 0 0 10px rgba(41, 121, 255, 0);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(41, 121, 255, 0);
-  }
-}
-
-.highlight-effect {
-  animation: highlight 2s ease-out;
-}
-
-.participant-highlight {
-  animation: highlight 2s ease-out;
-}
-
-.applicant-highlight {
-  animation: highlight 2s ease-out;
-}
-
-.truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 반응형에 따른 카드 너비 조정 */
-@media (min-width: 640px) {
-  .card-transition-leave-active {
-    width: calc(50% - 1rem);
-  }
-}
-
-@media (min-width: 1024px) {
-  .card-transition-leave-active {
-    width: calc(33.333% - 1rem);
-  }
-}
+/* 이제 대부분의 스타일이 각 컴포넌트로 이동했습니다 */
 </style>
