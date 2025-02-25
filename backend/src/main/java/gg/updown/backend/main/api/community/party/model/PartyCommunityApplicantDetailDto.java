@@ -13,6 +13,6 @@ public class PartyCommunityApplicantDetailDto {
     private long applicantSeq;
     private String puuid;
     private String position;
-    private Boolean isApprove;
+    private String applyStatus;
     DuoSummonerInfoDto summonerInfoDto;
 }

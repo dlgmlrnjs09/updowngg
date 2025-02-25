@@ -11,7 +11,7 @@ import java.util.List;
 public interface PartyCommunityMapper {
     List<PartyPostCardDto> getPartyPostList(DuoCommunitySearchFilter searchParamMap);
     PartyCommunityParticipantEntity selectParticipantWithLock(long postId);
-    List<PartyCommunityApplicantEntity> getApplicantList(@Param("puuid")String puuid, @Param("postIds")List<Long> postIds);
+    List<PartyCommunityApplicantEntity> getApplicantList(@Param("puuid")String puuid, @Param("postIds")List<Long> postIds, @Param("applyStatus")String applyStatus);
     List<PartyCommunityApplicantEntity> getApplicantListByPuuid(String puuid);
     PartyPostCardDto getPartyActivePost(String puuid);
     PartyPostCardDto getMyParticipantPost(String puuid);
@@ -35,7 +35,7 @@ public interface PartyCommunityMapper {
     boolean checkParticipateAnotherPosition(@Param("postId")long postId, @Param("puuid") String puuid);
     boolean checkAlreadyMyParty(String puuid);
 
-    void updateApplicantStatus(@Param("postId") long postId, @Param("applicantSeq") long applicantSeq, @Param("isApproval")boolean isApproval);
+    void updateApplicantStatus(@Param("postId") long postId, @Param("applicantSeq") long applicantSeq, @Param("applyStatus")String applyStatus);
     void updateParticipant(PartyCommunityParticipantEntity paramEntity);
     void deleteAnotherApplicant(PartyCommunityApplicantEntity paramEntity);
     void updatePartyStatus(@Param("postId")long postId, @Param("postStatus")String postStatus);

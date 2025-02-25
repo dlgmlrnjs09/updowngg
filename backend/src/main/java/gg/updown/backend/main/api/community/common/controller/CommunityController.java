@@ -66,7 +66,7 @@ public class CommunityController {
         partyCommunityService.apply(puuid, reqDto.getPostId(), reqDto.getPosition());
     }
 
-    @PostMapping("/party/apply/list")
+    @PostMapping("/party/applicant/list")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<PartyCommunityApplicantDto>> getApplyParty(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -74,6 +74,15 @@ public class CommunityController {
     ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
         return ResponseEntity.ok(partyCommunityService.getApplicantList(puuid, postIds));
+    }
+
+    @PostMapping("/party/my/applicant/list")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<PartyCommunityApplicantDto>> getApplyParty(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        return ResponseEntity.ok(partyCommunityService.getApplicantList(puuid));
     }
 
     @PostMapping("/party/approve")

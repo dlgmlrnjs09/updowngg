@@ -16,6 +16,7 @@ import gg.updown.backend.main.api.review.service.ReviewService;
 import gg.updown.backend.main.enums.SiteLeagueTier;
 import gg.updown.backend.main.enums.SiteMatchGameMode;
 import gg.updown.backend.main.enums.SiteMatchPosition;
+import gg.updown.backend.main.enums.SitePartyApplyStatus;
 import gg.updown.backend.main.exception.SiteCommonException;
 import gg.updown.backend.main.exception.SiteErrorMessage;
 import lombok.RequiredArgsConstructor;
@@ -184,7 +185,18 @@ public class PartyCommunityService implements CommunityInterface {
 
     public List<PartyCommunityApplicantDto> getApplicantList(String puuid, List<Long> postIds) {
         List<PartyCommunityApplicantDto> resDtoList = new ArrayList<>();
-        partyCommunityMapper.getApplicantList(puuid, postIds).forEach(dto -> {
+        partyCommunityMapper.getApplicantList(puuid, postIds, SitePartyApplyStatus.PENDING.getStatus()).forEach(dto -> {
+            PartyCommunityApplicantDto p = new PartyCommunityApplicantDto();
+            BeanUtils.copyProperties(dto, p);
+            resDtoList.add(p);
+        });
+
+        return resDtoList;
+    }
+
+    public List<PartyCommunityApplicantDto> getApplicantList(String puuid) {
+        List<PartyCommunityApplicantDto> resDtoList = new ArrayList<>();
+        partyCommunityMapper.getApplicantListByPuuid(puuid).forEach(dto -> {
             PartyCommunityApplicantDto p = new PartyCommunityApplicantDto();
             BeanUtils.copyProperties(dto, p);
             resDtoList.add(p);
@@ -369,7 +381,7 @@ public class PartyCommunityService implements CommunityInterface {
                     resultDto.setPostId(applicantEntity.getPostId());
                     resultDto.setApplicantSeq(applicantEntity.getApplicantSeq());
                     resultDto.setSummonerInfoDto(innerBasicInfoDto);
-                    resultDto.setIsApprove(applicantEntity.isApprove());
+                    resultDto.setApplyStatus(applicantEntity.getApplyStatus());
 
                     return resultDto;
                 })
@@ -384,7 +396,7 @@ public class PartyCommunityService implements CommunityInterface {
         count += Boolean.TRUE.equals(historyDto.getIsOpenAd()) ? 1 : 0;
         count += Boolean.TRUE.equals(historyDto.getIsOpenSup()) ? 1 : 0;
 
-        return count /*+ 1*/; // 본인포함
+        return count + 1; // 본인포함
     }
 
     private int getParticipantCount(PartyCommunityHistoryBaseDto historyDto) {

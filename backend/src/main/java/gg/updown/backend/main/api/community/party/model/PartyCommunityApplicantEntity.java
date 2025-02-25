@@ -14,7 +14,7 @@ public class PartyCommunityApplicantEntity {
     private long applicantSeq;
     private String applicantPuuid;
     private String position;
-    private boolean isApprove;
+    private String applyStatus;
     private LocalDateTime regDt;
     private LocalDateTime updDt;
     private LocalDateTime delDt;

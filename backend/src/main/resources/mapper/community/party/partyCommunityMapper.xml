@@ -124,9 +124,9 @@
 
     <insert id="insertPartyApplicant" parameterType="PartyCommunityApplicantEntity">
         INSERT INTO site_community_party_applicant (
-            post_id, applicant_puuid, position, applicant_seq
+            post_id, applicant_puuid, position, applicant_seq, apply_status
         ) VALUES (
-            #{postId}, #{applicantPuuid}, #{position}, #{applicantSeq}
+            #{postId}, #{applicantPuuid}, #{position}, #{applicantSeq}, #{applyStatus}
         )
     </insert>
 
@@ -184,7 +184,7 @@
 
     <update id="updateApplicantStatus" parameterType="map">
         UPDATE site_community_party_applicant
-        SET is_approve = #{isApproval}
+        SET apply_status = #{applyStatus}
         WHERE
             post_id = #{postId}
             and applicant_seq = #{applicantSeq}
@@ -206,7 +206,7 @@
             post_id,
             applicant_puuid,
             position,
-            is_approve,
+            apply_status,
             reg_dt,
             upd_dt,
             applicant_seq
@@ -222,7 +222,7 @@
             post_id,
             applicant_puuid,
             position,
-            is_approve,
+            apply_status,
             reg_dt,
             upd_dt,
             applicant_seq
@@ -231,11 +231,27 @@
         WHERE
             applicant_puuid = #{puuid}
             AND del_dt is null
-            AND is_approve is null /* 승인/거절/취소되지 않은 상태 */
+            AND apply_status = #{applyStatus}
             AND post_id IN
             <foreach item="postId" collection="postIds" open="(" separator="," close=")">
                 #{postId}
             </foreach>
+    </select>
+
+    <select id="getApplicantListByPuuid" resultType="PartyCommunityApplicantEntity" parameterType="String">
+        SELECT
+            post_id,
+            applicant_puuid,
+            position,
+            apply_status,
+            reg_dt,
+            upd_dt,
+            applicant_seq
+        FROM
+            site_community_party_applicant
+        WHERE
+            applicant_puuid = #{puuid}
+            AND del_dt is null
     </select>
 
     <select id="getPartyActivePost" parameterType="String" resultType="PartyPostCardDto">
@@ -335,7 +351,7 @@
             post_id,
             applicant_puuid,
             position,
-            is_approve,
+            apply_status,
             reg_dt,
             upd_dt,
             applicant_seq
@@ -343,7 +359,7 @@
             site_community_party_applicant
         WHERE
             post_id = #{postId}
-            and is_approve is null
+            and apply_status = 'PENDING'
             and del_dt is null
     </select>
 
@@ -450,7 +466,6 @@
         select
             scp.post_id,
             "content",
-            scp.reg_dt ,
             game_mode,
             scp2.is_open_top ,
             scp2.is_open_jungle ,
@@ -524,7 +539,7 @@
             <result property="postId" column="post_id"/>
             <result property="puuid" column="applicant_puuid"/>
             <result property="position" column="position"/>
-            <result property="isApprove" column="is_approve"/>
+            <result property="applyStatus" column="apply_status"/>
         </association>
     </resultMap>
 
@@ -547,7 +562,7 @@
             scpp.sup_puuid,
             scpa.applicant_puuid,
             scpa.position,
-            scpa.is_approve,
+            scpa.apply_status,
             scpa.reg_dt
         from
             site_community_post scp

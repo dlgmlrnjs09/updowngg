@@ -11,5 +11,5 @@ public class PartyCommunityApplicantDto {
     private long postId;
     private String puuid;
     private String position;
-    private Boolean isApprove;
+    private String applyStatus;
 }

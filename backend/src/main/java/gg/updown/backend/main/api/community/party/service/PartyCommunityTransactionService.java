@@ -5,6 +5,7 @@ import gg.updown.backend.main.api.community.party.mapper.PartyCommunityMapper;
 import gg.updown.backend.main.api.community.party.model.PartyCommunityApplicantEntity;
 import gg.updown.backend.main.api.community.party.model.PartyCommunityEntity;
 import gg.updown.backend.main.api.community.party.model.PartyCommunityParticipantEntity;
+import gg.updown.backend.main.enums.SitePartyApplyStatus;
 import gg.updown.backend.main.exception.SiteCommonException;
 import gg.updown.backend.main.exception.SiteErrorMessage;
 import lombok.RequiredArgsConstructor;
@@ -53,17 +54,20 @@ public class PartyCommunityTransactionService {
                         .position(position)
                         .applicantPuuid(puuid)
                         .applicantSeq(applicantSeq)
+                        .applyStatus(SitePartyApplyStatus.PENDING.getStatus())
                 .build()
         );
     }
 
     @Transactional
     public void updateApplicantAndParticipant(long postId, long applicantSeq, boolean isApprove) {
+        String approveStatus = isApprove ? SitePartyApplyStatus.APPROVE.getStatus() : SitePartyApplyStatus.REJECT.getStatus();
         // 승인/거절로 상태 변경
-        partyCommunityMapper.updateApplicantStatus(postId, applicantSeq, isApprove);
-        PartyCommunityApplicantEntity applicantEntity = partyCommunityMapper.getApplicant(postId, applicantSeq);
+        partyCommunityMapper.updateApplicantStatus(postId, applicantSeq, approveStatus);
 
         if (isApprove) {
+            PartyCommunityApplicantEntity applicantEntity = partyCommunityMapper.getApplicant(postId, applicantSeq);
+
             // 해당 post의 다른 포지션 신청서 삭제
             partyCommunityMapper.deleteAnotherApplicant(applicantEntity);
 
