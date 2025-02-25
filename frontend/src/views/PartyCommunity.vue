@@ -73,7 +73,7 @@ import PartyGrid from '@/components/community/party/PartyGrid.vue'
 import WriteModal from '@/components/community/party/WriteModal.vue'
 import type {
   CommunityPostDto, MyPartyPostDto,
-  PartyCommunityApplicantDetailDto,
+  PartyCommunityApplicantDetailDto, PartyParticipantDto,
   PartyPostCardDto,
   SearchFilter
 } from "@/types/community.ts"
@@ -130,34 +130,51 @@ onUnmounted(() => {
 })
 
 // 파티 인원수 변화 감지
-watch(() => myActiveParty.value?.postCardDto?.participantCount, (newCount, oldCount) => {
-  if (oldCount !== undefined && newCount !== undefined && newCount > oldCount) {
-    participantCount.value = newCount
-    setTimeout(() => participantCount.value = null, 2000) // 2초 후 null로 리셋
+watch(() => myActiveParty.value?.postCardDto?.participantDtoList, (newParticipants, oldParticipants) => {
+  if (!oldParticipants || !newParticipants) return;
+
+  const changes = compareParticipants(oldParticipants, newParticipants);
+
+  if (changes) {
+    // 나간 사람에 대한 toast 표시
+    changes.left.forEach(summoner => {
+      toast.info(`${summoner.gameName}님이 파티에서 나갔습니다.`);
+    });
+
+    // 들어온 사람에 대한 toast 표시
+    changes.joined.forEach(summoner => {
+      toast.success(`${summoner.gameName}님이 파티에 참가하였습니다.`);
+    });
+
+    // 누군가 들어왔을 때 참가자 수 애니메이션 업데이트
+    if (changes.joined.length > 0) {
+      participantCount.value = myActiveParty.value.postCardDto.participantCount;
+      setTimeout(() => participantCount.value = null, 2000);
+    }
   }
-})
+}, { deep: true });
 
 // 신청자 변화 감지
 watch(() => myActiveParty.value?.applicantByPositionMap, (newVal, oldVal) => {
-  if (!oldVal || !newVal) return
+  if (!oldVal || !newVal) return;
 
-  let hasNewApplicants = false
+  // 내가 파티장인지 확인
+  const isPartyLeader = myActiveParty.value?.postCardDto?.writerPuuid === myPuuid.value;
 
-  // 각 포지션별로 신청자 수 변화 확인
-  Object.keys(newVal).forEach(position => {
-    const newCount = newVal[position]?.length || 0
-    const oldCount = oldVal[position]?.length || 0
+  if (isPartyLeader) {
+    const newApplicants = compareApplicants(oldVal, newVal);
 
-    if (newCount > oldCount) {
-      hasNewApplicants = true
+    // 새 신청자에 대한 toast 표시
+    newApplicants.forEach(({ applicant, position }) => {
+      toast.info(`${applicant.gameName}님이 ${getPositionName(position)} 포지션에 파티참가 신청하였습니다.`);
+    });
+
+    if (newApplicants.length > 0) {
+      hasNewApplicant.value = true;
+      setTimeout(() => hasNewApplicant.value = false, 2000);
     }
-  })
-
-  if (hasNewApplicants) {
-    hasNewApplicant.value = true
-    setTimeout(() => hasNewApplicant.value = false, 2000) // 2초 후 효과 제거
   }
-}, { deep: true })
+}, { deep: true });
 
 // 내 파티 생성/참가 감지
 watch(() => myActiveParty.value, (newVal, oldVal) => {
@@ -166,6 +183,77 @@ watch(() => myActiveParty.value, (newVal, oldVal) => {
     setTimeout(() => hasNewApplicant.value = false, 2000) // 2초 후 효과 제거
   }
 })
+
+// 참가자 목록을 비교하여 참가자, 탈퇴자 식별
+const compareParticipants = (oldParticipants: PartyParticipantDto[], newParticipants: PartyParticipantDto[]) => {
+  if (!oldParticipants || !newParticipants) return null;
+
+  // 더 쉬운 비교를 위해 Map으로 변환
+  const oldMap = new Map();
+  const newMap = new Map();
+
+  oldParticipants.forEach(participant => {
+    if (participant.summonerInfoDto) {
+      oldMap.set(participant.position, participant.summonerInfoDto.summonerBasicInfoDto);
+    }
+  });
+
+  newParticipants.forEach(participant => {
+    if (participant.summonerInfoDto) {
+      newMap.set(participant.position, participant.summonerInfoDto.summonerBasicInfoDto);
+    }
+  });
+
+  // 나간 사람 확인
+  const left: any[] = [];
+  oldMap.forEach((summoner, position) => {
+    const newSummoner = newMap.get(position);
+    if (!newSummoner || newSummoner.puuid !== summoner.puuid) {
+      left.push(summoner);
+    }
+  });
+
+  // 들어온 사람 확인
+  const joined: any[] = [];
+  newMap.forEach((summoner, position) => {
+    const oldSummoner = oldMap.get(position);
+    if (!oldSummoner || oldSummoner.puuid !== summoner.puuid) {
+      joined.push(summoner);
+    }
+  });
+
+  return { left, joined };
+};
+
+// 2. 신청자 비교해서 새로운 신청자 식별
+const compareApplicants = (oldApplicantMap: any, newApplicantMap: any) => {
+  if (!oldApplicantMap || !newApplicantMap) return [];
+
+  const newApplicants: any[] = [];
+
+  // 각 포지션별로 확인
+  Object.keys(newApplicantMap).forEach(position => {
+    const oldApplicants = oldApplicantMap[position] || [];
+    const newApplicantsList = newApplicantMap[position] || [];
+
+    // 이전 목록에 없던 신청자 찾기
+    newApplicantsList.forEach(applicant => {
+      const isNew = !oldApplicants.some(
+          oldApp => oldApp.summonerInfoDto.summonerBasicInfoDto.puuid ===
+              applicant.summonerInfoDto.summonerBasicInfoDto.puuid
+      );
+
+      if (isNew) {
+        newApplicants.push({
+          position,
+          applicant: applicant.summonerInfoDto.summonerBasicInfoDto
+        });
+      }
+    });
+  });
+
+  return newApplicants;
+};
 
 const handleUpdatePartyStatus = async (postId: number, status: string) => {
   if (status === 'CLOSE') {
@@ -348,6 +436,17 @@ const handleLeaveParty = async (postId: number) => {
   toast.success('파티 탈퇴되었습니다.')
   await checkUpdates()
 }
+
+const getPositionName = (position: string) => {
+  const positionMap = {
+    'TOP': '탑',
+    'JG': '정글',
+    'MID': '미드',
+    'AD': '원딜',
+    'SUP': '서포터'
+  };
+  return positionMap[position] || position;
+};
 </script>
 
 <style scoped>

@@ -12,6 +12,7 @@ public interface PartyCommunityMapper {
     List<PartyPostCardDto> getPartyPostList(DuoCommunitySearchFilter searchParamMap);
     PartyCommunityParticipantEntity selectParticipantWithLock(long postId);
     List<PartyCommunityApplicantEntity> getApplicantList(@Param("puuid")String puuid, @Param("postIds")List<Long> postIds);
+    List<PartyCommunityApplicantEntity> getApplicantListByPuuid(String puuid);
     PartyPostCardDto getPartyActivePost(String puuid);
     PartyPostCardDto getMyParticipantPost(String puuid);
     boolean checkMyOpenParticipantPost(String puuid);

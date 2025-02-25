@@ -44,7 +44,10 @@ export const communityApi = {
         }),
 
     getApplyList: (postIds: number[]) =>
-        apiClient.post<PartyCommunityApplicantDetailDto[]>('/api/v1/community/party/apply/list', postIds),
+        apiClient.post<PartyCommunityApplicantDetailDto[]>('/api/v1/community/party/applicant/list', postIds),
+
+    getMyApplyList: (postIds: number[]) =>
+        apiClient.post<PartyCommunityApplicantDetailDto[]>('/api/v1/community/party/my/applicant/list', postIds),
 
     getMyPartyPost: () =>
         apiClient.get<MyPartyPostDto>('/api/v1/community/party/my'),

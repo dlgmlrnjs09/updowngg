@@ -29,6 +29,12 @@
             </span>
           </div>
           <div class="h-4 w-[1px] bg-gray-700"></div>
+          <component
+              :is="party.postCardDto.isUseMic ? MicIcon : MicOffIcon"
+              :class="party.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
+              class="w-4 h-4"
+          />
+          <div class="h-4 w-[1px] bg-gray-700"></div>
           <!-- 포지션 정보 (PC) -->
           <div class="flex items-center gap-2">
             <template v-for="participant in party.postCardDto.participantDtoList" :key="participant.position">
@@ -59,11 +65,6 @@
 
         <!-- 우측: 액션 버튼 -->
         <div class="flex items-center gap-2">
-          <component
-              :is="party.postCardDto.isUseMic ? MicIcon : MicOffIcon"
-              :class="party.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
-              class="w-4 h-4"
-          />
           <template v-if="party.postCardDto.writerPuuid === myPuuid">
             <button
                 @click="handleUpdateStatus('CLOSE')"
