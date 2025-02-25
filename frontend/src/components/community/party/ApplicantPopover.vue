@@ -3,7 +3,7 @@
   <div
       v-if="showPopover"
       ref="popoverRef"
-      class="absolute top-full left-0 mt-2 w-[300px] bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-700 z-10"
+      class="absolute top-full left-0 mt-2 w-[300px] bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-700 z-50"
   >
     <div v-if="applicants && applicants.length > 0">
       <div
@@ -113,24 +113,21 @@ const handleReject = (applicant: PartyCommunityApplicantDetailDto) => {
   )
 }
 
-// 라이프사이클 훅
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
-
 // showPopover 변경 감지
 watch(() => props.showPopover, (newVal) => {
   if (newVal) {
-    // 팝오버가 열리면 이벤트 리스너 추가
-    document.addEventListener('click', handleClickOutside)
+    // 팝오버가 열리면 이벤트 리스너 추가 (약간의 지연을 두어 클릭 이벤트와 충돌 방지)
+    setTimeout(() => {
+      document.addEventListener('click', handleClickOutside)
+    }, 100)
   } else {
     // 팝오버가 닫히면 이벤트 리스너 제거
     document.removeEventListener('click', handleClickOutside)
   }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 

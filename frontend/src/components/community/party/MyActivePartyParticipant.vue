@@ -1,17 +1,19 @@
 <!-- MyActivePartyParticipant.vue -->
 <template>
   <div
-      class="bg-[#1A1A1A] rounded-lg p-2 flex items-center justify-between text-center h-[52px] w-full"
+      class="bg-[#1A1A1A] rounded-lg p-2 flex items-center justify-between text-center h-[52px] w-full relative applicant-button"
       :class="[
       {
         'border-2 border-[#2979FF]': isWriter,
         'border border-[#333]': participant.isOpenPosition && !participant.summonerInfoDto,
         'border border-gray-700': participant.summonerInfoDto && !isWriter,
         'border border-[#383838]': !isWriter && !participant.isOpenPosition,
-        'opacity-50': !isWriter && !participant.isOpenPosition
+        'opacity-50': !isWriter && !participant.isOpenPosition,
+        'cursor-pointer': hasApplicants && participant.isOpenPosition && !participant.summonerInfoDto
       },
       isMobile ? '' : 'px-2 py-1'
     ]"
+      @click="hasApplicants && participant.isOpenPosition && !participant.summonerInfoDto ? toggleApplicants() : null"
   >
     <!-- PC/태블릿 뷰 -->
     <template v-if="!isMobile">
@@ -27,24 +29,24 @@
       </div>
 
       <template v-else>
-        <button
+        <div
             v-if="hasApplicants"
-            class="flex items-center gap-2 hover:bg-[#1A1A1A] rounded transition-colors applicant-button"
-            @click="toggleApplicants"
+            class="flex items-center gap-2 z-10 applicant-button"
+            @click.stop="toggleApplicants()"
         >
           <span class="text-gray-500 text-xs">대기 중</span>
           <span class="text-[#2979FF] text-xs flex items-center gap-1">
             ({{ applicantsCount }})
             <component :is="isApplicantsVisible ? ChevronUp : ChevronDown" class="w-3 h-3" />
           </span>
-        </button>
+        </div>
         <span v-else class="text-gray-500 text-xs ml-1">대기 중</span>
       </template>
     </template>
 
     <!-- 모바일 뷰 -->
     <template v-else>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 w-full">
         <img :src="getPositionImage(participant.position)" :alt="participant.position" class="w-5 h-5">
 
         <template v-if="participant.summonerInfoDto">
@@ -112,26 +114,34 @@
         </template>
 
         <template v-else>
-          <div class="text-gray-500 text-xs">
-            {{ participant.isOpenPosition ? '대기 중' : '-' }}
+          <div class="flex flex-1 items-center">
+            <div class="text-gray-500 text-xs">
+              {{ participant.isOpenPosition ? '대기 중' : '-' }}
+            </div>
+            <template v-if="hasApplicants">
+              <div
+                  class="flex items-center gap-1 text-[#2979FF] text-xs ml-2 applicant-button"
+                  @click.stop="toggleApplicants()"
+              >
+                ({{ applicantsCount }})
+                <component :is="isApplicantsVisible ? ChevronUp : ChevronDown" class="w-3 h-3" />
+              </div>
+            </template>
           </div>
-          <template v-if="hasApplicants">
-            <button
-                @click="toggleApplicants"
-                class="flex items-center gap-1 text-[#2979FF] text-xs"
-            >
-              ({{ applicantsCount }})
-              <component :is="isApplicantsVisible ? ChevronUp : ChevronDown" class="w-3 h-3" />
-            </button>
-          </template>
         </template>
       </div>
     </template>
+
+    <!-- 전체 영역 클릭을 위한 오버레이 (신청자가 있고, 현재 대기 중인 셀에만 표시) -->
+    <div
+        v-if="hasApplicants && participant.isOpenPosition && !participant.summonerInfoDto"
+        class="absolute inset-0 bg-transparent z-0"
+    ></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { ThumbsUp, ThumbsDown, ChevronUp, ChevronDown } from 'lucide-vue-next'
 import { useImageUrl } from "@/utils/imageUtil"
 
@@ -157,7 +167,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'toggle-applicants'): void
+  (e: 'toggle-applicants', position: string): void
 }>()
 
 // Computed
@@ -165,7 +175,7 @@ const hasApplicants = computed(() => props.applicantsCount > 0)
 
 // Methods
 const toggleApplicants = () => {
-  emit('toggle-applicants')
+  emit('toggle-applicants', props.position);
 }
 </script>
 

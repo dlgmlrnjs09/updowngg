@@ -45,7 +45,7 @@
                     :position="participant.position"
                     :is-applicants-visible="showApplicants[participant.position]"
                     :applicants-count="party.applicantByPositionMap?.[participant.position]?.length || 0"
-                    @toggle-applicants="toggleApplicants(participant.position, $event)"
+                    @toggle-applicants="toggleApplicants"
                 />
 
                 <!-- 신청자 목록 팝오버 -->
@@ -56,7 +56,7 @@
                     :post-id="party.postCardDto.postId"
                     @approve="handleApprove"
                     @reject="handleReject"
-                    @close="showApplicants[participant.position] = false"
+                    @close="closeApplicantPopover(participant.position)"
                 />
               </div>
             </template>
@@ -118,13 +118,13 @@
               :is-applicants-visible="showApplicants[participant.position]"
               :applicants-count="party.applicantByPositionMap?.[participant.position]?.length || 0"
               :is-mobile="true"
-              @toggle-applicants="toggleApplicants(participant.position)"
+              @toggle-applicants="toggleApplicants"
           />
         </div>
 
         <!-- 신청자 목록 (모바일용) -->
         <div v-for="(applicants, position) in party.applicantByPositionMap" :key="position">
-          <div v-if="true" class="space-y-2">
+          <div v-if="showApplicants[position]" class="space-y-2">
             <div
                 v-for="applicant in applicants"
                 :key="applicant.applicantSeq"
@@ -205,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { MicIcon, MicOffIcon, Users, ChevronUp, ChevronDown, UserCheck, UserX } from 'lucide-vue-next'
 import { useImageUrl } from "@/utils/imageUtil"
 import type { MyPartyPostDto } from "@/types/community"
@@ -245,16 +245,21 @@ const showApplicants = ref<{[key: string]: boolean}>({
 })
 
 // Methods
-const toggleApplicants = (position: string, event?: MouseEvent) => {
-  if (event) {
-    event.stopPropagation()
-  }
+const toggleApplicants = (position: string) => {
+  // 다른 포지션의 팝오버 닫기
   Object.keys(showApplicants.value).forEach(key => {
     if (key !== position) {
       showApplicants.value[key] = false
     }
   })
+
+  // 현재 포지션 토글
   showApplicants.value[position] = !showApplicants.value[position]
+}
+
+const closeApplicantPopover = (position: string) => {
+  console.log('Closing applicant popover for position:', position);
+  showApplicants.value[position] = false;
 }
 
 const handleUpdateStatus = (status: string) => {
