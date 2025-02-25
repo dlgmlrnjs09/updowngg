@@ -91,7 +91,7 @@ export interface PartyCommunityApplicantDto {
     postId: number;
     puuid: string;
     position: string;
-    isApprove: string;
+    applyStatus: string;
 }
 
 export interface PartyCommunityApplicantDetailDto {
@@ -99,7 +99,7 @@ export interface PartyCommunityApplicantDetailDto {
     applicantSeq: number;
     applicantPuuid: string;
     position: string;
-    isApprove: boolean
+    applyStatus: boolean
 
     summonerInfoDto: DuoSummonerInfoDto
 }
