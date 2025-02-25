@@ -196,7 +196,7 @@ public class PartyCommunityService implements CommunityInterface {
 
     public List<PartyCommunityApplicantDto> getApplicantList(String puuid) {
         List<PartyCommunityApplicantDto> resDtoList = new ArrayList<>();
-        partyCommunityMapper.getApplicantListByPuuid(puuid).forEach(dto -> {
+        partyCommunityMapper.getApplicantListByPuuid(puuid, SitePartyApplyStatus.PENDING.getStatus()).forEach(dto -> {
             PartyCommunityApplicantDto p = new PartyCommunityApplicantDto();
             BeanUtils.copyProperties(dto, p);
             resDtoList.add(p);

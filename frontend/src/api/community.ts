@@ -3,7 +3,7 @@ import type {
     CommunityPostDto,
     DuoPostCardDto,
     MyPartyPostDto,
-    PartyCommunityApplicantDetailDto,
+    PartyCommunityApplicantDetailDto, PartyCommunityApplicantDto,
     PartyCommunityAppliedHistoryResponse,
     PartyCommunityHistoryResponse,
     PartyPostCardDto,
@@ -46,8 +46,8 @@ export const communityApi = {
     getApplyList: (postIds: number[]) =>
         apiClient.post<PartyCommunityApplicantDetailDto[]>('/api/v1/community/party/applicant/list', postIds),
 
-    getMyApplyList: (postIds: number[]) =>
-        apiClient.post<PartyCommunityApplicantDetailDto[]>('/api/v1/community/party/my/applicant/list', postIds),
+    getMyApplyList: () =>
+        apiClient.post<PartyCommunityApplicantDto[]>('/api/v1/community/party/my/applicant/list'),
 
     getMyPartyPost: () =>
         apiClient.get<MyPartyPostDto>('/api/v1/community/party/my'),

@@ -184,7 +184,7 @@
 
     <update id="updateApplicantStatus" parameterType="map">
         UPDATE site_community_party_applicant
-        SET apply_status = #{applyStatus}
+        SET apply_status = #{applyStatus}, upd_dt = current_timestamp
         WHERE
             post_id = #{postId}
             and applicant_seq = #{applicantSeq}
@@ -238,7 +238,7 @@
             </foreach>
     </select>
 
-    <select id="getApplicantListByPuuid" resultType="PartyCommunityApplicantEntity" parameterType="String">
+    <select id="getApplicantListByPuuid" resultType="PartyCommunityApplicantEntity" parameterType="map">
         SELECT
             post_id,
             applicant_puuid,
@@ -251,6 +251,7 @@
             site_community_party_applicant
         WHERE
             applicant_puuid = #{puuid}
+            and apply_status = #{applyStatus}
             AND del_dt is null
     </select>
 
