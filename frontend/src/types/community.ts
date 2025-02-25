@@ -99,7 +99,7 @@ export interface PartyCommunityApplicantDetailDto {
     applicantSeq: number;
     applicantPuuid: string;
     position: string;
-    applyStatus: boolean
+    applyStatus: string
 
     summonerInfoDto: DuoSummonerInfoDto
 }

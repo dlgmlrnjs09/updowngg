@@ -106,6 +106,8 @@ const hasNewApplicant = ref(false)
 const participantCount = ref<number | null>(null)
 const myApplicationsStatus = ref<Map<string, string>>(new Map()); // key: `${postId}-${position}`, value: 'PENDING', 'APPROVED' 등
 const previousApplicationsStatus = ref<Map<string, string>>(new Map());
+const isApplyingPosition = ref(false);
+const lastAppliedTime = ref(new Map<string, number>());
 
 onMounted(async () => {
   setupVisibilityHandler()
@@ -310,9 +312,13 @@ const manualRefresh = async () => {
 const fetchAppliedPositions = async() => {
   const postIds = postCards.value?.map(p => p.postId)
   if (postIds && postIds.length > 0 && authStore.isAuthenticated) {
+    // 맵 초기화 (기존 상태 제거)
+    appliedPositions.value = new Map();
+
+    // 현재 활성 상태인 신청만 가져옴
     const response = await communityApi.getApplyList(postIds)
     response.data.forEach((application: PartyCommunityApplicantDetailDto) => {
-      appliedPositions.value.set(`${application.postId}-${application.position}`, true)
+        appliedPositions.value.set(`${application.postId}-${application.position}`, true)
     })
   }
 }
@@ -351,36 +357,51 @@ const fetchMyPartyPost = async () => {
 const fetchMyApplicationStatus = async () => {
   if (!authStore.isAuthenticated) return;
 
-  try {
-    const response = await communityApi.getMyApplyList();
+  const response = await communityApi.getMyApplyList();
+  console.log(response.data)
 
-    console.log(response.data)
+  // 이전 상태 저장
+  previousApplicationsStatus.value = new Map(myApplicationsStatus.value);
 
-    // 이전 상태 저장
-    previousApplicationsStatus.value = new Map(myApplicationsStatus.value);
+  // 새로운 상태 맵 생성
+  const newStatusMap = new Map();
 
-    // 새로운 상태 맵 생성
-    const newStatusMap = new Map();
+  if (response.data && Array.isArray(response.data)) {
+    response.data.forEach((application: PartyCommunityApplicantDto) => {
+      const key = `${application.postId}-${application.position}`;
+      const status = application.applyStatus || 'PENDING';
+      newStatusMap.set(key, status);
 
-    if (response.data && Array.isArray(response.data)) {
-      response.data.forEach((application: PartyCommunityApplicantDto) => {
-        const key = `${application.postId}-${application.position}`;
-        newStatusMap.set(key, application.applyStatus || 'PENDING');
-      });
-    }
-
-    // 상태 변경 확인 및 토스트 메시지 표시
-    checkApplicationStatusChanges(previousApplicationsStatus.value, newStatusMap);
-
-    // 새 상태로 업데이트
-    myApplicationsStatus.value = newStatusMap;
-  } catch (error) {
-    console.error('내 파티 신청 상태 조회 중 오류:', error);
+      // appliedPositions 맵 업데이트 (PENDING 상태가 아니면 신청 버튼을 다시 활성화하기 위해 제거)
+      if (status !== 'PENDING') {
+        appliedPositions.value.delete(key);
+      } else if (status === 'PENDING') {
+        appliedPositions.value.set(key, true);
+      }
+    });
   }
+
+  // 상태 변경 확인 및 토스트 메시지 표시
+  checkApplicationStatusChanges(previousApplicationsStatus.value, newStatusMap);
+
+  // 새 상태로 업데이트
+  myApplicationsStatus.value = newStatusMap;
 };
+
 
 // 상태 변경 감지 및 토스트 메시지 표시 함수
 const checkApplicationStatusChanges = (prevStatusMap: Map<string, string>, newStatusMap: Map<string, string>) => {
+  // 승인된 파티 ID를 추적 (동일 파티 내 다른 포지션 신청건의 상태 변경 알림 억제용)
+  const approvedPartyIds = new Set<number>();
+
+  // 먼저 승인된 파티 ID 확인
+  newStatusMap.forEach((newStatus, key) => {
+    if (newStatus === 'APPROVE') {
+      const [postIdStr] = key.split('-');
+      approvedPartyIds.add(parseInt(postIdStr));
+    }
+  });
+
   // 각 신청에 대해 상태 변경 확인
   newStatusMap.forEach((newStatus, key) => {
     const prevStatus = prevStatusMap.get(key);
@@ -390,16 +411,24 @@ const checkApplicationStatusChanges = (prevStatusMap: Map<string, string>, newSt
       const [postIdStr, position] = key.split('-');
       const postId = parseInt(postIdStr);
 
+      // 이미 PENDING이 아니면 appliedPositions에서 제거
+      appliedPositions.value.delete(key);
+
       // 해당 파티 찾기
       const party = postCards.value.find(card => card.postId === postId);
 
       if (party) {
+        // 승인 알림은 항상 표시
         if (newStatus === 'APPROVE') {
           toast.success('파티에 가입되었습니다.');
-        } else if (newStatus === 'REJECT') {
-          toast.error('파티 가입 신청이 거절되었습니다.');
-        } else if (newStatus === 'CANCEL') {
-          toast.info(`파티 가입 신청이 취소되었습니다.`);
+        }
+        // 거절/취소 알림은 동일 파티에 승인된 포지션이 없을 때만 표시
+        else if ((newStatus === 'REJECT' || newStatus === 'CANCEL') && !approvedPartyIds.has(postId)) {
+          if (newStatus === 'REJECT') {
+            toast.error('파티 가입 신청이 거절되었습니다.');
+          } else if (newStatus === 'CANCEL') {
+            toast.info(`파티 가입 신청이 취소되었습니다.`);
+          }
         }
       }
     }
@@ -409,13 +438,17 @@ const checkApplicationStatusChanges = (prevStatusMap: Map<string, string>, newSt
   prevStatusMap.forEach((prevStatus, key) => {
     if (!newStatusMap.has(key) && prevStatus === 'PENDING') {
       // 신청이 목록에서 사라졌으면 거절된 것으로 간주
+      appliedPositions.value.delete(key);
+
       const [postIdStr, position] = key.split('-');
       const postId = parseInt(postIdStr);
 
-      const party = postCards.value.find(card => card.postId === postId);
-
-      if (party) {
-        toast.error(`파티 가입 신청이 거절되었습니다.`);
+      // 만약 동일 파티에 승인된 포지션이 있다면 알림 표시하지 않음
+      if (!approvedPartyIds.has(postId)) {
+        const party = postCards.value.find(card => card.postId === postId);
+        if (party) {
+          toast.error(`파티 가입 신청이 거절되었습니다.`);
+        }
       }
     }
   });
@@ -477,10 +510,10 @@ const setupVisibilityHandler = () => {
 }
 
 const checkUpdates = async () => {
-  if (isPolling.value) return
+  if (isPolling.value) return;
 
-  isPolling.value = true
-  startCountdown()
+  isPolling.value = true;
+  startCountdown();
   try {
     const currentFilter: SearchFilter = {
       gameMode: selectedGameMode.value,
@@ -488,28 +521,94 @@ const checkUpdates = async () => {
       positionSelf: selectedPosition.value,
       offset: 0,
       limit: currentStartIndex.value + 15
+    };
+
+    // 현재 appliedPositions 상태 저장
+    const currentAppliedPositions = new Map(appliedPositions.value);
+
+    // 모든 API 호출을 병렬로 처리하여 시간 단축
+    const [postsResponse, myPartyResponse] = await Promise.all([
+      communityApi.getPartyPost('party', currentFilter),
+      authStore.isAuthenticated ? communityApi.getMyPartyPost() : Promise.resolve({ data: null })
+    ]);
+
+    // 포스트 데이터 업데이트
+    postCards.value = postsResponse.data;
+
+    // 내 파티 데이터 업데이트
+    if (myPartyResponse.data) {
+      myActiveParty.value = myPartyResponse.data;
     }
 
-    const response = await communityApi.getPartyPost('party', currentFilter)
-    postCards.value = response.data
-    await fetchAppliedPositions()
-    await fetchMyPartyPost()
+    // postIds 추출 후 appliedPositions 업데이트
+    const postIds = postCards.value?.map(p => p.postId);
+    if (postIds && postIds.length > 0 && authStore.isAuthenticated) {
+      const applyResponse = await communityApi.getApplyList(postIds);
+
+      // 새로운 Map 생성 (기존 값 복사하지 않고 완전히 새로 생성)
+      const newAppliedPositions = new Map();
+
+      // PENDING 상태인 신청만 추가
+      applyResponse.data.forEach((application: PartyCommunityApplicantDetailDto) => {
+        newAppliedPositions.set(`${application.postId}-${application.position}`, true);
+      });
+
+      // 기존에 방금 신청한 항목이 API에 아직 반영되지 않았다면 유지
+      currentAppliedPositions.forEach((value, key) => {
+        const [postId, position] = key.split('-');
+        // API 응답에 없지만 방금 신청한 항목인 경우 유지
+        if (!newAppliedPositions.has(key) &&
+            myApplicationsStatus.value.get(key) === 'PENDING' &&
+            new Date().getTime() - (lastAppliedTime.value.get(key) || 0) < 5000) {
+          newAppliedPositions.set(key, value);
+        }
+      });
+
+      // 상태 업데이트 (한번에 적용)
+      appliedPositions.value = newAppliedPositions;
+    }
+
+    // 신청 상태 업데이트
     await fetchMyApplicationStatus();
   } catch (error) {
-    console.error('업데이트 체크 중 오류:', error)
+    console.error('업데이트 체크 중 오류:', error);
   } finally {
-    isPolling.value = false
+    isPolling.value = false;
   }
-}
+};
 
 const applyForPosition = async (postId: number, position: string) => {
-  await communityApi.applyParty(postId, position)
-  appliedPositions.value.set(`${postId}-${position}`, true)
-  toast.success("참가신청이 완료되었습니다.")
-  // 신청 상태 추가
-  myApplicationsStatus.value.set(`${postId}-${position}`, 'PENDING');
-  await checkUpdates()
-}
+  // 이미 신청 중인 경우 중복 호출 방지
+  if (isApplyingPosition.value) {
+    return;
+  }
+
+  // 신청 중 상태로 설정
+  isApplyingPosition.value = true;
+
+  try {
+    // UI 즉시 업데이트 (사용자 피드백 향상)
+    const key = `${postId}-${position}`;
+    appliedPositions.value.set(key, true);
+    myApplicationsStatus.value.set(key, 'PENDING');
+    lastAppliedTime.value.set(key, new Date().getTime()); // 신청 시간 기록
+
+    // API 호출
+    await communityApi.applyParty(postId, position);
+    toast.success("참가신청이 완료되었습니다.");
+
+    // 별도의 checkUpdates 호출 없이 로컬 상태만 업데이트
+    // API 호출 이후 자동으로 폴링될 때 서버 상태와 동기화됨
+  } catch (error) {
+    // 오류 발생 시 상태 복원
+    appliedPositions.value.delete(`${postId}-${position}`);
+    myApplicationsStatus.value.delete(`${postId}-${position}`);
+    lastAppliedTime.value.delete(`${postId}-${position}`);
+  } finally {
+    // 신청 상태 초기화
+    isApplyingPosition.value = false;
+  }
+};
 
 const handleLeaveParty = async (postId: number) => {
   await communityApi.leaveMyParty(postId)

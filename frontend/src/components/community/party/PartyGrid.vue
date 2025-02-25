@@ -8,7 +8,7 @@
         class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
     >
       <PartyCard
-          v-for="card in cards"
+          v-for="card in memoizedCards"
           :key="card.postId"
           :card="card"
           :my-puuid="myPuuid"
@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { toRefs } from 'vue'
+import { toRefs, computed } from 'vue'
 import PartyCard from './PartyCard.vue'
 import type { PartyPostCardDto, SummonerBasicInfoDto } from "@/types/community"
 import { goSelectedSummonerProfile } from "@/utils/common"
@@ -54,6 +54,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { cards, myPuuid, appliedPositions, isLoading, showReadMore } = toRefs(props)
+// 메모이제이션된 카드 객체
+const memoizedCards = computed(() => {
+  return props.cards;
+});
 
 const emit = defineEmits<{
   (e: 'apply', postId: number, position: string): void

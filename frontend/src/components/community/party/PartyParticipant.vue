@@ -96,17 +96,19 @@
       <div class="text-gray-500 text-xs flex-1">
         {{ participant.isOpenPosition ? '대기 중' : '-' }}
       </div>
-      <button
-          v-if="showApplyButton"
-          @click="handleApply"
-          :class="[
-          'text-[10px] px-2 py-0.5 rounded',
-          isApplied ? 'bg-gray-500 cursor-not-allowed' : 'bg-[#2979FF]'
-        ]"
-          :disabled="isApplied"
-      >
-        {{ isApplied ? '신청완료' : '신청' }}
-      </button>
+      <div v-if="showApplyButton" class="apply-btn-container">
+        <button
+            @click="handleApply"
+            :class="[
+            'text-[10px] px-2 py-0.5 rounded button-transition',
+            isApplied ? 'bg-gray-500 cursor-not-allowed' : 'bg-[#2979FF]'
+          ]"
+            :disabled="isApplied"
+        >
+          {{ isApplied ? '신청완료' : '신청' }}
+        </button>
+      </div>
+      <div v-else class="w-[60px]"></div>
     </template>
   </div>
 </template>
@@ -146,5 +148,24 @@ const handleApply = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 버튼 트랜지션 추가 */
+.button-transition {
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  will-change: background-color, opacity;
+}
+
+/* 애니메이션 적용을 위한 컨테이너 */
+.apply-btn-container {
+  width: 60px;
+  display: flex;
+  justify-content: center;
 }
 </style>
