@@ -38,7 +38,7 @@
             <component :is="isApplicantsVisible ? ChevronUp : ChevronDown" class="w-3 h-3" />
           </span>
         </button>
-        <span v-else class="text-gray-500 text-xs">대기 중</span>
+        <span v-else class="text-gray-500 text-xs ml-1">대기 중</span>
       </template>
     </template>
 
