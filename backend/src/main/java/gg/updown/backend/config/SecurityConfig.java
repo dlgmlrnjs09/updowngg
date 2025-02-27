@@ -68,7 +68,9 @@ public class SecurityConfig {
                         )
                         .successHandler((request, response, authentication) -> {
                             HttpSession session = request.getSession();
-                            if (session.getAttribute("CONNECTION_USER_ID") != null) {
+                            if (authentication.getDetails() != null && authentication.getDetails().toString().contains("riot")) {
+                                response.sendRedirect("/api/v1/auth/riot/callback");
+                            } else if (session.getAttribute("CONNECTION_USER_ID") != null) {
                                 response.sendRedirect("/api/v1/auth/discord/callback");
                             } else {
                                 response.sendRedirect("/api/v1/auth/discord/login");
@@ -99,6 +101,8 @@ public class SecurityConfig {
         configuration.addAllowedOrigin("https://13.124.117.180");
         configuration.addAllowedOrigin("https://updowngg.lol");
         configuration.addAllowedOrigin("https://13.124.117.180:443");
+        configuration.addAllowedOrigin("http://dev.updowngg.lol:4173");
+        configuration.addAllowedOrigin("https://dev.updowngg.lol:4173");
         // 허용할 HTTP 메서드 설정
         configuration.addAllowedMethod("*");
         // 허용할 헤더 설정

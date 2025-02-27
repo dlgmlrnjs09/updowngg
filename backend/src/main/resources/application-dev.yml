@@ -1,3 +1,13 @@
+server:
+  port: 443
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-password: ENC(ldps1Ay7K9MwTGoJMY3wwJIZSlIHMjzF)
+    key-store-type: PKCS12
+    key-alias: tomcat
+    key-store-password: ENC(ldps1Ay7K9MwTGoJMY3wwJIZSlIHMjzF)
+
 spring:
   devtools:
     livereload:
@@ -17,6 +27,12 @@ spring:
     oauth2:
       client:
         registration:
+          riot:
+            client-id: 068d3688-3749-457f-a8df-cddaf18eacaa
+            client-secret: ENC(DiSOgYl2EF6ulfU1DJAwXBVaOnDEdXHv)
+            redirect-uri: "{baseUrl}/api/v1/riot/callback"
+            authorization-grant-type: authorization_code
+            scope: openid
           discord:
             client-id: 1325814241160335462
             client-secret: ENC(0l1zDR5TtICNIBA/opRReD8QorxnGGJsnTyQfAythYXfIVE0H5Ofe5vrI2nERB2a)
@@ -27,6 +43,12 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/discord"
         provider:
+          riot:
+            authorization-uri: https://auth.riotgames.com/authorize
+            token-uri: https://auth.riotgames.com/token
+            jwk-set-uri: https://auth.riotgames.com/.well-known/jwks.json
+            user-info-uri: https://auth.riotgames.com/userinfo
+            user-name-attribute: sub
           discord:
             authorization-uri: https://discord.com/api/oauth2/authorize
             token-uri: https://discord.com/api/oauth2/token
@@ -85,4 +107,4 @@ springdoc:
     path: /v2/api-docs
 
 frontend:
-  url: http://localhost:4173
+  url: https://dev.updowngg.lol:4173
