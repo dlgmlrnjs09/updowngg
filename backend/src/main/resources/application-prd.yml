@@ -24,7 +24,7 @@ spring:
           riot:
             client-id: 068d3688-3749-457f-a8df-cddaf18eacaa
             client-secret: ENC(XD68/kh0Vc6QneVgXHGPM9+yNsJctO2DJS1kL+3D0ChEQDU0q8pGG1IQUZ0Kxd6+JpyR0XC1VQk=)
-            redirect-uri: "{baseUrl}/api/v1/auth/riot/callback"
+            redirect-uri: "https://updowngg.lol/api/v1/auth/riot/callback"
             authorization-grant-type: authorization_code
             scope: openid
           discord:
