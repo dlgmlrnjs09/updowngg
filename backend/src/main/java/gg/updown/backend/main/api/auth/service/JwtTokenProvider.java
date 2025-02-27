@@ -1,6 +1,5 @@
 package gg.updown.backend.main.api.auth.service;
 
-import com.nimbusds.oauth2.sdk.token.AccessToken;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.enums.TokenStatus;
 import io.jsonwebtoken.*;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Component;
 import java.util.Base64;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * JWT 토큰 생성 및 검증을 담당하는 클래스
@@ -56,8 +53,8 @@ public class JwtTokenProvider {
      */
     public String createAccessToken(Authentication authentication) {
         UserDetailImpl userDetails = (UserDetailImpl) authentication.getPrincipal();
-        Claims claims = Jwts.claims().setSubject(userDetails.getUsername());
-        claims.put("email", userDetails.getUsername());
+        Claims claims = Jwts.claims().setSubject(userDetails.getPuuid());
+        claims.put("puuid", userDetails.getPuuid());
         // 사용자 권한 정보를 토큰에 추가
 //        claims.put("roles", userDetails.getAuthorities().stream()
 //                .map(GrantedAuthority::getAuthority)
@@ -85,7 +82,7 @@ public class JwtTokenProvider {
         Date validity = new Date(now.getTime() + refreshValidMilliseconds);
 
         String refreshToken = Jwts.builder()
-                .setSubject(userDetails.getUsername())
+                .setSubject(userDetails.getPuuid())
                 .setIssuedAt(now)
                 .setExpiration(validity)
                 .signWith(SignatureAlgorithm.HS256, secretKey)
@@ -93,7 +90,7 @@ public class JwtTokenProvider {
 
         // Redis에 refresh token 저장
         redisTemplate.opsForValue().set(
-                "RT:" + userDetails.getUsername(),
+                "RT:" + userDetails.getPuuid(),
                 refreshToken,
                 refreshValidMilliseconds,
                 TimeUnit.MILLISECONDS
@@ -157,7 +154,7 @@ public class JwtTokenProvider {
     public TokenStatus validateRefreshToken(String username, String refreshToken) {
         String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + username);
 
-        log.info("username: {}", username);
+        log.info("puuid: {}", username);
         log.info("Received refreshToken: {}", refreshToken);
         log.info("Stored refreshToken in Redis: {}", storedRefreshToken);
 

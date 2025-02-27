@@ -3,7 +3,6 @@ package gg.updown.backend.main.api.auth.controller;
 import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
 import gg.updown.backend.external.riot.api.rso.model.RiotTokenDto;
-import gg.updown.backend.external.riot.api.rso.model.RiotUserInfoDto;
 import gg.updown.backend.external.riot.api.rso.service.RiotRsoService;
 import gg.updown.backend.main.api.auth.model.*;
 import gg.updown.backend.main.api.auth.service.AuthService;
@@ -27,7 +26,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -74,11 +72,15 @@ public class AuthController {
     }
 
     @GetMapping("/riot/callback")
-    public void tes(HttpSession session, HttpServletResponse response, @AuthenticationPrincipal OAuth2User principal, String code) {
+    public void callbackRiotLogin(HttpServletResponse response, String code) {
         RiotTokenDto tokenDto = riotRsoService.exchangeCodeToToken(code);
-        RiotUserInfoDto userInfoDto = riotRsoService.getUserInfo(tokenDto.getAccessToken());
         AccountInfoResDto accountInfo = accountApiService.getAccountInfoByToken(tokenDto.getAccessToken());
-        System.out.println("");
+        JwtToken token = authService.loginWithRiot(accountInfo);
+        response.setHeader(
+                "Location",
+                frontendUrl + "/auth/success?accessToken=" + token.getAccessToken() + "&refreshToken=" + token.getRefreshToken()
+        );
+        response.setStatus(HttpStatus.TEMPORARY_REDIRECT.value());
     }
 
     @GetMapping("/discord/connect")

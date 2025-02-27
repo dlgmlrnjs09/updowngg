@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -79,14 +80,14 @@ public class AuthService {
                     .parseClaimsJws(refreshToken)
                     .getBody();
 
-            String username = claims.getSubject();
+            String puuid = claims.getSubject();
 
             // Refresh Token 유효성 검증
-            TokenStatus tokenStatus = jwtTokenProvider.validateRefreshToken(username, refreshToken);
+            TokenStatus tokenStatus = jwtTokenProvider.validateRefreshToken(puuid, refreshToken);
 
             switch (tokenStatus) {
                 case VALID:
-                    UserDetails userDetails = userDetailService.loadUserByUsername(username);
+                    UserDetails userDetails = userDetailService.loadUserByUsername(puuid);
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
 
@@ -160,6 +161,43 @@ public class AuthService {
     }
 
     public SiteAccountEntity getSiteAccountByPuuid(String puuid) {return authMapper.getSiteAccountByPuuid(puuid);}
+
+    public SiteAccountEntity findOrCreateRiotUser(AccountInfoResDto accountDto) {
+        SiteAccountEntity user = authMapper.getSiteAccountByPuuid(accountDto.getPuuid());
+
+        if (user == null) {
+            // 임시 비밀번호 생성 (실제로는 사용하지 않음)
+            String tempPassword = passwordEncoder.encode(generateRandomPassword());
+            authMapper.insertSiteAccount(accountDto.getPuuid(), null, tempPassword);
+            user = authMapper.getSiteAccountByPuuid(accountDto.getPuuid());
+        }
+
+        return user;
+    }
+
+    // 라이엇 로그인 처리
+    public JwtToken loginWithRiot(AccountInfoResDto riotUser) {
+        // 사용자 찾거나 생성
+        SiteAccountEntity user = findOrCreateRiotUser(riotUser);
+
+        // UserDetails 생성
+        UserDetailImpl userDetails = new UserDetailImpl(user);
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+
+        // JWT 토큰 생성
+        String accessToken = jwtTokenProvider.createAccessToken(authentication);
+        String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
+
+        return JwtToken.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    private String generateRandomPassword() {
+        return UUID.randomUUID().toString();
+    }
 
     private DiscordAccountEntity convertAttrToDiscordAccountEntity(Map<String, Object> attr) {
         return DiscordAccountEntity.builder()

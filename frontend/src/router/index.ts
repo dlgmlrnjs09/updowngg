@@ -90,6 +90,11 @@ const router = createRouter({
                     next('/setting/account');
                 }
             }
+        },
+        {
+            path: '/auth/success',
+            name: 'riotAuthSuccess',
+            component: () => import('@/views/AuthSuccess.vue')
         }
     ],
     scrollBehavior(to, from, savedPosition) {

@@ -20,13 +20,13 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     /**
      * email로 사용자 정보 조회
-     * @param email 이메일
+     * @param puuid
      * @return UserDetails 구현체
      * @throws UsernameNotFoundException 사용자를 찾을 수 없는 경우
      */
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        SiteAccountEntity user = authMapper.getSiteAccountByEmail(email);
+    public UserDetails loadUserByUsername(String puuid) throws UsernameNotFoundException {
+        SiteAccountEntity user = authMapper.getSiteAccountByPuuid(puuid);
         if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }

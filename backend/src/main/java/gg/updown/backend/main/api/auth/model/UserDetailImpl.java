@@ -39,7 +39,7 @@ public class UserDetailImpl implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getMemberEmail();
+        return user.getPuuid();
     }
 
     @Override

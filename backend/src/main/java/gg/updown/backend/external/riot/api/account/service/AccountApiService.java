@@ -17,6 +17,8 @@ import reactor.core.publisher.Mono;
 public class AccountApiService {
     @Value("${riot-api.account.base-path}")
     private String basePath;
+    @Value("${external.riot.api-key}")
+    private String apiKey;
 
     private final WebClient riotAsiaWebClient;
     private final WebClient riotOAuthWebClient;
@@ -44,7 +46,7 @@ public class AccountApiService {
 
     public AccountInfoResDto getAccountInfoByPuuid(String puuid) {
         return riotAsiaWebClient.get()
-                .uri(basePath + "/by-puuid/{puuid}", puuid)
+                .uri(basePath + "/by-puuid/{puuid}?api_key={apiKey}", puuid, apiKey)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, response -> {
                     if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
