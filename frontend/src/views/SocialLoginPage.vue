@@ -14,7 +14,10 @@
 
           <div class="space-y-6">
             <!-- 라이엇 시작하기 버튼 -->
-            <button class="w-full flex items-center justify-center gap-3 px-4 py-3.5 bg-[#D13639] hover:bg-[#B22B2E] border border-[#ea443530] rounded-lg transition-all text-sm font-medium group">
+            <button
+                class="w-full flex items-center justify-center gap-3 px-4 py-3.5 bg-[#D13639] hover:bg-[#B22B2E] border border-[#ea443530] rounded-lg transition-all text-sm font-medium group"
+                @click="handleRiotLogin"
+            >
               <img src="/src/assets/icon/riot_logo.svg" alt="Riot" class="w-5 h-5 group-hover:scale-110 transition-transform"/>
               <span>라이엇 계정으로 시작하기</span>
             </button>
@@ -72,19 +75,13 @@
   const toast = useToast();
   const router = useRouter();
 
+  const handleRiotLogin = () => {
+    window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/riot`;
+  }
 
   const handleDiscordLogin = async () => {
-    /*const response = await authApi.loginDiscord()
-    const data = response.data;
-    const loginResponse = await authStore.socialLogin(data)
-    if (!loginResponse) {
-      toast.error('로그인에 실패했습니다.');
-    } else {
-      toast.success('환영합니다!')
-      await router.push('/')
-    }*/
     /*const response = await authApi.loginDiscord()*/
-    const redirectUri = `${window.location.origin}/oauth2/discord/login`;
+    const redirectUri = `${window.location.origin}/riot/callback`;
     window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/discord?redirect_uri=${encodeURIComponent(redirectUri)}`;
   }
 </script>

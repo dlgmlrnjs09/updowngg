@@ -50,6 +50,26 @@ public class RiotWebClientConfig {
                 .build();
     }
 
+    @Bean
+    WebClient riotRsoWebClient() {
+        return WebClient.builder()
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .filter(loggingRequestUrl())
+                .build();
+    }
+
+    @Bean
+    public WebClient riotOAuthWebClient() {
+        return WebClient.builder()
+                .baseUrl("https://asia.api.riotgames.com")
+                .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36")
+                .defaultHeader(HttpHeaders.ACCEPT_LANGUAGE, "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .filter(loggingRequestUrl())
+                .build();
+    }
+
     private ExchangeFilterFunction loggingRequestUrl() {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
             log.info("Request URL: {}", clientRequest.url());

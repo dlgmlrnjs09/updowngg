@@ -1,5 +1,10 @@
 package gg.updown.backend.main.api.auth.controller;
 
+import gg.updown.backend.external.riot.api.account.model.AccountInfoResDto;
+import gg.updown.backend.external.riot.api.account.service.AccountApiService;
+import gg.updown.backend.external.riot.api.rso.model.RiotTokenDto;
+import gg.updown.backend.external.riot.api.rso.model.RiotUserInfoDto;
+import gg.updown.backend.external.riot.api.rso.service.RiotRsoService;
 import gg.updown.backend.main.api.auth.model.*;
 import gg.updown.backend.main.api.auth.service.AuthService;
 import gg.updown.backend.main.api.auth.service.JwtTokenProvider;
@@ -22,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -37,11 +43,13 @@ import java.util.Map;
 @Tag(name = "Auth", description = "사이트 인증관련 API")
 public class AuthController {
 
+    private final AccountApiService accountApiService;
     @Value("${frontend.url}")
     private String frontendUrl;
 
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RiotRsoService riotRsoService;
 
     @Operation(summary = "회원가입", description = "일반 회원가입")
     @PutMapping("/signup")
@@ -63,6 +71,14 @@ public class AuthController {
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    @GetMapping("/riot/callback")
+    public void tes(HttpSession session, HttpServletResponse response, @AuthenticationPrincipal OAuth2User principal, String code) {
+        RiotTokenDto tokenDto = riotRsoService.exchangeCodeToToken(code);
+        RiotUserInfoDto userInfoDto = riotRsoService.getUserInfo(tokenDto.getAccessToken());
+        AccountInfoResDto accountInfo = accountApiService.getAccountInfoByToken(tokenDto.getAccessToken());
+        System.out.println("");
     }
 
     @GetMapping("/discord/connect")
