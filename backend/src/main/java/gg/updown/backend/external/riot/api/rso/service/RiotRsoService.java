@@ -18,6 +18,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class RiotRsoService {
     @Value("${spring.security.oauth2.client.provider.riot.token-uri}")
     private String tokenUrl;
+    @Value("${spring.security.oauth2.client.registration.riot.redirect-uri}")
+    private String redirectUrl;
     @Value("${spring.security.oauth2.client.registration.riot.client-id}")
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.riot.client-secret}")
@@ -29,7 +31,7 @@ public class RiotRsoService {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
         formData.add("code", code);
-        formData.add("redirect_uri", "https://dev.updowngg.lol/api/v1/auth/riot/callback");
+        formData.add("redirect_uri", redirectUrl);
 
         return riotRsoWebClient.post()
                 .uri(tokenUrl)
