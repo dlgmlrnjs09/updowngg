@@ -433,6 +433,10 @@ public class PartyCommunityService implements CommunityInterface {
     }
 
     private <T extends PartyCommunityHistoryBaseDto> void setParticipantListByPartyList(List<T> partyList) {
+        if (partyList == null || partyList.isEmpty()) {
+            return;
+        }
+        
         for (T party : partyList) {
             List<PartyCommunityParticipantDto> participantList = new ArrayList<>();
 
