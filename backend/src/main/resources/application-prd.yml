@@ -80,6 +80,12 @@ logging:
       resultset: OFF     # ResultSet을 포함한 모든 JDBC 호출 정보
       resultsettable: OFF  # SQL 결과 데이터 테이블
       connection: OFF    # 커넥션 연결/해제 정보
+    org:
+      springframework:
+        security: DEBUG
+        security.oauth2: DEBUG
+        web: DEBUG
+
 
 frontend:
   url: https://updowngg.lol
