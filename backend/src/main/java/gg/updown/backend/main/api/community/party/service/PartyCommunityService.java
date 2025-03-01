@@ -168,7 +168,7 @@ public class PartyCommunityService implements CommunityInterface {
         transactionService.updateApplicantAndParticipant(reqDto.getPostId(), reqDto.getApplicantSeq(), isApproval);
     }
 
-    public void leaveMyParty(long postId, String puuid) {
+    public void leaveParty(long postId, String puuid) {
         boolean isParticipantParty = partyCommunityMapper.checkParticipateAnotherPosition(postId, puuid);
         if (!isParticipantParty) {
             // 등록했거나 참가중인 파티가 없음
@@ -180,7 +180,7 @@ public class PartyCommunityService implements CommunityInterface {
             );
         }
 
-        partyCommunityMapper.leaveMyParty(postId, puuid);
+        partyCommunityMapper.leaveParty(postId, puuid);
     }
 
     public List<PartyCommunityApplicantDto> getApplicantList(String puuid, List<Long> postIds) {
@@ -255,6 +255,21 @@ public class PartyCommunityService implements CommunityInterface {
         }
 
         partyCommunityMapper.updatePartyStatus(postId, status);
+    }
+
+    public void kickMember(long postId, String myPuuid, String memberPuuid) {
+        // 파티장 본인인지 확인
+        boolean isPartyReader = partyCommunityMapper.checkPartyReader(postId, myPuuid);
+        if (!isPartyReader) {
+            throw new SiteCommonException(
+                    HttpStatus.FORBIDDEN
+                    , SiteErrorMessage.NOT_PARTY_READER.getMessage()
+                    , SiteErrorMessage.NOT_PARTY_READER.getMessage()
+                    , SiteErrorMessage.NOT_PARTY_READER.getMessage()
+            );
+        }
+
+        partyCommunityMapper.leaveParty(postId, memberPuuid);
     }
 
     public List<PartyCommunityHistoryDto> getPartyHostedHistory(String puuid, int page, int limit) {

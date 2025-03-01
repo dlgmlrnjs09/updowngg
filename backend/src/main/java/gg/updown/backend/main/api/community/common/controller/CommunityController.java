@@ -112,7 +112,7 @@ public class CommunityController {
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
-        partyCommunityService.leaveMyParty(reqDto.getPostId(), puuid);
+        partyCommunityService.leaveParty(reqDto.getPostId(), puuid);
     }
 
     @PostMapping("/party/close/{postId}")
@@ -133,6 +133,16 @@ public class CommunityController {
     ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
         partyCommunityService.updatePartyStatus(postId, puuid, "CANCEL");
+    }
+
+    @PostMapping("/party/kick")
+    @PreAuthorize("isAuthenticated()")
+    public void cancel(
+            @RequestBody PartyCommunityKickReqDto reqDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String puuid = ((UserDetailImpl) userDetails).getPuuid();
+        partyCommunityService.kickMember(reqDto.getPostId(), puuid, reqDto.getPuuid());
     }
 
     @GetMapping("/party/history/hosted")

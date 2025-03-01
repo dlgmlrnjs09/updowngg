@@ -595,7 +595,7 @@
           and scpa.applicant_puuid = #{puuid}
     </select>
 
-    <update id="leaveMyParty" parameterType="map">
+    <update id="leaveParty" parameterType="map">
         UPDATE public.site_community_party_participant
         SET
             top_puuid = CASE WHEN top_puuid = #{puuid} THEN NULL ELSE top_puuid END,

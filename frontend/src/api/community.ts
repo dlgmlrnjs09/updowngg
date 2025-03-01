@@ -73,6 +73,12 @@ export const communityApi = {
             postId: postId
         }),
 
+    kickPartyMember: (postId: number, memberPuuid: string) =>
+        apiClient.post<boolean>('/api/v1/community/party/kick', {
+            postId: postId,
+            puuid: memberPuuid
+        }),
+
     closeParty: (postId: number) =>
         apiClient.post<void>(`/api/v1/community/party/close/${postId}`),
 

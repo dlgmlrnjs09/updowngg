@@ -25,6 +25,16 @@
           <span class="text-white text-xs truncate max-w-[80px]">
             {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
           </span>
+
+          <!-- PC/태블릿에서 참가자가 있고 파티장인 경우 강퇴 버튼 표시 -->
+          <button
+              v-if="canKick"
+              @click.stop="handleKick"
+              class="ml-1 bg-[#FF5252] hover:bg-[#D32F2F] text-white p-0.5 rounded"
+              title="강퇴"
+          >
+            <UserX class="w-2 h-2" />
+          </button>
         </div>
       </div>
 
@@ -111,6 +121,16 @@
               </span>
             </div>
           </div>
+
+          <!-- 파티장일 경우 강퇴 버튼 표시 -->
+          <button
+              v-if="canKick"
+              @click.stop="handleKick"
+              class="ml-2 bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1 rounded"
+              title="강퇴"
+          >
+            <UserX class="w-3 h-3" />
+          </button>
         </template>
 
         <template v-else>
@@ -142,10 +162,12 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { ThumbsUp, ThumbsDown, ChevronUp, ChevronDown } from 'lucide-vue-next'
+import { ThumbsUp, ThumbsDown, ChevronUp, ChevronDown, UserX } from 'lucide-vue-next'
 import { useImageUrl } from "@/utils/imageUtil"
+import {useAuthStore} from "@/stores/auth.ts";
 
 const { getPositionImage } = useImageUrl()
+const authStore = useAuthStore();
 
 type ParticipantDto = {
   position: string;
@@ -156,26 +178,38 @@ type ParticipantDto = {
 interface Props {
   participant: ParticipantDto
   isWriter: boolean
+  writerPuuid: string
   position: string
   isApplicantsVisible: boolean
   applicantsCount: number
   isMobile?: boolean
+  postId: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  isMobile: false
+  isMobile: false,
 })
 
 const emit = defineEmits<{
   (e: 'toggle-applicants', position: string): void
+  (e: 'kick-member', postId: number, memberPuuid: string): void
 }>()
 
 // Computed
 const hasApplicants = computed(() => props.applicantsCount > 0)
+const canKick = computed(() => props.writerPuuid === authStore.user?.puuid && !props.isWriter);
 
 // Methods
 const toggleApplicants = () => {
   emit('toggle-applicants', props.position);
+}
+
+const handleKick = (event: any) => {
+  event.stopPropagation();
+  if (props.participant.summonerInfoDto) {
+    const memberPuuid = props.participant.summonerInfoDto.summonerBasicInfoDto.puuid;
+    emit('kick-member', props.postId, memberPuuid);
+  }
 }
 </script>
 

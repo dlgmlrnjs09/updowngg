@@ -48,6 +48,7 @@
           @approve-applicant="handleApprove"
           @reject-applicant="handleReject"
           @leave-party="handleLeaveParty"
+          @kick-member="handleKickMember"
       />
 
       <!-- 듀오 카드 그리드 -->
@@ -435,7 +436,7 @@ const checkApplicationStatusChanges = (prevStatusMap: Map<string, string>, newSt
   });
 
   // 목록에서 사라진 신청 확인 (거절된 경우)
-  prevStatusMap.forEach((prevStatus, key) => {
+  /*prevStatusMap.forEach((prevStatus, key) => {
     if (!newStatusMap.has(key) && prevStatus === 'PENDING') {
       // 신청이 목록에서 사라졌으면 거절된 것으로 간주
       appliedPositions.value.delete(key);
@@ -451,7 +452,7 @@ const checkApplicationStatusChanges = (prevStatusMap: Map<string, string>, newSt
         }
       }
     }
-  });
+  });*/
 };
 
 const onFilterUpdate = (filter: { gameMode: string; position: string; tier: string }) => {
@@ -535,6 +536,7 @@ const checkUpdates = async () => {
     // 포스트 데이터 업데이트
     postCards.value = postsResponse.data;
 
+    console.log(myPartyResponse.data);
     // 내 파티 데이터 업데이트
     if (myPartyResponse.data) {
       myActiveParty.value = myPartyResponse.data;
@@ -614,6 +616,17 @@ const handleLeaveParty = async (postId: number) => {
   await communityApi.leaveMyParty(postId)
   toast.success('파티 탈퇴되었습니다.')
   await checkUpdates()
+}
+
+const handleKickMember = async (postId: number, memberPuuid: string) => {
+  try {
+    await communityApi.kickPartyMember(postId, memberPuuid)
+    toast.success('파티원이 강퇴되었습니다.')
+    await checkUpdates()
+  } catch (error) {
+    console.error('파티원 강퇴 중 오류:', error)
+    toast.error('파티원 강퇴에 실패했습니다.')
+  }
 }
 
 const getPositionName = (position: string) => {

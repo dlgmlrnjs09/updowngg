@@ -45,7 +45,10 @@
                     :position="participant.position"
                     :is-applicants-visible="showApplicants[participant.position]"
                     :applicants-count="party.applicantByPositionMap?.[participant.position]?.length || 0"
+                    :writer-puuid="party.postCardDto.writerPuuid"
+                    :post-id="party.postCardDto.postId"
                     @toggle-applicants="toggleApplicants"
+                    @kick-member="handleKickMember"
                 />
 
                 <!-- 신청자 목록 팝오버 -->
@@ -118,7 +121,10 @@
               :is-applicants-visible="showApplicants[participant.position]"
               :applicants-count="party.applicantByPositionMap?.[participant.position]?.length || 0"
               :is-mobile="true"
+              :writer-puuid="party.postCardDto.writerPuuid"
+              :post-id="party.postCardDto.postId"
               @toggle-applicants="toggleApplicants"
+              @kick-member="handleKickMember"
           />
         </div>
 
@@ -233,6 +239,7 @@ const emit = defineEmits<{
   (e: 'approve-applicant', postId: number, applicantPuuid: string, applicantSeq: number, position: string): void
   (e: 'reject-applicant', postId: number, applicantPuuid: string, applicantSeq: number, position: string): void
   (e: 'leave-party', postId: number): void
+  (e: 'kick-member', postId: number, memberPuuid: string): void
 }>()
 
 // Reactive states
@@ -276,6 +283,10 @@ const handleReject = (postId: number, applicantPuuid: string, applicantSeq: numb
 
 const handleLeave = () => {
   emit('leave-party', props.party.postCardDto.postId)
+}
+
+const handleKickMember = (postId: number, memberPuuid: string) => {
+  emit('kick-member', postId, memberPuuid)
 }
 
 const getGameModeName = (code: string) => {
