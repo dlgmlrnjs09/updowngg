@@ -251,7 +251,6 @@
             site_community_party_applicant
         WHERE
             applicant_puuid = #{puuid}
-            and apply_status = #{applyStatus}
             AND del_dt is null
     </select>
 
