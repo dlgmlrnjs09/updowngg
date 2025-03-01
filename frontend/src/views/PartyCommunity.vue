@@ -182,11 +182,15 @@ watch(() => myActiveParty.value?.applicantByPositionMap, (newVal, oldVal) => {
   }
 }, { deep: true });
 
-// 내 파티 생성/참가 감지
+// 내 파티 생성/참가/강퇴 감지
 watch(() => myActiveParty.value, (newVal, oldVal) => {
   if (!oldVal && newVal) {
+    // 파티 생성/참가
     hasNewApplicant.value = true
     setTimeout(() => hasNewApplicant.value = false, 2000) // 2초 후 효과 제거
+  } else if (oldVal && !newVal) {
+    // 파티에서 사라짐 (강퇴된 경우)
+    toast.info('파티에서 강퇴되었습니다.');
   }
 })
 
@@ -540,6 +544,9 @@ const checkUpdates = async () => {
     // 내 파티 데이터 업데이트
     if (myPartyResponse.data) {
       myActiveParty.value = myPartyResponse.data;
+    } else {
+      // 데이터가 없거나 204 응답인 경우 myActiveParty를 null로 설정
+      myActiveParty.value = null;
     }
 
     // postIds 추출 후 appliedPositions 업데이트
