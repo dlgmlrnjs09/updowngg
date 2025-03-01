@@ -427,8 +427,8 @@ const checkApplicationStatusChanges = (prevStatusMap: Map<string, string>, newSt
         if (newStatus === 'APPROVE') {
           toast.success('파티에 가입되었습니다.');
         }
-        // 거절/취소 알림은 동일 파티에 승인된 포지션이 없을 때만 표시
-        else if ((newStatus === 'REJECT' || newStatus === 'CANCEL') && !approvedPartyIds.has(postId)) {
+        // 거절/취소 알림도 항상 표시
+        else if (newStatus === 'REJECT' || newStatus === 'CANCEL') {
           if (newStatus === 'REJECT') {
             toast.error('파티 가입 신청이 거절되었습니다.');
           } else if (newStatus === 'CANCEL') {
