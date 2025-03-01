@@ -67,6 +67,15 @@ public class PartyCommunityTransactionService {
 
         if (isApprove) {
             PartyCommunityApplicantEntity applicantEntity = partyCommunityMapper.getApplicant(postId, applicantSeq);
+            
+            if (applicantEntity == null) {
+                throw new SiteCommonException(
+                    HttpStatus.NOT_FOUND,
+                    SiteErrorMessage.NOT_EXIST_PARTY.getMessage(),
+                    SiteErrorMessage.NOT_EXIST_PARTY.getMessage(),
+                    "신청 정보를 찾을 수 없습니다."
+                );
+            }
 
             // 해당 post의 다른 포지션 신청서 삭제
             partyCommunityMapper.deleteAnotherApplicant(applicantEntity);

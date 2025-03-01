@@ -211,7 +211,11 @@ public class CommunityController {
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         String puuid = ((UserDetailImpl) userDetails).getPuuid();
-        return ResponseEntity.ok(partyCommunityService.getMyActivePartyPost(puuid));
+        MyPartyDto myPartyDto = partyCommunityService.getMyActivePartyPost(puuid);
+        if (myPartyDto == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(myPartyDto);
     }
 
 }
