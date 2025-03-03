@@ -20,6 +20,8 @@
             scd.is_open_sup,
             scd.post_status,
             scd.is_use_mic,
+            scd.tier_min,
+            scd.tier_max,
             scpp.top_puuid,
             scpp.jungle_puuid,
             scpp.mid_puuid,
@@ -57,7 +59,9 @@
             is_open_ad,
             is_open_sup,
             post_status,
-            is_use_mic
+            is_use_mic,
+            tier_min,
+            tier_max
         ) VALUES (
             #{postId},
              #{gameMode},
@@ -67,7 +71,9 @@
              #{isOpenAd},
              #{isOpenSup},
              #{postStatus},
-             #{isUseMic}
+             #{isUseMic},
+             #{tierMin},
+             #{tierMax}
         );
     </insert>
 
@@ -273,6 +279,8 @@
             scd.is_open_sup,
             scd.post_status,
             scd.is_use_mic,
+            scd.tier_min,
+            scd.tier_max,
             scpp.top_puuid,
             scpp.jungle_puuid,
             scpp.mid_puuid,
@@ -305,6 +313,8 @@
             scd.is_open_mid,
             scd.is_open_ad,
             scd.is_open_sup,
+            scd.tier_min,
+            scd.tier_max,
             scd.post_status,
             scd.is_use_mic,
             scpp.top_puuid,

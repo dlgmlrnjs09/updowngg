@@ -16,4 +16,6 @@ public class PartyCommunityReqDto {
     private Boolean isOpenMid;
     private Boolean isOpenAd;
     private Boolean isOpenSup;
+    private String tierMin;
+    private String tierMax;
 }

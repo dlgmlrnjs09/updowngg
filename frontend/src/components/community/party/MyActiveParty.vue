@@ -1,4 +1,4 @@
-<!-- MyActiveParty.vue -->
+<!-- MyActiveParty.vue 수정 -->
 <template>
   <div
       v-if="party"
@@ -17,26 +17,37 @@
                 {{ party.postCardDto.writerPuuid === myPuuid ? '모집중' : '참가중' }}
               </span>
               <div class="h-4 w-[1px] bg-gray-700"></div>
+              <div
+                  class="flex items-center gap-2"
+                  :class="{ 'participant-highlight': participantCount === party.postCardDto.participantCount }"
+              >
+                <Users class="w-4 h-4 text-gray-400" />
+                <span class="text-white text-sm">
+                {{ party.postCardDto.participantCount }} / {{ party.postCardDto.recruitCount }}
+              </span>
+              </div>
+              <div class="h-4 w-[1px] bg-gray-700"></div>
+              <component
+                  :is="party.postCardDto.isUseMic ? MicIcon : MicOffIcon"
+                  :class="party.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
+                  class="w-4 h-4"
+              />
+              <div class="h-4 w-[1px] bg-gray-700"></div>
               <span class="text-white text-sm">
                 {{ getGameModeName(party.postCardDto.gameMode) }}
               </span>
             </div>
-            <div class="h-4 w-[1px] bg-gray-700"></div>
-            <div
-                class="flex items-center gap-2"
-                :class="{ 'participant-highlight': participantCount === party.postCardDto.participantCount }"
-            >
-              <Users class="w-4 h-4 text-gray-400" />
-              <span class="text-white text-sm">
-                {{ party.postCardDto.participantCount }} / {{ party.postCardDto.recruitCount }}
-              </span>
-            </div>
-            <div class="h-4 w-[1px] bg-gray-700"></div>
-            <component
-                :is="party.postCardDto.isUseMic ? MicIcon : MicOffIcon"
-                :class="party.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
-                class="w-4 h-4"
-            />
+            <!-- 티어 범위 정보 추가 -->
+            <template v-if="isRankedMode && hasTierRange">
+              <div class="h-4 w-[1px] bg-gray-700"></div>
+              <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1">
+                  <img v-if="party.postCardDto.tierMin && party.postCardDto.tierMin !== '전체'" :src="getTierImage(party.postCardDto.tierMin)" :alt="party.postCardDto.tierMin" class="w-4 h-4">
+                  <span class="text-white text-sm">{{ getTierRangeDisplay() }}</span>
+                  <img v-if="party.postCardDto.tierMax && party.postCardDto.tierMax !== '전체' && party.postCardDto.tierMax !== party.postCardDto.tierMin" :src="getTierImage(party.postCardDto.tierMax)" :alt="party.postCardDto.tierMax" class="w-4 h-4">
+                </div>
+              </div>
+            </template>
           </div>
 
           <!-- 우측: 액션 버튼 -->
@@ -180,12 +191,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { MicIcon, MicOffIcon, Users, ChevronUp, ChevronDown, UserCheck, UserX } from 'lucide-vue-next'
 import { useImageUrl } from "@/utils/imageUtil"
 import type { MyPartyPostDto } from "@/types/community"
 import MyActivePartyParticipant from "@/components/community/party/MyActivePartyParticipant.vue"
 import ApplicantModal from "@/components/community/party/ApplicantModal.vue"
+const {getTierImage } = useImageUrl()
 
 const { getPositionImage } = useImageUrl()
 
@@ -213,6 +225,52 @@ const emit = defineEmits<{
 
 // Reactive states
 const activePosition = ref<string | null>(null)
+
+// 티어 범위 관련 computed
+const isRankedMode = computed(() => {
+  const gameMode = props.party.postCardDto.gameMode;
+  return gameMode === 'SOLO_RANK' || gameMode === 'FLEX_RANK';
+});
+
+const hasTierRange = computed(() => {
+  const tierMin = props.party.postCardDto.tierMin;
+  const tierMax = props.party.postCardDto.tierMax;
+  return (tierMin && tierMin !== '전체') || (tierMax && tierMax !== '전체');
+});
+
+const getTierRangeDisplay = () => {
+  const tierMin = props.party.postCardDto.tierMin;
+  const tierMax = props.party.postCardDto.tierMax;
+
+  if (!tierMin && !tierMax) return '전체 티어';
+  if (tierMin === '전체' && tierMax === '전체') return '전체 티어';
+
+  if (tierMin === '전체' || !tierMin) {
+    return `${getTierName(tierMax!)} 이하`;
+  }
+
+  if (tierMax === '전체' || !tierMax) {
+    return `${getTierName(tierMin)} 이상`;
+  }
+
+  return `${getTierName(tierMin)} ~ ${getTierName(tierMax)}`;
+};
+
+const getTierName = (tierCode: string) => {
+  const tierMap: {[key: string]: string} = {
+    'IRON': '아이언',
+    'BRONZE': '브론즈',
+    'SILVER': '실버',
+    'GOLD': '골드',
+    'PLATINUM': '플래티넘',
+    'EMERALD': '에메랄드',
+    'DIAMOND': '다이아몬드',
+    'MASTER': '마스터',
+    'GRANDMASTER': '그랜드마스터',
+    'CHALLENGER': '챌린저',
+  };
+  return tierMap[tierCode] || tierCode;
+};
 
 // Methods
 const toggleApplicants = (position: string) => {

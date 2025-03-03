@@ -1,6 +1,6 @@
 <template>
-  <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-    <div class="bg-[#141414] w-full max-w-xl rounded-xl p-6">
+  <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+    <div class="bg-[#141414] w-full max-w-xl rounded-xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
       <!-- 헤더 -->
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-white text-lg font-bold">파티 모집하기</h2>
@@ -106,6 +106,41 @@
         </div>
       </div>
 
+      <!-- 티어 범위 설정 -->
+      <div v-if="isRankedMode" class="space-y-3 mt-6">
+        <div class="flex justify-between items-center">
+          <label class="text-sm text-gray-300 font-medium">모집할 티어 범위</label>
+          <div v-if="showTierRange" class="text-sm text-gray-300 font-medium">
+            {{ getTierRangeDisplay() }}
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex-1">
+            <select
+                v-model="minTier"
+                class="w-full bg-[#1A1A1A] text-white text-sm px-3 py-2.5 rounded-lg border border-[#333] focus:outline-none focus:border-[#2979FF] transition-colors"
+                @change="validateTierRange"
+            >
+              <option v-for="tier in tiers" :key="tier.code" :value="tier.code">
+                {{ tier.name }}
+              </option>
+            </select>
+          </div>
+          <div class="text-white text-sm font-medium">~</div>
+          <div class="flex-1">
+            <select
+                v-model="maxTier"
+                class="w-full bg-[#1A1A1A] text-white text-sm px-3 py-2.5 rounded-lg border border-[#333] focus:outline-none focus:border-[#2979FF] transition-colors"
+                @change="validateTierRange"
+            >
+              <option v-for="tier in tiers" :key="tier.code" :value="tier.code">
+                {{ tier.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- 내용 입력 -->
       <div class="space-y-3 mt-6">
         <div class="flex justify-between">
@@ -150,6 +185,21 @@ const positions = [
   { value: 'SUP', label: '서포터' }
 ]
 
+// 티어 정보 (BE와 일치하도록 설정)
+const tiers = [
+  { code: '전체', name: '전체' },
+  { code: 'IRON', name: '아이언' },
+  { code: 'BRONZE', name: '브론즈' },
+  { code: 'SILVER', name: '실버' },
+  { code: 'GOLD', name: '골드' },
+  { code: 'PLATINUM', name: '플래티넘' },
+  { code: 'EMERALD', name: '에메랄드' },
+  { code: 'DIAMOND', name: '다이아몬드' },
+  { code: 'MASTER', name: '마스터' },
+  { code: 'GRANDMASTER', name: '그랜드마스터' },
+  { code: 'CHALLENGER', name: '챌린저' }
+]
+
 const partyLeaderPosition = ref('')
 const positionsOpen = ref({
   TOP: false,
@@ -159,11 +209,59 @@ const positionsOpen = ref({
   SUP: false
 })
 
+// 티어 범위 설정
+const minTier = ref('전체')
+const maxTier = ref('전체')
+const showTierRange = computed(() => minTier.value !== '전체' || maxTier.value !== '전체')
+const isRankedMode = computed(() =>
+    queueType.value === 'SOLO_RANK' || queueType.value === 'FLEX_RANK'
+)
+
+const getTierRangeDisplay = () => {
+  if (minTier.value === '전체' && maxTier.value === '전체') {
+    return '전체 티어'
+  }
+
+  if (minTier.value === '전체') {
+    return getTierName(maxTier.value) + ' 이하'
+  }
+
+  if (maxTier.value === '전체') {
+    return getTierName(minTier.value) + ' 이상'
+  }
+
+  return getTierName(minTier.value) + ' ~ ' + getTierName(maxTier.value)
+}
+
+const getTierName = (tierCode: string) => {
+  const tier = tiers.find(t => t.code === tierCode)
+  return tier ? tier.name : tierCode
+}
+
 const togglePositionOpen = (position: string) => {
   // 파티장 포지션은 자동으로 비활성화
   if (position !== partyLeaderPosition.value) {
     positionsOpen.value[position] = !positionsOpen.value[position]
   }
+}
+
+const validateTierRange = () => {
+  // '전체'인 경우는 항상 유효
+  if (minTier.value === '전체' || maxTier.value === '전체') {
+    return true
+  }
+
+  const minTierIndex = tiers.findIndex(t => t.code === minTier.value)
+  const maxTierIndex = tiers.findIndex(t => t.code === maxTier.value)
+
+  // 최소 티어가 최대 티어보다 높은 경우 (인덱스가 클수록 높은 티어)
+  if (minTierIndex > maxTierIndex) {
+    // 자동으로 최대 티어를 최소 티어로 설정
+    maxTier.value = minTier.value
+    return false
+  }
+
+  return true
 }
 
 const queueType = ref('SOLO_RANK')
@@ -200,6 +298,11 @@ const handleSubmit = () => {
     return
   }
 
+  // 티어 범위 검증
+  if (!validateTierRange()) {
+    return
+  }
+
   if (!content.value) {
     toast.error('내용을 입력해주세요.')
     return
@@ -216,7 +319,9 @@ const handleSubmit = () => {
       isOpenJungle: positionsOpen.value.JG,
       isOpenMid: positionsOpen.value.MID,
       isOpenAd: positionsOpen.value.AD,
-      isOpenSup: positionsOpen.value.SUP
+      isOpenSup: positionsOpen.value.SUP,
+      tierMin: minTier.value,
+      tierMax: maxTier.value
     }
   }
 

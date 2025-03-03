@@ -19,6 +19,8 @@ public class PartyCommunityEntity extends CommunityPostEntity {
     private Boolean isOpenSup;
     private Boolean isUseMic;
     private String postStatus;
+    private String tierMin;
+    private String tierMax;
     private LocalDateTime regDt;
     private LocalDateTime updDt;
     private LocalDateTime delDt;

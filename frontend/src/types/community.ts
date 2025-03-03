@@ -44,6 +44,16 @@ export interface SearchFilter {
     limit?: number;
 }
 
+export interface PartySearchFilter {
+    gameMode?: string;
+    positionSelf?: string;
+    positionFind?: string;
+    tierMin?: string;
+    tierMax?: string;
+    offset?: number;
+    limit?: number;
+}
+
 export interface PartyCommunityDto {
     gameMode: string
     isUseMic: boolean
@@ -53,6 +63,8 @@ export interface PartyCommunityDto {
     isOpenMid: boolean
     isOpenAd: boolean
     isOpenSup: boolean
+    tierMin?: string;
+    tierMax?: string;
 }
 
 export interface PartyParticipantDto {
@@ -77,6 +89,8 @@ export interface PartyPostCardDto {
     isOpenMid: boolean;
     isOpenAd: boolean;
     isOpenSup: boolean;
+    tierMin: string;
+    tierMax: string;
     topPuuid: string | null;
     junglePuuid: string | null;
     midPuuid: string | null;

@@ -23,6 +23,8 @@ public class PartyPostCardDto extends CommunityPostDto {
     private Boolean isOpenMid;
     private Boolean isOpenAd;
     private Boolean isOpenSup;
+    private String tierMin;
+    private String tierMax;
     private String topPuuid;
     private String junglePuuid;
     private String midPuuid;
