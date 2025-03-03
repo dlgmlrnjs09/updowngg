@@ -40,10 +40,54 @@
                 and game_mode = #{gameMode}
             </if>
             <if test="positionSelf != null">
-                and position_self = #{positionSelf.code}
+                <if test="positionSelf.code == 'TOP'">
+                    and scd.is_open_top is true
+                </if>
+                <if test="positionSelf.code == 'JG'">
+                    and scd.is_open_jungle is true
+                </if>
+                <if test="positionSelf.code == 'MID'">
+                    and scd.is_open_mid is true
+                </if>
+                <if test="positionSelf.code == 'AD'">
+                    and scd.is_open_ad is true
+                </if>
+                <if test="positionSelf.code == 'SUP'">
+                    and scd.is_open_sup is true
+                </if>
             </if>
-            <if test="positionFind != null">
-                and position_find = #{positionFind}
+            <if test="tier != null">
+                and #{tier.sortNum} between
+                (
+                    case
+                        when scd.tier_min = 'IRON' then 1
+                        when scd.tier_min = 'BRONZE' then 2
+                        when scd.tier_min = 'SILVER' then 3
+                        when scd.tier_min = 'GOLD' then 4
+                        when scd.tier_min = 'PLATINUM' then 5
+                        when scd.tier_min = 'EMERALD' then 6
+                        when scd.tier_min = 'DIAMOND' then 7
+                        when scd.tier_min = 'MASTER' then 8
+                        when scd.tier_min = 'GRANDMASTER' then 9
+                        when scd.tier_min = 'CHALLENGER' then 10
+                        else 0
+                    end
+                ) and
+                (
+                    case
+                        when scd.tier_max = 'IRON' then 1
+                        when scd.tier_max = 'BRONZE' then 2
+                        when scd.tier_max = 'SILVER' then 3
+                        when scd.tier_max = 'GOLD' then 4
+                        when scd.tier_max = 'PLATINUM' then 5
+                        when scd.tier_max = 'EMERALD' then 6
+                        when scd.tier_max = 'DIAMOND' then 7
+                        when scd.tier_max = 'MASTER' then 8
+                        when scd.tier_max = 'GRANDMASTER' then 9
+                        when scd.tier_max = 'CHALLENGER' then 10
+                        else 11
+                    end
+                )
             </if>
         order by scp.post_id desc
         offset #{offset} limit #{limit}
