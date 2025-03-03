@@ -21,20 +21,25 @@
         <img :src="getPositionImage(participant.position)" :alt="participant.position" class="w-4 h-4">
       </div>
       <div v-if="participant.summonerInfoDto" class="flex-1 text-left ml-2 min-w-0">
-        <div class="flex items-center gap-1">
-          <span class="text-white text-xs truncate max-w-[80px]">
-            {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
-          </span>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1">
+            <span class="text-white text-xs truncate">
+              {{ participant.summonerInfoDto.summonerBasicInfoDto.gameName }}
+            </span>
 
-          <!-- PC/태블릿에서 참가자가 있고 파티장인 경우 강퇴 버튼 표시 -->
-          <button
-              v-if="canKick"
-              @click.stop="handleKick"
-              class="ml-1 bg-[#FF5252] hover:bg-[#D32F2F] text-white p-0.5 rounded"
-              title="강퇴"
-          >
-            <UserX class="w-2 h-2" />
-          </button>
+            <!-- PC/태블릿에서 참가자가 있고 파티장인 경우 강퇴 버튼 표시 -->
+            <button
+                v-if="canKick"
+                @click.stop="handleKick"
+                class="ml-1 bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1 rounded"
+                title="강퇴"
+            >
+              <UserX class="w-3 h-3" />
+            </button>
+          </div>
+          <div class="text-gray-400 text-[10px] truncate">
+            #{{ participant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
+          </div>
         </div>
       </div>
 
@@ -126,10 +131,10 @@
           <button
               v-if="canKick"
               @click.stop="handleKick"
-              class="ml-2 bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1 rounded"
+              class="ml-2 bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1.5 rounded"
               title="강퇴"
           >
-            <UserX class="w-3 h-3" />
+            <UserX class="w-4 h-4" />
           </button>
         </template>
 
@@ -224,6 +229,7 @@ const handleKick = (event: any) => {
   position: relative;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 80px;
 }
 
 .applicant-button:hover {

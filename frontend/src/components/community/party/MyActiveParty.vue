@@ -7,84 +7,91 @@
   >
     <div class="bg-[#141414] rounded-xl border border-[#2979FF] p-4">
       <!-- PC/태블릿 뷰 -->
-      <div class="hidden sm:flex items-center justify-between">
-        <!-- 좌측: 기본 정보 -->
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2">
-            <span class="text-[#2979FF] text-sm font-medium">
-              {{ party.postCardDto.writerPuuid === myPuuid ? '모집중' : '참가중' }}
-            </span>
-            <span class="text-white text-sm">
-              {{ getGameModeName(party.postCardDto.gameMode) }}
-            </span>
+      <div class="hidden sm:flex flex-col gap-4">
+        <!-- 첫 번째 줄: 기본 정보 및 액션 버튼 -->
+        <div class="flex items-center justify-between">
+          <!-- 좌측: 기본 정보 -->
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4">
+              <span class="text-[#2979FF] text-sm font-medium">
+                {{ party.postCardDto.writerPuuid === myPuuid ? '모집중' : '참가중' }}
+              </span>
+              <div class="h-4 w-[1px] bg-gray-700"></div>
+              <span class="text-white text-sm">
+                {{ getGameModeName(party.postCardDto.gameMode) }}
+              </span>
+            </div>
+            <div class="h-4 w-[1px] bg-gray-700"></div>
+            <div
+                class="flex items-center gap-2"
+                :class="{ 'participant-highlight': participantCount === party.postCardDto.participantCount }"
+            >
+              <Users class="w-4 h-4 text-gray-400" />
+              <span class="text-white text-sm">
+                {{ party.postCardDto.participantCount }} / {{ party.postCardDto.recruitCount }}
+              </span>
+            </div>
+            <div class="h-4 w-[1px] bg-gray-700"></div>
+            <component
+                :is="party.postCardDto.isUseMic ? MicIcon : MicOffIcon"
+                :class="party.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
+                class="w-4 h-4"
+            />
           </div>
-          <div class="h-4 w-[1px] bg-gray-700"></div>
-          <div
-              class="flex items-center gap-2"
-              :class="{ 'participant-highlight': participantCount === party.postCardDto.participantCount }"
-          >
-            <Users class="w-4 h-4 text-gray-400" />
-            <span class="text-white text-sm">
-              {{ party.postCardDto.participantCount }} / {{ party.postCardDto.recruitCount }}
-            </span>
-          </div>
-          <div class="h-4 w-[1px] bg-gray-700"></div>
-          <component
-              :is="party.postCardDto.isUseMic ? MicIcon : MicOffIcon"
-              :class="party.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
-              class="w-4 h-4"
-          />
-          <div class="h-4 w-[1px] bg-gray-700"></div>
-          <!-- 포지션 정보 (PC) -->
+
+          <!-- 우측: 액션 버튼 -->
           <div class="flex items-center gap-2">
-            <template v-for="participant in party.postCardDto.participantDtoList" :key="participant.position">
-              <div v-if="participant.isOpenPosition" class="relative">
-                <MyActivePartyParticipant
-                    :participant="participant"
-                    :is-writer="party.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid"
-                    :position="participant.position"
-                    :is-applicants-visible="activePosition === participant.position"
-                    :applicants-count="party.applicantByPositionMap?.[participant.position]?.length || 0"
-                    :writer-puuid="party.postCardDto.writerPuuid"
-                    :post-id="party.postCardDto.postId"
-                    @toggle-applicants="toggleApplicants"
-                    @kick-member="handleKickMember"
-                />
-              </div>
+            <template v-if="party.postCardDto.writerPuuid === myPuuid">
+              <button
+                  @click="handleUpdateStatus('CLOSE')"
+                  class="bg-[#1A1A1A] hover:bg-[#242424] text-white px-3 py-1.5 rounded-lg text-xs"
+              >
+                마감
+              </button>
+              <button
+                  @click="handleUpdateStatus('CANCEL')"
+                  class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
+              >
+                취소
+              </button>
+            </template>
+            <template v-else>
+              <button
+                  @click="handleLeave"
+                  class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
+              >
+                나가기
+              </button>
             </template>
           </div>
         </div>
 
-        <!-- 우측: 액션 버튼 -->
-        <div class="flex items-center gap-2">
-          <template v-if="party.postCardDto.writerPuuid === myPuuid">
-            <button
-                @click="handleUpdateStatus('CLOSE')"
-                class="bg-[#1A1A1A] hover:bg-[#242424] text-white px-3 py-1.5 rounded-lg text-xs"
-            >
-              마감
-            </button>
-            <button
-                @click="handleUpdateStatus('CANCEL')"
-                class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
-            >
-              취소
-            </button>
-          </template>
-          <template v-else>
-            <button
-                @click="handleLeave"
-                class="bg-[#1A1A1A] hover:bg-[#242424] text-[#FF5252] px-3 py-1.5 rounded-lg text-xs"
-            >
-              나가기
-            </button>
+        <!-- 구분선 추가 -->
+        <div class="h-[1px] w-full bg-gray-700"></div>
+
+        <!-- 두 번째 줄: 포지션별 참가자 정보 -->
+        <div class="flex items-center gap-3">
+          <template v-for="participant in party.postCardDto.participantDtoList" :key="participant.position">
+            <div v-if="participant.isOpenPosition" class="relative">
+              <MyActivePartyParticipant
+                  :participant="participant"
+                  :is-writer="party.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid"
+                  :position="participant.position"
+                  :is-applicants-visible="activePosition === participant.position"
+                  :applicants-count="party.applicantByPositionMap?.[participant.position]?.length || 0"
+                  :writer-puuid="party.postCardDto.writerPuuid"
+                  :post-id="party.postCardDto.postId"
+                  @toggle-applicants="toggleApplicants"
+                  @kick-member="handleKickMember"
+              />
+            </div>
           </template>
         </div>
       </div>
 
       <!-- 모바일 뷰 -->
       <div class="sm:hidden space-y-4">
-        <!-- 상태 및 기본 정보 -->
+        <!-- 첫 번째 줄: 상태 및 기본 정보 -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="text-[#2979FF] text-sm font-medium">
@@ -92,14 +99,28 @@
             </span>
             <span class="text-white text-sm">{{ getGameModeName(party.postCardDto.gameMode) }}</span>
           </div>
-          <component
-              :is="party.postCardDto.isUseMic ? MicIcon : MicOffIcon"
-              :class="party.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
-              class="w-4 h-4"
-          />
+          <div class="flex items-center gap-2">
+            <div
+                class="flex items-center gap-1"
+                :class="{ 'participant-highlight': participantCount === party.postCardDto.participantCount }"
+            >
+              <Users class="w-4 h-4 text-gray-400" />
+              <span class="text-white text-sm">
+                {{ party.postCardDto.participantCount }} / {{ party.postCardDto.recruitCount }}
+              </span>
+            </div>
+            <component
+                :is="party.postCardDto.isUseMic ? MicIcon : MicOffIcon"
+                :class="party.postCardDto.isUseMic ? 'text-[#2979FF]' : 'text-gray-500'"
+                class="w-4 h-4"
+            />
+          </div>
         </div>
 
-        <!-- 포지션 정보 (모바일) -->
+        <!-- 구분선 추가 -->
+        <div class="h-[1px] w-full bg-gray-700"></div>
+
+        <!-- 두 번째 줄: 포지션 정보 -->
         <div class="grid grid-cols-1 gap-2">
           <MyActivePartyParticipant
               v-for="participant in party.postCardDto.participantDtoList"
@@ -117,7 +138,7 @@
           />
         </div>
 
-        <!-- 액션 버튼 -->
+        <!-- 세 번째 줄: 액션 버튼 -->
         <div class="flex justify-end gap-2">
           <template v-if="party.postCardDto.writerPuuid === myPuuid">
             <button
