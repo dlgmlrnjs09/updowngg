@@ -31,11 +31,12 @@
           <span class="inline md:hidden">평가됨</span>
         </button>
         <button
+            v-if="authStore?.user?.puuid == profileData.riotAccountInfoEntity?.puuid"
             @click="toggleReviewFilter('unreviewed')"
             :class="[
-            'px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded-md transition-colors whitespace-nowrap',
-            showUnreviewed ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-          ]"
+              'px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded-md transition-colors whitespace-nowrap',
+              showUnreviewed ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            ]"
         >
           <span class="hidden md:inline">평가하지 않은 게임</span>
           <span class="inline md:hidden">미평가</span>
@@ -75,7 +76,6 @@
   </div>
 </template>
 
-// MatchList.vue
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import type { LolMatchInfoRes } from '@/types/match';
@@ -83,6 +83,7 @@ import type { LolSummonerProfileResDto } from '@/types/summoner';
 import MatchSummary from '@/components/match/MatchSummary.vue';
 import MatchDataEmpty from "@/components/match/MatchDataEmpty.vue";
 import { Filter } from 'lucide-vue-next';
+import {useAuthStore} from "@/stores/auth.ts";
 
 const props = defineProps<{
   matches: LolMatchInfoRes[];
@@ -103,6 +104,7 @@ const emit = defineEmits<{
 const selectedGameMode = ref('ALL');
 const showReviewed = ref(false);
 const showUnreviewed = ref(false);
+const authStore = useAuthStore();
 
 const gameModes = [
   { id: 'ALL', name: '전체' },
