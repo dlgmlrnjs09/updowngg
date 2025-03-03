@@ -11,9 +11,10 @@ import {createPinia} from "pinia"
 const app = createApp(App)
 const pinia = createPinia()
 
+const isMobile = window.innerWidth < 768;
 // Toast 먼저 설정
 app.use(Toast, {
-    position: "bottom-right",
+    position: isMobile ? "top-center" : "bottom-right",
     timeout: 3000,
     closeOnClick: true,
     pauseOnHover: true
