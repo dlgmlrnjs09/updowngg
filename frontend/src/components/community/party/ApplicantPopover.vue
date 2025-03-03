@@ -3,7 +3,7 @@
   <div
       v-if="showPopover"
       ref="popoverRef"
-      class="absolute top-full left-0 mt-2 w-[300px] bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-700 z-50"
+      class="absolute top-full left-0 mt-2 w-[450px] bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-700 z-50"
   >
     <div v-if="applicants && applicants.length > 0">
       <div
@@ -11,22 +11,18 @@
           :key="applicant.applicantSeq"
           class="p-3 border-b border-gray-700 last:border-0"
       >
-        <div class="flex items-center gap-3">
-          <img
-              :src="applicant.summonerInfoDto.summonerBasicInfoDto.profileIconUrl"
-              :alt="applicant.summonerInfoDto.summonerBasicInfoDto.gameName"
-              class="w-10 h-10 rounded-lg"
-          />
-          <div class="flex-1">
+        <div class="flex items-center w-full">
+          <!-- 왼쪽: 소환사 기본 정보 -->
+          <div class="flex-1 min-w-0">
             <div class="flex items-center gap-1">
-              <span class="text-white text-sm">
+              <div class="text-white text-sm hover:text-[#2979FF] truncate">
                 {{ applicant.summonerInfoDto.summonerBasicInfoDto.gameName }}
-              </span>
-              <span class="text-gray-400 text-xs">
+              </div>
+              <div class="text-gray-400 text-xs">
                 #{{ applicant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
-              </span>
+              </div>
             </div>
-            <div class="flex gap-1 mt-1">
+            <div class="flex gap-1 mt-0.5">
               <span
                   v-for="tag in applicant.summonerInfoDto.frequentTagDtoList"
                   :key="tag.tagCode"
@@ -36,16 +32,62 @@
               </span>
             </div>
           </div>
+
+          <!-- 중앙: 평가 점수 -->
+          <div class="flex flex-col items-end mr-4">
+            <div class="flex items-center gap-1 text-[10px] mb-0.5">
+              <span class="text-gray-400">평가</span>
+              <span class="text-[#2979FF] font-medium">
+                {{ applicant.summonerInfoDto.reviewStatsDto?.score?.toFixed(1) ?? 0 }}점
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1">
+                <ThumbsUp class="w-3 h-3 text-[#4CAF50]" />
+                <span class="text-[#4CAF50] text-[10px]">
+                  {{ applicant.summonerInfoDto.reviewStatsDto?.upCount ?? 0 }}
+                </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <ThumbsDown class="w-3 h-3 text-[#FF5252]" />
+                <span class="text-[#FF5252] text-[10px]">
+                  {{ applicant.summonerInfoDto.reviewStatsDto?.downCount ?? 0 }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 모스트 챔피언 정보 -->
+          <div class="flex gap-1 mr-4">
+            <div
+                v-for="(champion, index) in applicant.summonerInfoDto.mostChampionDto?.slice(0, 2)"
+                :key="index"
+                class="bg-[#141414] rounded-lg p-1 flex flex-col items-center"
+            >
+              <img
+                  :src="champion.iconUrl"
+                  :alt="champion.nameUs"
+                  class="w-5 h-5 rounded mb-0.5"
+              >
+              <span class="text-[9px] text-[#4CAF50]">
+                {{ champion.winRate }}%
+              </span>
+            </div>
+          </div>
+
+          <!-- 승인/거절 버튼 -->
           <div class="flex items-center gap-1">
             <button
                 @click="handleApprove(applicant)"
                 class="bg-[#2979FF] hover:bg-[#2565D1] text-white p-1.5 rounded"
+                title="승인"
             >
               <UserCheck class="w-4 h-4" />
             </button>
             <button
                 @click="handleReject(applicant)"
                 class="bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1.5 rounded"
+                title="거절"
             >
               <UserX class="w-4 h-4" />
             </button>
@@ -61,7 +103,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { UserCheck, UserX } from 'lucide-vue-next'
+import { UserCheck, UserX, ThumbsUp, ThumbsDown } from 'lucide-vue-next'
 import type { PartyCommunityApplicantDetailDto } from "@/types/community"
 
 interface Props {
@@ -141,5 +183,11 @@ onUnmounted(() => {
 .applicant-popover-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

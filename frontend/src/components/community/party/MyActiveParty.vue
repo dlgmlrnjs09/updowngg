@@ -43,23 +43,12 @@
                     :participant="participant"
                     :is-writer="party.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid"
                     :position="participant.position"
-                    :is-applicants-visible="showApplicants[participant.position]"
+                    :is-applicants-visible="activePosition === participant.position"
                     :applicants-count="party.applicantByPositionMap?.[participant.position]?.length || 0"
                     :writer-puuid="party.postCardDto.writerPuuid"
                     :post-id="party.postCardDto.postId"
                     @toggle-applicants="toggleApplicants"
                     @kick-member="handleKickMember"
-                />
-
-                <!-- 신청자 목록 팝오버 -->
-                <ApplicantPopover
-                    :show-popover="showApplicants[participant.position]"
-                    :applicants="party.applicantByPositionMap?.[participant.position] || []"
-                    :position="participant.position"
-                    :post-id="party.postCardDto.postId"
-                    @approve="handleApprove"
-                    @reject="handleReject"
-                    @close="closeApplicantPopover(participant.position)"
                 />
               </div>
             </template>
@@ -118,7 +107,7 @@
               :participant="participant"
               :is-writer="party.postCardDto.writerPuuid === participant.summonerInfoDto?.summonerBasicInfoDto?.puuid"
               :position="participant.position"
-              :is-applicants-visible="showApplicants[participant.position]"
+              :is-applicants-visible="activePosition === participant.position"
               :applicants-count="party.applicantByPositionMap?.[participant.position]?.length || 0"
               :is-mobile="true"
               :writer-puuid="party.postCardDto.writerPuuid"
@@ -126,58 +115,6 @@
               @toggle-applicants="toggleApplicants"
               @kick-member="handleKickMember"
           />
-        </div>
-
-        <!-- 신청자 목록 (모바일용) -->
-        <div v-for="(applicants, position) in party.applicantByPositionMap" :key="position">
-          <div v-if="showApplicants[position]" class="space-y-2">
-            <div
-                v-for="applicant in applicants"
-                :key="applicant.applicantSeq"
-                class="bg-[#141414] rounded-lg p-3"
-            >
-              <div class="flex items-center gap-3">
-                <img
-                    :src="applicant.summonerInfoDto.summonerBasicInfoDto.profileIconUrl"
-                    :alt="applicant.summonerInfoDto.summonerBasicInfoDto.gameName"
-                    class="w-10 h-10 rounded-lg"
-                />
-                <div class="flex-1">
-                  <div class="flex items-center gap-1">
-                    <span class="text-white text-sm">
-                      {{ applicant.summonerInfoDto.summonerBasicInfoDto.gameName }}
-                    </span>
-                    <span class="text-gray-400 text-xs">
-                      #{{ applicant.summonerInfoDto.summonerBasicInfoDto.tagLine }}
-                    </span>
-                  </div>
-                  <div class="flex gap-1 mt-1">
-                    <span
-                        v-for="tag in applicant.summonerInfoDto.frequentTagDtoList"
-                        :key="tag.tagCode"
-                        class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
-                    >
-                      {{ tag.tagValue }}
-                    </span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-1">
-                  <button
-                      @click="handleApprove(party.postCardDto.postId, applicant.summonerInfoDto.summonerBasicInfoDto.puuid, applicant.applicantSeq, position)"
-                      class="bg-[#2979FF] hover:bg-[#2565D1] text-white p-1.5 rounded"
-                  >
-                    <UserCheck class="w-4 h-4" />
-                  </button>
-                  <button
-                      @click="handleReject(party.postCardDto.postId, applicant.summonerInfoDto.summonerBasicInfoDto.puuid, applicant.applicantSeq, position)"
-                      class="bg-[#FF5252] hover:bg-[#D32F2F] text-white p-1.5 rounded"
-                  >
-                    <UserX class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- 액션 버튼 -->
@@ -207,6 +144,17 @@
         </div>
       </div>
     </div>
+
+    <!-- 신청자 모달 -->
+    <ApplicantModal
+        :show="!!activePosition"
+        :applicants="activePosition ? (party.applicantByPositionMap?.[activePosition] || []) : []"
+        :position="activePosition || ''"
+        :post-id="party.postCardDto.postId"
+        @approve="handleApprove"
+        @reject="handleReject"
+        @close="closeApplicantModal"
+    />
   </div>
 </template>
 
@@ -215,8 +163,8 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { MicIcon, MicOffIcon, Users, ChevronUp, ChevronDown, UserCheck, UserX } from 'lucide-vue-next'
 import { useImageUrl } from "@/utils/imageUtil"
 import type { MyPartyPostDto } from "@/types/community"
-import ApplicantPopover from './ApplicantPopover.vue'
-import MyActivePartyParticipant from "@/components/community/party/MyActivePartyParticipant.vue";
+import MyActivePartyParticipant from "@/components/community/party/MyActivePartyParticipant.vue"
+import ApplicantModal from "@/components/community/party/ApplicantModal.vue"
 
 const { getPositionImage } = useImageUrl()
 
@@ -243,30 +191,19 @@ const emit = defineEmits<{
 }>()
 
 // Reactive states
-const showApplicants = ref<{[key: string]: boolean}>({
-  'TOP': false,
-  'JG': false,
-  'MID': false,
-  'AD': false,
-  'SUP': false
-})
+const activePosition = ref<string | null>(null)
 
 // Methods
 const toggleApplicants = (position: string) => {
-  // 다른 포지션의 팝오버 닫기
-  Object.keys(showApplicants.value).forEach(key => {
-    if (key !== position) {
-      showApplicants.value[key] = false
-    }
-  })
-
-  // 현재 포지션 토글
-  showApplicants.value[position] = !showApplicants.value[position]
+  if (activePosition.value === position) {
+    activePosition.value = null
+  } else {
+    activePosition.value = position
+  }
 }
 
-const closeApplicantPopover = (position: string) => {
-  console.log('Closing applicant popover for position:', position);
-  showApplicants.value[position] = false;
+const closeApplicantModal = () => {
+  activePosition.value = null
 }
 
 const handleUpdateStatus = (status: string) => {
@@ -275,10 +212,14 @@ const handleUpdateStatus = (status: string) => {
 
 const handleApprove = (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
   emit('approve-applicant', postId, applicantPuuid, applicantSeq, position)
+  // 승인 후 모달 닫기
+  closeApplicantModal()
 }
 
 const handleReject = (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
   emit('reject-applicant', postId, applicantPuuid, applicantSeq, position)
+  // 마지막 신청자를 거절한 경우, 모달을 자동으로 닫지 않고 남겨두기
+  // (사용자가 직접 모달을 닫을 수 있게 함)
 }
 
 const handleLeave = () => {

@@ -44,13 +44,13 @@
             class="flex items-center gap-2 z-10 applicant-button"
             @click.stop="toggleApplicants()"
         >
-          <span class="text-gray-500 text-xs">대기 중</span>
+          <span class="text-gray-500 text-xs">모집 중</span>
           <span class="text-[#2979FF] text-xs flex items-center gap-1">
             ({{ applicantsCount }})
             <component :is="isApplicantsVisible ? ChevronUp : ChevronDown" class="w-3 h-3" />
           </span>
         </div>
-        <span v-else class="text-gray-500 text-xs ml-1">대기 중</span>
+        <span v-else class="text-gray-500 text-xs ml-1">모집 중</span>
       </template>
     </template>
 
@@ -136,7 +136,7 @@
         <template v-else>
           <div class="flex flex-1 items-center">
             <div class="text-gray-500 text-xs">
-              {{ participant.isOpenPosition ? '대기 중' : '-' }}
+              {{ participant.isOpenPosition ? '모집 중' : '-' }}
             </div>
             <template v-if="hasApplicants">
               <div

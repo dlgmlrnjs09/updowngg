@@ -1,4 +1,4 @@
-<!-- PartyCommunity-backup.vue -->
+
 <template>
   <div class="min-h-screen bg-[#0A0A0A] p-4 sm:p-6">
     <!-- 듀오 등록 모달 -->

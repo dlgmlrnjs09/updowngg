@@ -94,7 +94,7 @@
           class="w-5 h-5"
       >
       <div class="text-gray-500 text-xs flex-1">
-        {{ participant.isOpenPosition ? '대기 중' : '-' }}
+        {{ participant.isOpenPosition ? '모집 중' : '-' }}
       </div>
       <div v-if="showApplyButton" class="apply-btn-container">
         <button
