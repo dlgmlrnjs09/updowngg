@@ -13,6 +13,9 @@ export default defineConfig(({ command, mode }) => {
   console.log('Current Directory:', process.cwd())
   console.log('=======================')
 
+  // 환경에 따른 호스트 이름 설정
+  const hmrHost = mode === 'development' ? 'dev.updowngg.lol' : 'updowngg.lol'
+
   return {
     plugins: [
       vue(),
@@ -22,13 +25,18 @@ export default defineConfig(({ command, mode }) => {
         configResolved(config) {
           console.log('=== Config Resolved ===')
           console.log('VITE_API_URL:', config.env.VITE_API_URL)
+          console.log('HMR Host:', hmrHost)
           console.log('=====================')
         }
       }
     ],
     server: {
       host: '0.0.0.0',  // 모든 네트워크 인터페이스에서 수신
-      port: 4173
+      port: 4173,
+      hmr: {
+        host: hmrHost,  // 환경에 따라 다른 호스트 사용
+        protocol: 'https' ? 'wss' : 'ws'  // HTTPS 사용 여부에 따라 설정
+      }
     },
     resolve: {
       alias: {

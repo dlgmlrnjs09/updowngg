@@ -61,8 +61,6 @@ apiClient.interceptors.request.use(
                     localStorage.setItem('accessToken', newAccessToken);
                     config.headers.Authorization = `Bearer ${newAccessToken}`;
 
-                    console.log('Token Refresh! new Token : ', newAccessToken);
-
                 } catch (error) {
                     // 리프레시 실패 시 로그아웃
                     localStorage.removeItem('accessToken');

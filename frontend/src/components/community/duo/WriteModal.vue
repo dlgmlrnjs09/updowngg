@@ -170,9 +170,6 @@ const handleSubmit = () => {
     }
   }
 
-  console.log('formData:', formData)  // 추가
-  console.log('hasMic value:', hasMic.value)  // 추가
-
   emit('submit', formData)
 }
 </script>

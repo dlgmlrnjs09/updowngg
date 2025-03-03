@@ -363,7 +363,6 @@ const fetchMyApplicationStatus = async () => {
   if (!authStore.isAuthenticated) return;
 
   const response = await communityApi.getMyApplyList();
-  console.log(response.data)
 
   // 이전 상태 저장
   previousApplicationsStatus.value = new Map(myApplicationsStatus.value);
@@ -539,8 +538,6 @@ const checkUpdates = async () => {
 
     // 포스트 데이터 업데이트
     postCards.value = postsResponse.data;
-
-    console.log(myPartyResponse.data);
     // 내 파티 데이터 업데이트
     if (myPartyResponse.data) {
       myActiveParty.value = myPartyResponse.data;
