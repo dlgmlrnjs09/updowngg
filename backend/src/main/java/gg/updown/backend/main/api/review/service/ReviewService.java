@@ -15,6 +15,7 @@ import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
+import gg.updown.backend.main.enums.SiteNotificationContent;
 import gg.updown.backend.main.enums.SiteNotificationType;
 import gg.updown.backend.main.exception.SiteCommonException;
 import gg.updown.backend.main.exception.SiteErrorDevMessage;
@@ -116,7 +117,7 @@ public class ReviewService {
                     .subSeq(reqDto.getSummonerReviewSeq())
                     .targetSiteCode(accountEntity.getMemberSiteCode())
                     .targetPuuid(accountEntity.getPuuid())
-                    .content("**" + gameStartDt + "** 에 플레이한 " + "**" +  gameModeName + "** 게임의 평가가 도착했어요!")
+                    .content(SiteNotificationContent.REVIEW_RECEIVE.format(gameStartDt, gameModeName))
                     .iconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, (String) matchInfo.get("champ_name")))
                     .actionDt(gameStartDt)
                     .build());

@@ -135,6 +135,8 @@ public class PartyCommunityService implements CommunityInterface {
         );
 
         transactionService.applyPartyCommunityPost(postId, position, puuid);
+
+        this.sendNotificationForPartyParticipants(postId, puuid, SiteMatchPosition.findByCode(position).getNameKr(), SiteNotificationContent.PARTY_APPLICANT);
     }
 
     public void updateApplicantStatus(PartyCommunityApproveReqDto reqDto, String puuid, boolean isApproval) {
@@ -167,6 +169,13 @@ public class PartyCommunityService implements CommunityInterface {
         );
 
         transactionService.updateApplicantAndParticipant(reqDto.getPostId(), reqDto.getApplicantSeq(), isApproval);
+
+        if (isApproval) {
+            this.sendNotificationForPartyParticipants(reqDto.getPostId(), reqDto.getApplicantPuuid(), null, SiteNotificationContent.PARTY_PARTICIPATION);
+            this.sendNotificationToOneTarget(reqDto.getPostId(), reqDto.getApplicantPuuid(), SiteNotificationContent.PARTY_SELF_PARTICIPANT.format());
+        } else {
+            this.sendNotificationToOneTarget(reqDto.getPostId(), reqDto.getApplicantPuuid(), SiteNotificationContent.PARTY_REJECT.format());
+        }
     }
 
     public void leaveParty(long postId, String puuid) {
@@ -183,36 +192,7 @@ public class PartyCommunityService implements CommunityInterface {
 
         partyCommunityMapper.leaveParty(postId, puuid);
 
-        try {
-            SummonerBasicInfoDto leavedPayerInfo = lolSummonerService.getSummonerBasicInfoByPuuid(puuid);
-            LocalDateTime actionDt = LocalDateTime.now();
-
-            PartyCommunityParticipantEntity participants = partyCommunityMapper.getPartyParticipantsByPostId(postId);
-            List<String> notificationTargetPuuidList = new ArrayList<>();
-            Optional.ofNullable(participants.getTopPuuid()).ifPresent(notificationTargetPuuidList::add);
-            Optional.ofNullable(participants.getJunglePuuid()).ifPresent(notificationTargetPuuidList::add);
-            Optional.ofNullable(participants.getMidPuuid()).ifPresent(notificationTargetPuuidList::add);
-            Optional.ofNullable(participants.getAdPuuid()).ifPresent(notificationTargetPuuidList::add);
-            Optional.ofNullable(participants.getSupPuuid()).ifPresent(notificationTargetPuuidList::add);
-
-            for (String notificationTargetPuuid : notificationTargetPuuidList) {
-                if (notificationTargetPuuid.equals(puuid)) {
-                    // 자기 자신은 알림 X
-                    continue;
-                }
-
-                notificationService.notify(NotificationDto.builder()
-                        .notificationType(SiteNotificationType.PARTY_COMMUNITY.getCode())
-                        .subSeq(postId)
-                        .targetPuuid(notificationTargetPuuid)
-                        .content("**" + leavedPayerInfo.getGameName() + "**" + " 님이 파티에서 나갔습니다.")
-                        .iconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, leavedPayerInfo.getProfileIconId()))
-                        .actionDt(actionDt)
-                    .build());
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+        this.sendNotificationForPartyParticipants(postId, puuid, null, SiteNotificationContent.PARTY_LEAVE);
     }
 
     public List<PartyCommunityApplicantDto> getApplicantList(String puuid, List<Long> postIds) {
@@ -287,6 +267,8 @@ public class PartyCommunityService implements CommunityInterface {
         }
 
         partyCommunityMapper.updatePartyStatus(postId, status);
+
+        this.sendNotificationForPartyParticipants(postId, puuid, null, SiteNotificationContent.PARTY_BREAKUP);
     }
 
     public void kickMember(long postId, String myPuuid, String memberPuuid) {
@@ -302,6 +284,8 @@ public class PartyCommunityService implements CommunityInterface {
         }
 
         partyCommunityMapper.leaveParty(postId, memberPuuid);
+
+        this.sendNotificationToOneTarget(postId, memberPuuid, SiteNotificationContent.PARTY_KICK.format());
     }
 
     public List<PartyCommunityHistoryDto> getPartyHostedHistory(String puuid, int page, int limit) {
@@ -553,6 +537,66 @@ public class PartyCommunityService implements CommunityInterface {
                     participantErrorMsg,
                     participantErrorMsg
             );
+        }
+    }
+
+    /**
+     * 자신을 제외한 파티원들에게 알림 send
+     * @param postId
+     * @param puuid
+     */
+    private void sendNotificationForPartyParticipants (long postId, String puuid, String position, SiteNotificationContent notificationType) {
+
+        try {
+            SummonerBasicInfoDto summonerBasicInfoDto = lolSummonerService.getSummonerBasicInfoByPuuid(puuid);
+            LocalDateTime actionDt = LocalDateTime.now();
+
+            String notificationContent = switch (notificationType) {
+                case PARTY_PARTICIPATION, PARTY_LEAVE, PARTY_BREAKUP -> notificationType.format(summonerBasicInfoDto.getGameName());
+                case PARTY_APPLICANT -> notificationType.format(summonerBasicInfoDto.getGameName(), position);
+                default -> "";
+            };
+
+            PartyCommunityParticipantEntity participants = partyCommunityMapper.getPartyParticipantsByPostId(postId);
+            List<String> notificationTargetPuuidList = new ArrayList<>();
+            Optional.ofNullable(participants.getTopPuuid()).ifPresent(notificationTargetPuuidList::add);
+            Optional.ofNullable(participants.getJunglePuuid()).ifPresent(notificationTargetPuuidList::add);
+            Optional.ofNullable(participants.getMidPuuid()).ifPresent(notificationTargetPuuidList::add);
+            Optional.ofNullable(participants.getAdPuuid()).ifPresent(notificationTargetPuuidList::add);
+            Optional.ofNullable(participants.getSupPuuid()).ifPresent(notificationTargetPuuidList::add);
+
+            for (String notificationTargetPuuid : notificationTargetPuuidList) {
+                if (notificationTargetPuuid.equals(puuid)) {
+                    // 자기 자신은 알림 X
+                    continue;
+                }
+
+                notificationService.notify(NotificationDto.builder()
+                        .notificationType(SiteNotificationType.PARTY_COMMUNITY.getCode())
+                        .subSeq(postId)
+                        .targetPuuid(notificationTargetPuuid)
+                        .content(notificationContent)
+                        .iconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, summonerBasicInfoDto.getProfileIconId()))
+                        .actionDt(actionDt)
+                        .build());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    private void sendNotificationToOneTarget(long postId, String puuid, String content) {
+        try {
+            notificationService.notify(NotificationDto.builder()
+                    .notificationType(SiteNotificationType.PARTY_COMMUNITY.getCode())
+                    .subSeq(postId)
+                    .targetPuuid(puuid)
+                    .content(content)
+                    .iconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, ""))
+                    .actionDt(LocalDateTime.now())
+                    .build());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 }
