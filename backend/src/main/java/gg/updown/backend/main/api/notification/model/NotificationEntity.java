@@ -1,7 +1,6 @@
 package gg.updown.backend.main.api.notification.model;
 
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
@@ -14,13 +13,13 @@ public class NotificationEntity {
     private long notificationSeq;
     private String notificationId;
     private String notificationType;
+    private long subSeq;
     private long targetSiteCode;
+    private String targetPuuid;
     private String content;
+    private String iconUrl;
     private boolean readYn;
-    private String championName;
     private LocalDateTime readDt;
     private LocalDateTime regDt;
-    private LocalDateTime gameCreateDt;
-    private String gameModeName;
-    private long reviewSeq;
+    private LocalDateTime actionDt;
 }

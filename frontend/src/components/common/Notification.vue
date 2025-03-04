@@ -14,23 +14,17 @@
           모두 확인
         </button>
       </div>
-<!--      <div class="divider"></div>-->
       <div v-for="notificationEntity in store.notifications.slice(0,10)"
            :key="notificationEntity.notificationId"
            class="notification-item"
            :class="{ 'unread': !notificationEntity.readYn }"
            @click="handleNotificationClick(notificationEntity)">
         <div class="flex items-center gap-3">
-          <img :src="notificationEntity.championIconUrl" class="w-8 h-8 rounded-full" alt=""/>
-          <span class="content">
-       <span class="text-blue-400">{{ formatTimeAgo(notificationEntity.gameCreateDt) }}</span>에 플레이한
-       <span class="text-green-400">{{notificationEntity.gameModeName}}</span> 게임의 평가가 도착했어요!
-     </span>
+          <img :src="notificationEntity.iconUrl" class="w-8 h-8 rounded-full" alt=""/>
+          <span class="content" v-html="formatContent(notificationEntity.content)"></span>
+
         </div>
         <div class="notification-footer">
-<!--          <button class="read-btn" @click.stop="handleRead(notificationEntity.notificationId)">-->
-<!--            {{ notificationEntity.readYn ? '읽음' : '읽기' }}-->
-<!--          </button>-->
           <span class="time">{{ formatTimeAgo(notificationEntity.regDt) }}</span>
         </div>
       </div>
@@ -47,8 +41,7 @@ import { onMounted, ref, onUnmounted, watch } from 'vue'
 import { Bell } from 'lucide-vue-next'
 import {formatTimeAgo} from "@/utils/common.ts";
 import { useDropdownStore } from '@/stores/dropdown'
-import type {ReviewNotification} from "@/types/notification.ts";
-import {notificationApi} from "@/api/notification.ts";
+import type {Notification} from "@/types/notification.ts";
 import {reviewApi} from "@/api/review.ts";
 import {useRouter} from "vue-router";
 
@@ -57,6 +50,24 @@ const store = useNotificationStore()
 const isDropdownOpen = ref(false)
 const notificationDropdown = ref<HTMLElement | null>(null)
 const router = useRouter();
+
+const formatContent = (content: string) => {
+  if (!content) {
+    return content;
+  }
+
+  return content.replace(/\*\*([^*]+)\*\*/g, (fullMatch, capturedText) => {
+    // ISO 날짜 형식인지 확인 (YYYY-MM-DDThh:mm:ss.sss)
+    const isISOTimestamp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?$/.test(capturedText);
+
+    if (isISOTimestamp) {
+      return `<strong>${formatTimeAgo(capturedText)}</strong>`;
+    }
+
+    // 타임스탬프가 아니라면 단순 강조처리
+    return `<strong>${capturedText}</strong>`;
+  });
+};
 
 onMounted(() => {
   /*store.initSSE()*/
@@ -96,23 +107,25 @@ const handleReadAll = (ids: string[]) => {
   store.markAsReadAll(ids)
 }
 
-const handleNotificationClick = async (notification: ReviewNotification) => {
+const handleNotificationClick = async (notification: Notification) => {
   try {
     if (!notification.readYn) {
       await store.markAsRead(notification.notificationId);
     }
 
-    const response = await reviewApi.findReviewPage(notification.reviewSeq);
-    const page = response.data;
+    if (notification.notificationType === 'SITE_REVIEW') {
+      const response = await reviewApi.findReviewPage(notification.subSeq);
+      const page = response.data;
 
-    await router.push({
-      name: 'reviewHistory',
-      query: {
-        page: page.toString(),
-        tab: 'received',
-        reviewSeq: notification.reviewSeq.toString()
-      }
-    });
+      await router.push({
+        name: 'reviewHistory',
+        query: {
+          page: page.toString(),
+          tab: 'received',
+          reviewSeq: notification.subSeq.toString()
+        }
+      });
+    }
 
     dropdownStore.setOpenDropdown(null)
     isDropdownOpen.value = !isDropdownOpen.value
@@ -277,6 +290,11 @@ const handleNotificationClick = async (notification: ReviewNotification) => {
   color: #666;
   font-size: 14px;
   border: 1px solid #333
+}
+
+:deep(.content strong) {
+  color: #2979ff;
+  font-weight: 600;
 }
 
 @media (max-width: 1024px) {

@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="gg.updown.backend.main.api.notification.mapper.NotificationMapper">
-	<insert id="insertNotification" parameterType="notificationEntity">
+	<insert id="insertNotification" parameterType="notificationEntity" useGeneratedKeys="true" keyProperty="notificationSeq">
 		INSERT INTO site_notification (
 			notification_id,
 			notification_type,
 			target_site_code,
 			content,
-			champion_name,
-			game_create_dt,
-			game_mode_name,
-			review_seq
+			target_puuid,
+			sub_seq,
+			icon_url,
+			action_dt
 		) VALUES (
 			 #{notificationId},
 			 #{notificationType},
 			 #{targetSiteCode},
 			 #{content},
-			 #{championName},
-			 #{gameCreateDt},
-			 #{gameModeName},
-			 #{reviewSeq}
+			 #{targetPuuid},
+			#{subSeq},
+			#{iconUrl},
+			#{actionDt}
 		 )
 	</insert>
 
-	<select id="getNotifications" parameterType="long" resultType="notificationEntity">
+	<select id="getNotifications" parameterType="String" resultType="notificationEntity">
 		SELECT
 			notification_seq,
 			notification_id,
@@ -33,12 +33,12 @@
 			read_yn,
 			read_dt,
 			reg_dt,
-			champion_name,
-			game_create_dt,
-			game_mode_name,
-			review_seq
+			target_puuid,
+			sub_seq,
+			icon_url,
+			action_dt
 		FROM site_notification
-		WHERE target_site_code = #{targetSiteCode}
+		WHERE target_puuid = #{puuid}
 		  AND reg_dt >= NOW() - INTERVAL '30 days'
 		ORDER BY notification_seq desc
 		LIMIT 10
@@ -49,7 +49,7 @@
 		SET read_yn = true,
 			read_dt = now()
 		WHERE
-		    target_site_code = #{siteCode}
+		    target_puuid = #{puuid}
 			and notification_id = #{id}
 	</update>
 
@@ -59,7 +59,7 @@
 			SET read_yn = true,
 			    read_dt = now()
 			WHERE
-                target_site_code = #{siteCode}
+                target_puuid = #{puuid}
                 and notification_id = #{id}
 		</foreach>
 	</update>

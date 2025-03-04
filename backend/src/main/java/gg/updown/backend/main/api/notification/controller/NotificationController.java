@@ -4,23 +4,20 @@ package gg.updown.backend.main.api.notification.controller;
 import gg.updown.backend.main.api.auth.model.UserDetailImpl;
 import gg.updown.backend.main.api.auth.service.JwtTokenProvider;
 import gg.updown.backend.main.api.notification.model.NotificationDto;
-import gg.updown.backend.main.api.notification.model.NotificationEntity;
 import gg.updown.backend.main.api.notification.service.NotificationService;
 import gg.updown.backend.main.enums.TokenStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
@@ -43,11 +40,11 @@ public class NotificationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // UserDetailImpl에서 siteCode 가져오기
-        long siteCode = userDetail.getSiteCode();
+        // UserDetailImpl에서 puuid 가져오기
+        String puuid = userDetail.getPuuid();
 
         // SSE Emitter 생성
-        SseEmitter emitter = notificationService.subscribe(siteCode);
+        SseEmitter emitter = notificationService.subscribe(puuid);
 
         return ResponseEntity
                 .ok()
@@ -60,23 +57,23 @@ public class NotificationController {
     @GetMapping("/list")
     public List<NotificationDto> getNotification(@AuthenticationPrincipal UserDetails user) {
         if (user != null) {
-            return notificationService.getNotifications(((UserDetailImpl) user).getSiteCode());
+            return notificationService.getNotifications(((UserDetailImpl) user).getPuuid());
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     @PostMapping("/read/{notificationId}")
     public void readNotification(@PathVariable String notificationId, @AuthenticationPrincipal UserDetails user) {
         if (user != null) {
-            notificationService.readNotification(notificationId, ((UserDetailImpl) user).getSiteCode());
+            notificationService.readNotification(notificationId, ((UserDetailImpl) user).getPuuid());
         }
     }
 
     @PostMapping("/read/all")
     public void readAllNotification(@RequestBody List<String> notificationIds, @AuthenticationPrincipal UserDetails user) {
         if (user != null) {
-            notificationService.readNotifications(notificationIds, ((UserDetailImpl) user).getSiteCode());
+            notificationService.readNotifications(notificationIds, ((UserDetailImpl) user).getPuuid());
         }
     }
 }

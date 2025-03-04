@@ -1,6 +1,5 @@
 package gg.updown.backend.main.api.notification.service;
 
-import gg.updown.backend.external.riot.RiotDdragonUrlBuilder;
 import gg.updown.backend.main.api.notification.mapper.NotificationMapper;
 import gg.updown.backend.main.api.notification.model.NotificationDto;
 import gg.updown.backend.main.api.notification.model.NotificationEntity;
@@ -12,34 +11,32 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class NotificationService {
-    private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
+    private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final NotificationMapper notificationMapper;
 
     @Value("${riot-api.latest-version}")
     private String latestVersion;
 
-    public SseEmitter subscribe(long memberSiteCode) {
+    public SseEmitter subscribe(String memberPuuid) {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        emitters.put(memberSiteCode, emitter);
+        emitters.put(memberPuuid, emitter);
 
-        emitter.onCompletion(() -> emitters.remove(memberSiteCode));
-        emitter.onTimeout(() -> emitters.remove(memberSiteCode));
+        emitter.onCompletion(() -> emitters.remove(memberPuuid));
+        emitter.onTimeout(() -> emitters.remove(memberPuuid));
 
         return emitter;
     }
 
     public void notify(NotificationEntity notificationEntity) {
-        SseEmitter emitter = emitters.get(notificationEntity.getTargetSiteCode());
+        SseEmitter emitter = emitters.get(notificationEntity.getTargetPuuid());
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event()
@@ -49,47 +46,46 @@ public class NotificationService {
                 notificationEntity.setNotificationType("SITE_REVIEW");
                 notificationMapper.insertNotification(notificationEntity);
             } catch (IOException e) {
-                emitters.remove(notificationEntity.getTargetSiteCode());
+                emitters.remove(notificationEntity.getTargetPuuid());
             }
         }
     }
 
     public void notify(NotificationDto notificationDto) {
-        SseEmitter emitter = emitters.get(notificationDto.getTargetSiteCode());
+        SseEmitter emitter = emitters.get(notificationDto.getTargetPuuid());
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event()
                         .data(notificationDto)
-                        .name("review-notification"));
-
-                notificationDto.setNotificationType("SITE_REVIEW");
-                NotificationEntity notificationEntity = new NotificationEntity();
-                BeanUtils.copyProperties(notificationDto, notificationEntity);
-                notificationMapper.insertNotification(notificationEntity);
+                        .name(notificationDto.getNotificationType()));
             } catch (IOException e) {
-                emitters.remove(notificationDto.getTargetSiteCode());
+                emitters.remove(notificationDto.getTargetPuuid());
             }
         }
+
+        notificationDto.setNotificationType(notificationDto.getNotificationType());
+        NotificationEntity notificationEntity = new NotificationEntity();
+        BeanUtils.copyProperties(notificationDto, notificationEntity);
+        notificationMapper.insertNotification(notificationEntity);
     }
 
-    public List<NotificationDto> getNotifications(long siteCode) {
-        List<NotificationEntity> list = notificationMapper.getNotifications(siteCode);
+    public List<NotificationDto> getNotifications(String puuid) {
+        List<NotificationEntity> list = notificationMapper.getNotifications(puuid);
 
         return list.stream()
                 .map(dto -> {
                     NotificationDto entity = new NotificationDto();
                     BeanUtils.copyProperties(dto, entity);
-                    entity.setChampionIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, dto.getChampionName()));
                     return entity;
                 })
                 .toList();
     }
 
-    public void readNotification(String id, long siteCode) {
-        notificationMapper.readNotification(id, siteCode);
+    public void readNotification(String id, String puuid) {
+        notificationMapper.readNotification(id, puuid);
     }
 
-    public void readNotifications(List<String> ids, long siteCode) {
-        notificationMapper.readNotifications(ids, siteCode);
+    public void readNotifications(List<String> ids, String puuid) {
+        notificationMapper.readNotifications(ids, puuid);
     }
 }

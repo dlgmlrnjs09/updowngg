@@ -5,12 +5,11 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface NotificationMapper {
     void insertNotification(NotificationEntity notificationEntity);
-    List<NotificationEntity> getNotifications(long siteCode);
-    void readNotification(@Param("id") String id, @Param("siteCode") long siteCode);
-    void readNotifications(@Param("ids") List<String> ids, @Param("siteCode") long siteCode);
+    List<NotificationEntity> getNotifications(String puuid);
+    void readNotification(@Param("id") String id, @Param("puuid") String puuid);
+    void readNotifications(@Param("ids") List<String> ids, @Param("puuid") String puuid);
 }

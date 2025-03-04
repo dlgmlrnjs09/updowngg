@@ -15,6 +15,7 @@ import gg.updown.backend.main.api.review.model.dto.*;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagCategoryEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagEntity;
 import gg.updown.backend.main.api.review.model.entity.ReviewTagSuggestEntity;
+import gg.updown.backend.main.enums.SiteNotificationType;
 import gg.updown.backend.main.exception.SiteCommonException;
 import gg.updown.backend.main.exception.SiteErrorDevMessage;
 import gg.updown.backend.main.riot.ddragon.service.DdragonService;
@@ -112,14 +113,14 @@ public class ReviewService {
             LocalDateTime gameStartDt = ((Timestamp) matchInfo.get("game_create_dt")).toLocalDateTime();
             String gameModeName = MatchGameMode.getQueueName((Integer) matchInfo.get("queue_id"));
             notificationService.notify(NotificationDto.builder()
+                    .notificationType(SiteNotificationType.SITE_REVIEW.getCode())
                     .notificationId(UUID.randomUUID().toString())
-                    .reviewSeq(reqDto.getSummonerReviewSeq())
+                    .subSeq(reqDto.getSummonerReviewSeq())
                     .targetSiteCode(accountEntity.getMemberSiteCode())
-//                    .content(gameStartDt + " 에 플레이한 " + gameModeName + " 게임에 새로운 평가가 등록되었습니다.")
-                    .championName((String) matchInfo.get("champ_name"))
-                    .championIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, (String) matchInfo.get("champ_name")))
-                    .gameCreateDt(gameStartDt)
-                    .gameModeName(gameModeName)
+                    .targetPuuid(accountEntity.getPuuid())
+                    .content("**" + gameStartDt + "** 에 플레이한 " + "**" +  gameModeName + "** 게임의 평가가 도착했어요!")
+                    .iconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, (String) matchInfo.get("champ_name")))
+                    .actionDt(gameStartDt)
                     .build());
         } catch (Exception e) {
             e.printStackTrace();
@@ -210,7 +211,7 @@ public class ReviewService {
         }
 
         dto.getReviewerInfoList().forEach(reviewerInfo -> {
-            if (reviewerInfo.getIsAnonymous()) {
+            if (reviewerInfo.getIsAnonymous() != null && reviewerInfo.getIsAnonymous()) {
                 reviewerInfo.anonymizeReviewerInfo();
                 return;
             }
