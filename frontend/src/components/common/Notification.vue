@@ -17,7 +17,6 @@
            :class="{ 'unread': !notificationEntity.readYn }"
            @click="handleNotificationClick(notificationEntity)"
       >
-        {{notificationEntity.iconUrl}}
         <div class="flex items-center gap-3">
           <!-- iconUrl이 있으면 이미지를, 없으면 아이콘 컴포넌트를 표시 -->
           <img v-if="notificationEntity.iconUrl"
