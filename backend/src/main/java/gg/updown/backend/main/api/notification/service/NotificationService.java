@@ -13,6 +13,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -52,6 +53,12 @@ public class NotificationService {
     }
 
     public void notify(NotificationDto notificationDto) {
+        notificationDto.setNotificationType(notificationDto.getNotificationType());
+        notificationDto.setNotificationId(UUID.randomUUID().toString());
+        NotificationEntity notificationEntity = new NotificationEntity();
+        BeanUtils.copyProperties(notificationDto, notificationEntity);
+        notificationMapper.insertNotification(notificationEntity);
+
         SseEmitter emitter = emitters.get(notificationDto.getTargetPuuid());
         if (emitter != null) {
             try {
@@ -62,11 +69,6 @@ public class NotificationService {
                 emitters.remove(notificationDto.getTargetPuuid());
             }
         }
-
-        notificationDto.setNotificationType(notificationDto.getNotificationType());
-        NotificationEntity notificationEntity = new NotificationEntity();
-        BeanUtils.copyProperties(notificationDto, notificationEntity);
-        notificationMapper.insertNotification(notificationEntity);
     }
 
     public List<NotificationDto> getNotifications(String puuid) {

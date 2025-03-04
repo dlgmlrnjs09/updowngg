@@ -10,13 +10,12 @@ import gg.updown.backend.main.api.community.duo.model.DuoSummonerInfoDto;
 import gg.updown.backend.main.api.community.party.mapper.PartyCommunityMapper;
 import gg.updown.backend.main.api.community.party.model.*;
 import gg.updown.backend.main.api.lol.summoner.service.LolSummonerService;
+import gg.updown.backend.main.api.notification.model.NotificationDto;
+import gg.updown.backend.main.api.notification.service.NotificationService;
 import gg.updown.backend.main.api.ranking.model.SummonerBasicInfoDto;
 import gg.updown.backend.main.api.review.model.dto.ReviewStatsDto;
 import gg.updown.backend.main.api.review.service.ReviewService;
-import gg.updown.backend.main.enums.SiteLeagueTier;
-import gg.updown.backend.main.enums.SiteMatchGameMode;
-import gg.updown.backend.main.enums.SiteMatchPosition;
-import gg.updown.backend.main.enums.SitePartyApplyStatus;
+import gg.updown.backend.main.enums.*;
 import gg.updown.backend.main.exception.SiteCommonException;
 import gg.updown.backend.main.exception.SiteErrorMessage;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -40,6 +40,7 @@ public class PartyCommunityService implements CommunityInterface {
 
     private final PartyCommunityTransactionService transactionService;
     private final PartyCommunityMapper partyCommunityMapper;
+    private final NotificationService notificationService;
 
     @Override
     public <T extends CommunityPostDto> List<T> getPostList(String communityCode, Map<String, String> searchParamMap) {
@@ -181,6 +182,37 @@ public class PartyCommunityService implements CommunityInterface {
         }
 
         partyCommunityMapper.leaveParty(postId, puuid);
+
+        try {
+            SummonerBasicInfoDto leavedPayerInfo = lolSummonerService.getSummonerBasicInfoByPuuid(puuid);
+            LocalDateTime actionDt = LocalDateTime.now();
+
+            PartyCommunityParticipantEntity participants = partyCommunityMapper.getPartyParticipantsByPostId(postId);
+            List<String> notificationTargetPuuidList = new ArrayList<>();
+            Optional.ofNullable(participants.getTopPuuid()).ifPresent(notificationTargetPuuidList::add);
+            Optional.ofNullable(participants.getJunglePuuid()).ifPresent(notificationTargetPuuidList::add);
+            Optional.ofNullable(participants.getMidPuuid()).ifPresent(notificationTargetPuuidList::add);
+            Optional.ofNullable(participants.getAdPuuid()).ifPresent(notificationTargetPuuidList::add);
+            Optional.ofNullable(participants.getSupPuuid()).ifPresent(notificationTargetPuuidList::add);
+
+            for (String notificationTargetPuuid : notificationTargetPuuidList) {
+                if (notificationTargetPuuid.equals(puuid)) {
+                    // 자기 자신은 알림 X
+                    continue;
+                }
+
+                notificationService.notify(NotificationDto.builder()
+                        .notificationType(SiteNotificationType.PARTY_COMMUNITY.getCode())
+                        .subSeq(postId)
+                        .targetPuuid(notificationTargetPuuid)
+                        .content("**" + leavedPayerInfo.getGameName() + "**" + " 님이 파티에서 나갔습니다.")
+                        .iconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, leavedPayerInfo.getProfileIconId()))
+                        .actionDt(actionDt)
+                    .build());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     public List<PartyCommunityApplicantDto> getApplicantList(String puuid, List<Long> postIds) {

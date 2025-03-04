@@ -25,6 +25,8 @@ public interface PartyCommunityMapper {
     int getPartyParticipatedHistoryCount(String puuid);
     List<PartyCommunityAppliedHistoryDto> getPartyAppliedHistory(@Param("puuid") String puuid, @Param("page") int page, @Param("limit") int limit);
     int getPartyAppliedHistoryCount(String puuid);
+    PartyCommunityParticipantEntity getPartyParticipantsByPostId(long postId);
+    List<PartyParticipantInfoDto> getParticipantsInfoByPostId(long postId);
 
     void insertPartyPost(PartyCommunityEntity paramEntity);
     void insertPartyParticipant(PartyCommunityParticipantEntity paramEntity);

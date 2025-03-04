@@ -667,4 +667,106 @@
               OR sup_puuid = #{puuid}
           )
     </update>
+
+    <select id="getPartyParticipantsByPostId" parameterType="long" resultType="PartyCommunityParticipantEntity">
+        SELECT
+            scp.post_id,
+            top_puuid,
+            jungle_puuid,
+            mid_puuid,
+            ad_puuid,
+            sup_puuid,
+            scpp.upd_dt
+        FROM
+            site_community_party scp
+            inner join site_community_party_participant scpp on (scp.post_id = scpp.post_id)
+        WHERE
+            scp.post_id = #{postId}
+            and scp.del_dt is null
+    </select>
+
+    <select id="getParticipantsInfoByPostId" parameterType="long" resultType="PartyParticipantInfoDto">
+        SELECT
+            scp.post_id,
+            'TOP' AS position,
+            top_puuid AS puuid,
+            ra.game_name,
+            ra.tag_line
+        FROM
+            site_community_party scp
+                INNER JOIN site_community_party_participant scpp ON (scp.post_id = scpp.post_id)
+                INNER JOIN riot_account ra ON (scpp.top_puuid = ra.puuid)
+        WHERE
+            scp.post_id = #{postId}
+          AND scp.del_dt IS NULL
+          AND top_puuid IS NOT NULL
+
+        UNION ALL
+
+        SELECT
+            scp.post_id,
+            'JUNGLE' AS position,
+            jungle_puuid AS puuid,
+            ra.game_name,
+            ra.tag_line
+        FROM
+            site_community_party scp
+                INNER JOIN site_community_party_participant scpp ON (scp.post_id = scpp.post_id)
+                INNER JOIN riot_account ra ON (scpp.jungle_puuid = ra.puuid)
+        WHERE
+            scp.post_id = #{postId}
+          AND scp.del_dt IS NULL
+          AND jungle_puuid IS NOT NULL
+
+        UNION ALL
+
+        SELECT
+            scp.post_id,
+            'MID' AS position,
+            mid_puuid AS puuid,
+            ra.game_name,
+            ra.tag_line
+        FROM
+            site_community_party scp
+                INNER JOIN site_community_party_participant scpp ON (scp.post_id = scpp.post_id)
+                INNER JOIN riot_account ra ON (scpp.mid_puuid = ra.puuid)
+        WHERE
+            scp.post_id = #{postId}
+          AND scp.del_dt IS NULL
+          AND mid_puuid IS NOT NULL
+
+        UNION ALL
+
+        SELECT
+            scp.post_id,
+            'AD' AS position,
+            ad_puuid AS puuid,
+            ra.game_name,
+            ra.tag_line
+        FROM
+            site_community_party scp
+                INNER JOIN site_community_party_participant scpp ON (scp.post_id = scpp.post_id)
+                INNER JOIN riot_account ra ON (scpp.ad_puuid = ra.puuid)
+        WHERE
+            scp.post_id = #{postId}
+          AND scp.del_dt IS NULL
+          AND ad_puuid IS NOT NULL
+
+        UNION ALL
+
+        SELECT
+            scp.post_id,
+            'SUP' AS position,
+            sup_puuid AS puuid,
+            ra.game_name,
+            ra.tag_line
+        FROM
+            site_community_party scp
+                INNER JOIN site_community_party_participant scpp ON (scp.post_id = scpp.post_id)
+                INNER JOIN riot_account ra ON (scpp.sup_puuid = ra.puuid)
+        WHERE
+            scp.post_id = #{postId}
+          AND scp.del_dt IS NULL
+          AND sup_puuid IS NOT NULL
+    </select>
 </mapper>

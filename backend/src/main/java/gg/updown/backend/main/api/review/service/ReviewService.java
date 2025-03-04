@@ -31,7 +31,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -114,7 +113,6 @@ public class ReviewService {
             String gameModeName = MatchGameMode.getQueueName((Integer) matchInfo.get("queue_id"));
             notificationService.notify(NotificationDto.builder()
                     .notificationType(SiteNotificationType.SITE_REVIEW.getCode())
-                    .notificationId(UUID.randomUUID().toString())
                     .subSeq(reqDto.getSummonerReviewSeq())
                     .targetSiteCode(accountEntity.getMemberSiteCode())
                     .targetPuuid(accountEntity.getPuuid())
@@ -123,7 +121,7 @@ public class ReviewService {
                     .actionDt(gameStartDt)
                     .build());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

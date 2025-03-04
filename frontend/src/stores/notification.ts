@@ -2,6 +2,11 @@ import {defineStore} from "pinia";
 import type {Notification} from "@/types/notification.ts";
 import {notificationApi} from '@/api/notification'
 
+const NOTIFICATION_TYPES = [
+    { code: 'SITE_REVIEW', eventName: 'review-notification', description: '리뷰' },
+    { code: 'PARTY_COMMUNITY', eventName: 'party-notification', description: '파티 커뮤니티' },
+];
+
 export const useNotificationStore = defineStore('notification', {
     state: () => ({
         eventSource: null as EventSource | null,
@@ -11,28 +16,49 @@ export const useNotificationStore = defineStore('notification', {
 
     actions: {
         initSSE() {
-            /*console.log("SSE 초기화");*/
             if (this.eventSource) {
-                /*console.log("기존 SSE 연결 종료");*/
-                this.eventSource.close()
+                this.eventSource.close();
             }
 
-            this.eventSource = notificationApi.subscribe()
-            /*console.log("새 SSE 연결 생성:", this.eventSource.readyState);*/
+            console.log("SSE 초기화 시작");
 
-            this.eventSource.addEventListener('review-notification', (event) => {
-                /*console.log("리뷰 알림 수신");*/
-                const notification = JSON.parse(event.data)
-                this.notifications = [notification, ...this.notifications]
-                this.unreadCount++
-            })
+            this.eventSource = notificationApi.subscribe();
+            console.log("eventSource 생성됨:", this.eventSource);
 
-            this.eventSource.onerror = () => {
-                this.eventSource?.close()
-                setTimeout(() => this.initSSE(), 10000)
+            console.log("알림 타입 목록:", NOTIFICATION_TYPES);
+
+            // forEach 전후에 로그 추가
+            console.log("forEach 루프 시작");
+            NOTIFICATION_TYPES.forEach((type, index) => {
+                console.log(`${index}번째 타입 처리 중:`, type.code);
+
+                if (this.eventSource) {
+                    this.eventSource.addEventListener(type.code, (event) => {
+                        console.log(`${type.description} 알림 수신:`, event);
+                        const notification = JSON.parse(event.data);
+                        this.notifications = [notification, ...this.notifications];
+                        this.unreadCount++;
+                    });
+                    console.log(`${type.code} 이벤트 리스너 등록 완료`);
+                } else {
+                    console.error("eventSource가 null입니다");
+                }
+            });
+            console.log("forEach 루프 종료");
+
+            if (this.eventSource) {
+                this.eventSource.onopen = () => {
+                    console.log("SSE 연결 열림");
+                };
+
+                this.eventSource.onerror = (error) => {
+                    console.error("SSE 오류 발생:", error);
+                    this.eventSource?.close();
+                    setTimeout(() => this.initSSE(), 10000);
+                };
             }
 
-            this.fetchNotifications()
+            this.fetchNotifications();
         },
 
         async fetchNotifications() {
