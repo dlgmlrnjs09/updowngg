@@ -76,13 +76,7 @@
             </div>
 
             <div class="flex gap-1 mt-0.5">
-              <span
-                  v-for="tag in participant.summonerInfoDto.frequentTagDtoList"
-                  :key="tag.tagCode"
-                  class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
-              >
-                {{ tag.tagValue }}
-              </span>
+              <TagList :tags="participant.summonerInfoDto.frequentTagDtoList.slice(0, 2)" size="xxSmallReactive" :is-show-count="false"/>
             </div>
           </div>
 
@@ -110,22 +104,22 @@
             </div>
           </div>
 
-          <div class="flex gap-1 ml-2">
-            <div
-                v-for="(champion, index) in participant.summonerInfoDto.mostChampionDto.slice(0, 2)"
-                :key="index"
-                class="bg-[#141414] rounded-lg p-1 flex flex-col items-center"
-            >
-              <img
-                  :src="champion.iconUrl"
-                  :alt="champion.nameUs"
-                  class="w-5 h-5 rounded mb-0.5"
-              >
-              <span class="text-[9px] text-[#4CAF50]">
-                {{ champion.winRate }}%
-              </span>
-            </div>
-          </div>
+<!--          <div class="flex gap-1 ml-2">-->
+<!--            <div-->
+<!--                v-for="(champion, index) in participant.summonerInfoDto.mostChampionDto.slice(0, 2)"-->
+<!--                :key="index"-->
+<!--                class="bg-[#141414] rounded-lg p-1 flex flex-col items-center"-->
+<!--            >-->
+<!--              <img-->
+<!--                  :src="champion.iconUrl"-->
+<!--                  :alt="champion.nameUs"-->
+<!--                  class="w-5 h-5 rounded mb-0.5"-->
+<!--              >-->
+<!--              <span class="text-[9px] text-[#4CAF50]">-->
+<!--                {{ champion.winRate }}%-->
+<!--              </span>-->
+<!--            </div>-->
+<!--          </div>-->
 
           <!-- 파티장일 경우 강퇴 버튼 표시 -->
           <button
@@ -170,6 +164,7 @@ import { computed, onMounted } from 'vue'
 import { ThumbsUp, ThumbsDown, ChevronUp, ChevronDown, UserX } from 'lucide-vue-next'
 import { useImageUrl } from "@/utils/imageUtil"
 import {useAuthStore} from "@/stores/auth.ts";
+import TagList from "@/components/common/TagList.vue";
 
 const { getPositionImage } = useImageUrl()
 const authStore = useAuthStore();

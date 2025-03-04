@@ -47,7 +47,7 @@ import type { ReviewTagDto } from "@/types/review"
 
 defineProps<{
   tags: ReviewTagDto[]
-  size: 'xSmall' | 'small' | 'medium' | 'large'
+  size: 'xxSmallReactive' | 'xSmall' | 'small' | 'medium' | 'large'
   isShowCount: boolean
   isArrangeRow?: boolean
   isClickable?: boolean
@@ -62,6 +62,7 @@ const hoveredTag = ref<ReviewTagDto | null>(null)
 const tooltipStyle = ref({})
 
 const sizeClasses = {
+  xxSmallReactive: 'text-[9px] sm:text-[9px] md:text-[10px] px-1 py-0.5 rounded',
   xSmall: 'text-[10px] px-2 py-0.5',
   small: 'px-2 py-1 text-xs',
   medium: 'px-3 py-1 text-sm',
@@ -152,7 +153,7 @@ const handleMouseEnter = (event: MouseEvent, tag: ReviewTagDto) => {
 
 .tag-count {
   color: #9e9e9e;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .tooltip {

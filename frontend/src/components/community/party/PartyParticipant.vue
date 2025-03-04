@@ -34,13 +34,14 @@
         </div>
 
         <div class="flex gap-1 mt-0.5">
-          <span
-              v-for="tag in participant.summonerInfoDto.frequentTagDtoList"
-              :key="tag.tagCode"
-              class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"
-          >
-            {{ tag.tagValue }}
-          </span>
+<!--          <span-->
+<!--              v-for="tag in participant.summonerInfoDto.frequentTagDtoList"-->
+<!--              :key="tag.tagCode"-->
+<!--              class="bg-[#2979FF]/10 text-[#2979FF] text-[9px] px-1 py-0.5 rounded"-->
+<!--          >-->
+<!--            {{ tag.tagValue }}-->
+<!--          </span>-->
+          <TagList :tags="participant.summonerInfoDto.frequentTagDtoList.slice(0, 2)" size="xxSmallReactive" :is-show-count="true"/>
         </div>
       </div>
 
@@ -117,7 +118,7 @@
 import { computed } from 'vue'
 import { ThumbsUp, ThumbsDown } from 'lucide-vue-next'
 import { useImageUrl } from "@/utils/imageUtil"
-import type { ParticipantDto, SummonerBasicInfoDto } from "@/types/community"
+import TagList from "@/components/common/TagList.vue";
 
 const { getPositionImage } = useImageUrl()
 

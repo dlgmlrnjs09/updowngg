@@ -52,13 +52,7 @@
                       </span>
                     </div>
                     <div class="flex gap-1 mt-0.5 flex-wrap max-w-[120px] sm:max-w-full">
-                      <span
-                          v-for="tag in applicant.summonerInfoDto.frequentTagDtoList.slice(0, isMobile ? 2 : 4)"
-                          :key="tag.tagCode"
-                          class="bg-[#2979FF]/10 text-[#2979FF] text-[8px] sm:text-[9px] md:text-xs px-1 py-0.5 rounded"
-                      >
-                        {{ tag.tagValue }}
-                      </span>
+                      <TagList :tags="applicant.summonerInfoDto.frequentTagDtoList.slice(0, 2)" size="xxSmallReactive" :is-show-count="true"/>
                     </div>
                   </div>
                 </div>
@@ -149,6 +143,7 @@ import { ref, watch, nextTick, computed, onUnmounted } from 'vue'
 import { X, UserCheck, UserX, ThumbsUp, ThumbsDown } from 'lucide-vue-next'
 import type { PartyCommunityApplicantDetailDto } from "@/types/community"
 import { useImageUrl } from "@/utils/imageUtil"
+import TagList from "@/components/common/TagList.vue";
 
 const { getPositionImage } = useImageUrl()
 
