@@ -10,19 +10,26 @@
     <div v-if="isDropdownOpen" class="dropdown-notification">
       <div class="dropdown-header">
         <h3>알림</h3>
-        <button @click="handleReadAll(store.notifications.slice(0,10).filter(n => !n.readYn).map(n => n.notificationId))" class="read-all-btn">
-          모두 확인
-        </button>
       </div>
-      <div v-for="notificationEntity in store.notifications.slice(0,10)"
+      <div v-for="notificationEntity in store.notifications"
            :key="notificationEntity.notificationId"
            class="notification-item"
            :class="{ 'unread': !notificationEntity.readYn }"
-           @click="handleNotificationClick(notificationEntity)">
+           @click="handleNotificationClick(notificationEntity)"
+      >
+        {{notificationEntity.iconUrl}}
         <div class="flex items-center gap-3">
-          <img :src="notificationEntity.iconUrl" class="w-8 h-8 rounded-full" alt=""/>
-          <span class="content" v-html="formatContent(notificationEntity.content)"></span>
+          <!-- iconUrl이 있으면 이미지를, 없으면 아이콘 컴포넌트를 표시 -->
+          <img v-if="notificationEntity.iconUrl"
+               :src="notificationEntity.iconUrl"
+               class="w-8 h-8 rounded-full"
+               alt=""/>
+          <component v-else
+                     :is="getNotificationIcon(notificationEntity.notificationType)"
+                     class="w-8 h-8 p-1 rounded-full bg-gray-800"
+          />
 
+          <span class="content" v-html="formatContent(notificationEntity.content)"></span>
         </div>
         <div class="notification-footer">
           <span class="time">{{ formatTimeAgo(notificationEntity.regDt) }}</span>
@@ -38,7 +45,7 @@
 <script setup lang="ts">
 import { useNotificationStore } from '@/stores/notification.ts'
 import { onMounted, ref, onUnmounted, watch } from 'vue'
-import { Bell } from 'lucide-vue-next'
+import { Bell, Star, Users, Info, MessageSquare, UserPlus } from 'lucide-vue-next'
 import {formatTimeAgo} from "@/utils/common.ts";
 import { useDropdownStore } from '@/stores/dropdown'
 import type {Notification} from "@/types/notification.ts";
@@ -50,6 +57,18 @@ const store = useNotificationStore()
 const isDropdownOpen = ref(false)
 const notificationDropdown = ref<HTMLElement | null>(null)
 const router = useRouter();
+
+// 아이콘 컴포넌트 반환 함수
+const getNotificationIcon = (type: string) => {
+  switch(type) {
+    case 'SITE_REVIEW':
+      return MessageSquare;
+    case 'PARTY_COMMUNITY':
+      return Users;
+    default:
+      return Bell;
+  }
+};
 
 const formatContent = (content: string) => {
   if (!content) {
@@ -95,6 +114,7 @@ const toggleDropdown = () => {
     dropdownStore.setOpenDropdown(null)
   } else {
     dropdownStore.setOpenDropdown('notification')
+    handleReadAll(store.notifications.filter(n => !n.readYn).map(n => n.notificationId))
   }
   isDropdownOpen.value = !isDropdownOpen.value
 }
@@ -109,10 +129,6 @@ const handleReadAll = (ids: string[]) => {
 
 const handleNotificationClick = async (notification: Notification) => {
   try {
-    if (!notification.readYn) {
-      await store.markAsRead(notification.notificationId);
-    }
-
     if (notification.notificationType === 'SITE_REVIEW') {
       const response = await reviewApi.findReviewPage(notification.subSeq);
       const page = response.data;

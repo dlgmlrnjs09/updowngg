@@ -592,7 +592,7 @@ public class PartyCommunityService implements CommunityInterface {
                     .subSeq(postId)
                     .targetPuuid(puuid)
                     .content(content)
-                    .iconUrl(RiotDdragonUrlBuilder.getSummonerIconUrl(latestVersion, ""))
+                    .iconUrl(null)
                     .actionDt(LocalDateTime.now())
                     .build());
         } catch (Exception e) {
