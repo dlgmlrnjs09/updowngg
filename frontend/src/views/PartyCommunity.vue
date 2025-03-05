@@ -71,9 +71,8 @@
           :has-highlight="currentTourStep >= 4"
       />
 
-      <!-- 듀오 카드 그리드 - 실제 카드들 (투어가 아닐 때만 표시) -->
+      <!-- 듀오 카드 그리드 -->
       <PartyGrid
-          v-if="!showTour"
           id="party-grid"
           :cards="postCards"
           :my-puuid="myPuuid"
@@ -83,11 +82,6 @@
           @apply="applyForPosition"
           @load-more="onLoadMore"
       />
-
-      <!-- 투어를 위한 가상 파티 카드 (투어 중에만 표시) -->
-      <div v-if="showTour" id="mock-party-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 card-transition">
-        <MockPartyCard :has-highlight="currentTourStep === 3" />
-      </div>
       
       <!-- 투어 시작 버튼 -->
       <button
@@ -112,7 +106,6 @@ import { RefreshCcw, HelpCircle } from 'lucide-vue-next'
 import PartyFilter from '@/components/community/party/PartyFilter.vue'
 import MyActiveParty from '@/components/community/party/MyActiveParty.vue'
 import MockActiveParty from '@/components/community/party/MockActiveParty.vue'
-import MockPartyCard from '@/components/community/party/MockPartyCard.vue'
 import PartyGrid from '@/components/community/party/PartyGrid.vue'
 import WriteModal from '@/components/community/party/WriteModal.vue'
 import TourGuide from '@/components/common/TourGuide.vue'
@@ -164,20 +157,6 @@ const baseSteps = [
     title: '파티 생성',
     content: '이 버튼을 클릭하여 새로운 파티를 생성할 수 있습니다. 게임 모드, 마이크 사용 여부, 모집할 포지션을 선택하세요.',
     position: 'left',
-    margin: 5
-  },
-  {
-    target: '#mock-party-grid > div:first-child',
-    title: '파티 카드',
-    content: '각 카드에는 파티 정보와 참여 가능한 포지션이 표시됩니다. 원하는 파티를 찾아 참가해보세요.',
-    position: 'right',
-    margin: 10
-  },
-  {
-    target: '.apply-btn-container.position-buttons',
-    title: '포지션 신청',
-    content: '원하는 포지션의 신청 버튼을 클릭하여 파티 참가를 신청하세요. 파티장이 승인하면 파티에 합류됩니다.',
-    position: 'right',
     margin: 5
   }
 ]
@@ -231,36 +210,6 @@ const closeTour = () => {
 const handleTourStepChange = (step: number) => {
   // 현재 스텝 저장
   currentTourStep.value = step
-  
-  // 특정 단계에 대한 준비
-  if (step === 3) {
-    // 가상 파티 카드에 대한 준비 - 요소가 DOM에 완전히 렌더링되도록 지연 처리
-    // 스크롤 후 충분한 시간이 지난 다음에 강조 효과를 적용하기 위해 딜레이 증가
-    setTimeout(() => {
-      const mockCard = document.querySelector('#mock-party-grid > div:first-child')
-      if (mockCard) {
-        // 애니메이션 재시작을 위해 클래스 재적용
-        mockCard.classList.remove('highlight-effect')
-        void mockCard.offsetWidth // reflow 강제로 트리거
-        mockCard.classList.add('highlight-effect')
-      }
-    }, 1500) // 스크롤이 완료될 충분한 시간 후 강조 효과 적용
-  }
-  
-  // 포지션 신청 버튼 단계
-  if (step === 4) {
-    // 신청 버튼에 대한 강조 처리도 지연시켜 스크롤 후 적용
-    setTimeout(() => {
-      const applyButtons = document.querySelectorAll('.apply-btn-container.position-buttons')
-      applyButtons.forEach(button => {
-        if (button) {
-          button.classList.remove('highlight-effect')
-          void button.offsetWidth // reflow 강제로 트리거
-          button.classList.add('highlight-effect')
-        }
-      })
-    }, 1500)
-  }
   
   // 로그
   console.log(`Tour step changed to ${step}`)
