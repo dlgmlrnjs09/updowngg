@@ -79,9 +79,17 @@ const tooltipStyle = computed(() => {
 
 const nextStep = () => {
   if (currentStep.value < props.steps.length) {
-    currentStep.value++
-    emit('step-changed', currentStep.value)
-    positionTooltip(true)
+    // 버튼 비활성화 효과를 보여주기 위한 짧은 딜레이
+    setTimeout(() => {
+      currentStep.value++
+      emit('step-changed', currentStep.value)
+      
+      // 단계 변경 후 더 긴 딜레이로 화면이 준비될 시간 제공
+      setTimeout(() => {
+        // 항상 강제 스크롤 수행
+        positionTooltip(true)
+      }, 500)
+    }, 100)
   } else {
     emit('tour-completed')
   }
@@ -89,9 +97,17 @@ const nextStep = () => {
 
 const prevStep = () => {
   if (currentStep.value > 1) {
-    currentStep.value--
-    emit('step-changed', currentStep.value)
-    positionTooltip(true)
+    // 버튼 비활성화 효과를 보여주기 위한 짧은 딜레이
+    setTimeout(() => {
+      currentStep.value--
+      emit('step-changed', currentStep.value)
+      
+      // 단계 변경 후 더 긴 딜레이로 화면이 준비될 시간 제공
+      setTimeout(() => {
+        // 항상 강제 스크롤 수행
+        positionTooltip(true)
+      }, 500)
+    }, 100)
   }
 }
 
@@ -102,6 +118,31 @@ const handleOverlayClick = (event: MouseEvent) => {
   }
 }
 
+// 스크롤 처리를 위한 별도의 함수
+const scrollToTarget = (targetElement, callback) => {
+  const targetRect = targetElement.getBoundingClientRect()
+  const buffer = 200 // 더 큰 버퍼로 여유 공간 확보
+  const elementTop = targetRect.top + window.scrollY
+  const elementHeight = targetRect.height
+  const viewportHeight = window.innerHeight
+  
+  // 요소의 중앙 위치 계산
+  const elementCenter = elementTop + (elementHeight / 2)
+  // 화면 중앙으로 스크롤할 위치 계산
+  const targetScrollPosition = elementCenter - (viewportHeight / 2)
+  
+  // 요소를 화면 중앙에 배치하도록 스크롤
+  window.scrollTo({ 
+    top: Math.max(0, targetScrollPosition), 
+    behavior: 'smooth' 
+  })
+  
+  // 스크롤이 완료된 후 콜백 실행 (1초 기다림)
+  setTimeout(() => {
+    if (callback) callback()
+  }, 1000)
+}
+
 const positionTooltip = (forceScroll = false) => {
   const targetElement = document.querySelector(currentStepData.value.target)
   
@@ -110,23 +151,13 @@ const positionTooltip = (forceScroll = false) => {
     return
   }
   
-  // 요소가 화면에 보이지 않으면 스크롤
+  // 강제 스크롤이 요청되었거나 요소가 화면에 완전히 보이지 않는 경우 먼저 스크롤
   if (forceScroll) {
-    const targetRect = targetElement.getBoundingClientRect()
-    const elementTop = targetRect.top + window.scrollY
-    const elementHeight = targetRect.height
-    const viewportHeight = window.innerHeight
-    
-    // 요소의 중앙 위치 계산
-    const elementCenter = elementTop + (elementHeight / 2)
-    // 화면 중앙으로 스크롤할 위치 계산
-    const targetScrollPosition = elementCenter - (viewportHeight / 2)
-    
-    // 요소를 화면 중앙에 배치하도록 스크롤
-    window.scrollTo({ 
-      top: Math.max(0, targetScrollPosition), 
-      behavior: 'smooth' 
+    scrollToTarget(targetElement, () => {
+      // 스크롤 완료 후 위치 계산 (재귀 호출하되 강제 스크롤 없이)
+      positionTooltip(false)
     })
+    return // 스크롤 진행 중이므로 여기서 종료
   }
   
   const targetRect = targetElement.getBoundingClientRect()
@@ -230,6 +261,7 @@ const positionTooltip = (forceScroll = false) => {
 
 const updatePosition = () => {
   nextTick(() => {
+    // 항상 강제 스크롤 수행 후 툴팁 위치 조정
     positionTooltip(true)
   })
 }
