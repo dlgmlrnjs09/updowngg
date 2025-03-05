@@ -235,6 +235,7 @@ const handleTourStepChange = (step: number) => {
   // 특정 단계에 대한 준비
   if (step === 3) {
     // 가상 파티 카드에 대한 준비 - 요소가 DOM에 완전히 렌더링되도록 지연 처리
+    // 스크롤 후 충분한 시간이 지난 다음에 강조 효과를 적용하기 위해 딜레이 증가
     setTimeout(() => {
       const mockCard = document.querySelector('#mock-party-grid > div:first-child')
       if (mockCard) {
@@ -243,7 +244,22 @@ const handleTourStepChange = (step: number) => {
         void mockCard.offsetWidth // reflow 강제로 트리거
         mockCard.classList.add('highlight-effect')
       }
-    }, 200)
+    }, 1500) // 스크롤이 완료될 충분한 시간 후 강조 효과 적용
+  }
+  
+  // 포지션 신청 버튼 단계
+  if (step === 4) {
+    // 신청 버튼에 대한 강조 처리도 지연시켜 스크롤 후 적용
+    setTimeout(() => {
+      const applyButtons = document.querySelectorAll('.apply-btn-container.position-buttons')
+      applyButtons.forEach(button => {
+        if (button) {
+          button.classList.remove('highlight-effect')
+          void button.offsetWidth // reflow 강제로 트리거
+          button.classList.add('highlight-effect')
+        }
+      })
+    }, 1500)
   }
   
   // 로그
