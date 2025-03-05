@@ -97,7 +97,7 @@
       <div class="text-gray-500 text-xs flex-1">
         {{ participant.isOpenPosition ? '모집 중' : '-' }}
       </div>
-      <div v-if="showApplyButton" class="apply-btn-container">
+      <div v-if="showApplyButton" class="apply-btn-container position-buttons">
         <button
             @click="handleApply"
             :class="[

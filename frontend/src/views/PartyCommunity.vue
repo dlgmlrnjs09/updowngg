@@ -8,6 +8,17 @@
         @close="showWriteModal = false"
     />
 
+    <!-- 온보딩 투어 가이드 -->
+    <TourGuide 
+      v-if="showTour" 
+      :steps="tourSteps" 
+      :show="showTour"
+      :close-on-overlay-click="true"
+      @close="closeTour"
+      @step-changed="handleTourStepChange"
+      @tour-completed="completeTour"
+    />
+
     <div class="max-w-6xl mx-auto mb-8">
       <!-- 새로고침 영역 -->
       <div class="flex justify-end items-center mb-4 gap-3">
@@ -30,6 +41,7 @@
     <div class="max-w-6xl mx-auto mb-8">
       <!-- 필터 영역 -->
       <PartyFilter
+          id="party-filter"
           :initial-game-mode="selectedGameMode"
           :initial-position="selectedPosition"
           :initial-tier="selectedTier"
@@ -40,6 +52,7 @@
       <!-- 내 파티 미니바 -->
       <MyActiveParty
           v-if="myActiveParty"
+          id="active-party"
           :party="myActiveParty"
           :my-puuid="myPuuid"
           :has-new-applicant="hasNewApplicant"
@@ -53,6 +66,7 @@
 
       <!-- 듀오 카드 그리드 -->
       <PartyGrid
+          id="party-grid"
           :cards="postCards"
           :my-puuid="myPuuid"
           :applied-positions="appliedPositions"
@@ -61,17 +75,28 @@
           @apply="applyForPosition"
           @load-more="onLoadMore"
       />
+      
+      <!-- 투어 시작 버튼 -->
+      <button
+        v-if="!showTour && !tourCompleted"
+        @click="startTour"
+        class="fixed bottom-8 right-8 bg-[#2979FF] text-white p-3 rounded-full shadow-lg hover:bg-[#1A67E0] transition-colors z-50"
+        aria-label="파티 기능 설명 보기"
+      >
+        <HelpCircle class="w-6 h-6" />
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { RefreshCcw } from 'lucide-vue-next'
+import { RefreshCcw, HelpCircle } from 'lucide-vue-next'
 import PartyFilter from '@/components/community/party/PartyFilter.vue'
 import MyActiveParty from '@/components/community/party/MyActiveParty.vue'
 import PartyGrid from '@/components/community/party/PartyGrid.vue'
 import WriteModal from '@/components/community/party/WriteModal.vue'
+import TourGuide from '@/components/common/TourGuide.vue'
 import type {
   CommunityPostDto, MyPartyPostDto,
   PartyCommunityApplicantDetailDto, PartyCommunityApplicantDto, PartyParticipantDto,
@@ -99,6 +124,76 @@ const UPDATE_INTERVAL = 10000
 const countdown = ref(10)
 const countdownInterval = ref<number>()
 
+// 온보딩 투어 관련 상태
+const showTour = ref(false)
+const tourCompleted = ref(false)
+const TOUR_COMPLETED_KEY = 'party_tour_completed'
+
+// 온보딩 투어 스텝 정의 - 기본 스텝
+const baseSteps = [
+  {
+    target: '#party-filter',
+    title: '파티 필터',
+    content: '원하는 게임 모드, 티어, 포지션을 선택하여 맞춤형 파티를 찾아보세요.',
+    position: 'bottom',
+    margin: 5
+  },
+  {
+    target: '#party-filter .write-button',
+    title: '파티 생성',
+    content: '이 버튼을 클릭하여 새로운 파티를 생성할 수 있습니다. 원하는 게임 모드와 모집할 포지션을 선택하세요.',
+    position: 'left',
+    margin: 5
+  },
+  {
+    target: '.max-w-6xl > div:first-child', // 새로고침 영역 타겟팅
+    title: '자동 새로고침',
+    content: '10초마다 파티 목록이 자동으로 갱신됩니다. 카운트다운이 5초 이하일 때 수동으로 새로고침할 수도 있어요.',
+    position: 'left',
+    margin: 5
+  },
+  {
+    target: '#party-grid',
+    title: '파티 목록',
+    content: '다양한 파티를 확인하고 원하는 포지션에 신청해보세요. 카드를 클릭하면 상세 정보를 볼 수 있습니다.',
+    position: 'top',
+    margin: 10
+  },
+  {
+    target: '.apply-btn-container.position-buttons',
+    title: '포지션 신청',
+    content: '원하는 포지션 버튼을 클릭하여 파티 참가를 신청하세요. 파티장이 승인하면 파티에 합류됩니다.',
+    position: 'top',
+    margin: 5
+  }
+]
+
+// 내 활성 파티 관련 스텝
+const myPartySteps = [
+  {
+    target: '#active-party',
+    title: '내 활성 파티',
+    content: '내가 참여중인 파티 정보입니다. 파티장이면 신청자 관리와 모집 마감이 가능합니다.',
+    position: 'bottom',
+    margin: 5
+  },
+  {
+    target: '.applicant-button',
+    title: '신청자 관리',
+    content: '파티장은 이 버튼을 통해 포지션별 신청자를 확인하고 승인하거나 거절할 수 있습니다.',
+    position: 'left',
+    margin: 5
+  }
+]
+
+// 활성 파티 존재 여부에 따라 투어 스텝 동적 생성
+const tourSteps = computed(() => {
+  if (myActiveParty.value) {
+    return [...baseSteps, ...myPartySteps]
+  }
+  return baseSteps
+})
+
 const toast = useToast()
 const authStore = useAuthStore()
 const myPuuid = computed(() => authStore.user?.puuid)
@@ -110,6 +205,37 @@ const previousApplicationsStatus = ref<Map<string, string>>(new Map());
 const isApplyingPosition = ref(false);
 const lastAppliedTime = ref(new Map<string, number>());
 
+// 투어 관련 메서드
+const startTour = () => {
+  showTour.value = true
+}
+
+const closeTour = () => {
+  showTour.value = false
+}
+
+const handleTourStepChange = (step: number) => {
+  // 필요한 경우 추가 액션 처리
+  console.log(`Tour step changed to ${step}`)
+  
+  // 특정 스텝에서 화면 요소 자동 클릭 등 추가 기능 구현 가능
+}
+
+const completeTour = () => {
+  showTour.value = false
+  tourCompleted.value = true
+  
+  // 로컬 스토리지에 투어 완료 상태 저장
+  localStorage.setItem(TOUR_COMPLETED_KEY, 'true')
+  
+  toast.success('파티 기능 설명 완료! 이제 파티에 참여해보세요.')
+  
+  // 10초 후에 도움 버튼 다시 표시
+  setTimeout(() => {
+    tourCompleted.value = false
+  }, 60000) // 1분 후 다시 표시
+}
+
 onMounted(async () => {
   setupVisibilityHandler()
   await fetchPosts({})
@@ -117,6 +243,17 @@ onMounted(async () => {
   await fetchMyPartyPost()
   await fetchMyApplicationStatus();
   startCountdown()
+
+  // 로컬 스토리지에서 투어 완료 상태 확인
+  const completedStatus = localStorage.getItem(TOUR_COMPLETED_KEY)
+  tourCompleted.value = completedStatus === 'true'
+  
+  // 첫 방문이고 투어를 완료하지 않은 사용자에게 3초 후 자동으로 투어 시작
+  if (!tourCompleted.value && postCards.value.length > 0) {
+    setTimeout(() => {
+      showTour.value = true
+    }, 3000)
+  }
 
   // 10초마다 전체 업데이트
   updateInterval.value = window.setInterval(async () => {
