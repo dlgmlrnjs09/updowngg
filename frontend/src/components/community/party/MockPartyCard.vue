@@ -116,8 +116,6 @@ const positions = [
 <style scoped>
 .highlight-effect {
   animation: highlight 2s ease-out;
-  position: relative;
-  z-index: 10;
 }
 
 .mock-party {
