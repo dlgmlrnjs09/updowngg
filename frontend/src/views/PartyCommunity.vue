@@ -8,15 +8,15 @@
         @close="showWriteModal = false"
     />
 
-    <!-- 온보딩 투어 가이드 -->
-    <TourGuide 
-      v-if="showTour" 
-      :steps="tourSteps" 
-      :show="showTour"
+    <!-- 가이드 모달 -->
+    <GuideModal
+      v-if="showGuide"
+      :pages="guidePages"
+      :show="showGuide"
       :close-on-overlay-click="true"
-      @close="closeTour"
-      @step-changed="handleTourStepChange"
-      @tour-completed="completeTour"
+      @close="closeGuide"
+      @page-changed="handleGuidePageChange"
+      @complete="completeGuide"
     />
 
     <div class="max-w-6xl mx-auto mb-8">
@@ -64,11 +64,6 @@
           @kick-member="handleKickMember"
       />
       
-      <!-- 투어를 위한 가상 파티 -->
-      <MockActiveParty 
-          v-if="!myActiveParty && showTour && shouldShowMockParty" 
-          :has-highlight="currentTourStep >= 4"
-      />
 
       <!-- 듀오 카드 그리드 -->
       <PartyGrid
@@ -82,12 +77,11 @@
           @load-more="onLoadMore"
       />
       
-      <!-- 투어 시작 버튼 -->
+      <!-- 가이드 시작 버튼 -->
       <button
-        v-if="!showTour && !tourCompleted"
-        @click="startTour"
-        class="fixed bottom-8 right-8 bg-[#2979FF] text-white p-3 rounded-full shadow-lg hover:bg-[#1A67E0] transition-all z-50 animate-bounce-soft flex items-center group"
-        style="animation-delay: 1s;"
+        v-if="!showGuide && !guideCompleted"
+        @click="startGuide"
+        class="fixed bottom-8 right-8 bg-[#2979FF] text-white p-3 rounded-full shadow-lg hover:bg-[#1A67E0] transition-all z-50 flex items-center group"
         aria-label="파티 기능 설명 보기"
       >
         <HelpCircle class="w-6 h-6" />
@@ -104,10 +98,9 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { RefreshCcw, HelpCircle } from 'lucide-vue-next'
 import PartyFilter from '@/components/community/party/PartyFilter.vue'
 import MyActiveParty from '@/components/community/party/MyActiveParty.vue'
-import MockActiveParty from '@/components/community/party/MockActiveParty.vue'
 import PartyGrid from '@/components/community/party/PartyGrid.vue'
 import WriteModal from '@/components/community/party/WriteModal.vue'
-import TourGuide from '@/components/common/TourGuide.vue'
+import GuideModal from '@/components/common/GuideModal.vue'
 import type {
   CommunityPostDto, MyPartyPostDto,
   PartyCommunityApplicantDetailDto, PartyCommunityApplicantDto, PartyParticipantDto,
@@ -135,67 +128,35 @@ const UPDATE_INTERVAL = 10000
 const countdown = ref(10)
 const countdownInterval = ref<number>()
 
-// 온보딩 투어 관련 상태
-const showTour = ref(false)
-const tourCompleted = ref(false)
-const TOUR_COMPLETED_KEY = 'party_tour_completed'
-const currentTourStep = ref(1)
-const shouldShowMockParty = ref(false)
+// 가이드 모달 관련 상태
+const showGuide = ref(false)
+const guideCompleted = ref(false)
+const GUIDE_COMPLETED_KEY = 'party_guide_completed'
+const currentGuidePageIndex = ref(0)
 
-// 온보딩 투어 스텝 정의 - 기본 스텝
-const baseSteps = [
+// 가이드 페이지 정의
+const guidePages = [
   {
-    target: '#party-filter',
-    title: '파티 필터',
-    content: '원하는 게임 모드, 티어, 포지션을 선택하여 맞춤형 파티를 찾을 수 있습니다.',
-    position: 'bottom',
-    margin: 5
+    title: '파티 필터 & 생성',
+    content: '원하는 게임 모드, 티어, 포지션을 선택하여 맞춤형 파티를 찾을 수 있습니다. 파티 생성 버튼을 클릭하여 게임 모드, 마이크 사용 여부, 모집할 포지션을 선택하고 새로운 파티를 만들 수 있습니다.'
+    // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
   },
   {
-    target: '#party-filter .write-button',
-    title: '파티 생성',
-    content: '이 버튼을 클릭하여 새로운 파티를 생성할 수 있습니다. 게임 모드, 마이크 사용 여부, 모집할 포지션을 선택하세요.',
-    position: 'left',
-    margin: 5
-  },
-  {
-    target: '#party-grid',
     title: '파티 목록',
-    content: '이곳에서 다양한 파티를 확인할 수 있습니다. 각 카드에는 파티 정보와 참여 가능한 포지션이 표시됩니다.',
-    position: 'top',
-    margin: 10
+    content: '이곳에서 다양한 파티를 확인할 수 있습니다. 각 카드에는 파티 정보와 참여 가능한 포지션이 표시됩니다. 원하는 포지션의 신청 버튼을 클릭하여 파티 참가를 신청하세요. 파티장이 승인하면 파티에 합류됩니다.'
+    // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
   },
   {
-    target: '.apply-btn-container.position-buttons',
-    title: '포지션 신청',
-    content: '원하는 포지션의 신청 버튼을 클릭하여 파티 참가를 신청하세요. 파티장이 승인하면 파티에 합류됩니다.',
-    position: 'right',
-    margin: 5
-  }
-]
-
-// 내 활성 파티 관련 스텝
-const myPartySteps = [
-  {
-    target: '#active-party',
     title: '내 활성 파티',
-    content: '내가 참여중인 파티 정보입니다. 파티장이면 신청자 관리, 모집 마감, 취소가 가능하며, 일반 멤버는 파티에서 나갈 수 있습니다.',
-    position: 'bottom',
-    margin: 5
+    content: '내가 참여중인 파티 정보입니다. 파티장이면 신청자 관리, 모집 마감, 취소가 가능합니다. 파티장은 포지션별 신청자를 확인하고 승인하거나 거절할 수 있으며, 신청자가 있으면 숫자로 표시됩니다. 일반 멤버는 파티에서 나갈 수 있습니다.'
+    // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
   },
   {
-    target: '.applicant-button',
-    title: '신청자 관리',
-    content: '파티장은 이 버튼을 통해 포지션별 신청자를 확인하고 승인하거나 거절할 수 있습니다. 신청자가 있으면 숫자로 표시됩니다.',
-    position: 'right',
-    margin: 5
+    title: '실시간 업데이트',
+    content: '파티 상태는 자동으로 주기적으로 업데이트됩니다. 새로운 참가자나 신청자가 생기면 알림을 받게 되며, 파티원의 변경이 있을 때도 즉시 반영됩니다. 우측 상단의 새로고침 버튼을 통해 언제든지 최신 정보를 확인할 수 있습니다.'
+    // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
   }
 ]
-
-// 모든 사용자에게 전체 투어 스텝을 보여줌 (없는 경우 목업 파티 사용)
-const tourSteps = computed(() => {
-  return [...baseSteps, ...myPartySteps]
-})
 
 const toast = useToast()
 const authStore = useAuthStore()
@@ -208,91 +169,35 @@ const previousApplicationsStatus = ref<Map<string, string>>(new Map());
 const isApplyingPosition = ref(false);
 const lastAppliedTime = ref(new Map<string, number>());
 
-// 투어 관련 메서드
-const startTour = () => {
-  // 리셋 및 초기화
-  currentTourStep.value = 1
-  shouldShowMockParty.value = false
-  showTour.value = true
+// 가이드 관련 메서드
+const startGuide = () => {
+  currentGuidePageIndex.value = 0
+  showGuide.value = true
 }
 
-const closeTour = () => {
-  showTour.value = false
-  shouldShowMockParty.value = false
+const closeGuide = () => {
+  showGuide.value = false
 }
 
-const handleTourStepChange = (step: number) => {
-  // 현재 스텝 저장
-  currentTourStep.value = step
-  
-  // 파티 관련 스텝에 진입하면 목업 파티 표시
-  const partyStepIndex = myActiveParty.value ? 4 : 3 // 파티가 있으면 기본스텝+1, 없으면 기본스텝
-  
-  if (!myActiveParty.value && step >= partyStepIndex) {
-    shouldShowMockParty.value = true
-  } else if (!myActiveParty.value && step < partyStepIndex) {
-    shouldShowMockParty.value = false
-  }
-  
-  // 특정 스텝에서 필요한 추가 액션 처리
-  console.log(`Tour step changed to ${step}`)
+const handleGuidePageChange = (pageIndex: number) => {
+  currentGuidePageIndex.value = pageIndex
+  console.log(`Guide page changed to ${pageIndex}`)
 }
 
-const completeTour = () => {
-  showTour.value = false
-  tourCompleted.value = true
-  shouldShowMockParty.value = false
+const completeGuide = () => {
+  showGuide.value = false
+  guideCompleted.value = true
   
-  // 로컬 스토리지에 투어 완료 상태 저장
-  localStorage.setItem(TOUR_COMPLETED_KEY, 'true')
+  // 로컬 스토리지에 가이드 완료 상태 저장
+  localStorage.setItem(GUIDE_COMPLETED_KEY, 'true')
   
-  // 축하 메시지 및 시각적 피드백
-  toast.success('축하합니다! 파티 기능 설명을 완료했습니다. 이제 파티에 참여해보세요.')
+  // 완료 메시지
+  toast.success('파티 기능 설명을 완료했습니다. 이제 파티에 참여해보세요!')
   
-  // 애니메이션 효과를 위한 임시 요소 생성 및 제거
-  const confetti = document.createElement('div')
-  confetti.className = 'confetti-container'
-  document.body.appendChild(confetti)
-  
-  // 브랜드 색상 - 주로 파란색(파티 테마), 하얀색, 그린
-  const colors = ['#2979FF', '#1A67E0', '#FFFFFF', '#4CAF50', '#1976D2', '#E3F2FD', '#64B5F6']
-  
-  // 40개의 색종이 생성
-  for (let i = 0; i < 40; i++) {
-    const confettiPiece = document.createElement('div')
-    confettiPiece.className = 'confetti-piece'
-    
-    // 랜덤 위치 및 크기
-    confettiPiece.style.left = `${Math.random() * 100}%`
-    const size = Math.random() * 10 + 5
-    confettiPiece.style.width = `${size}px`
-    confettiPiece.style.height = `${size}px`
-    
-    // 색상 및 모양
-    confettiPiece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
-    confettiPiece.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px'
-    
-    // 애니메이션 랜덤화
-    confettiPiece.style.animationDelay = `${Math.random() * 1.5}s`
-    confettiPiece.style.animationDuration = `${Math.random() * 2 + 2}s`
-    
-    // 랜덤 좌우 이동 (CSS 변수 설정)
-    confettiPiece.style.setProperty('--random', Math.random().toString())
-    
-    confetti.appendChild(confettiPiece)
-  }
-  
-  // 3.5초 후 색종이 효과 제거
+  // 5분 후에 도움 버튼 다시 표시
   setTimeout(() => {
-    if (document.body.contains(confetti)) {
-      document.body.removeChild(confetti)
-    }
-  }, 3500)
-  
-  // 1분 후에 도움 버튼 다시 표시
-  setTimeout(() => {
-    tourCompleted.value = false
-  }, 60000)
+    guideCompleted.value = false
+  }, 300000) // 5분
 }
 
 onMounted(async () => {
@@ -303,14 +208,14 @@ onMounted(async () => {
   await fetchMyApplicationStatus();
   startCountdown()
 
-  // 로컬 스토리지에서 투어 완료 상태 확인
-  const completedStatus = localStorage.getItem(TOUR_COMPLETED_KEY)
-  tourCompleted.value = completedStatus === 'true'
+  // 로컬 스토리지에서 가이드 완료 상태 확인
+  const completedStatus = localStorage.getItem(GUIDE_COMPLETED_KEY)
+  guideCompleted.value = completedStatus === 'true'
   
-  // 첫 방문이고 투어를 완료하지 않은 사용자에게 2초 후 자동으로 투어 시작
-  if (!tourCompleted.value && postCards.value.length > 0) {
+  // 첫 방문이고 가이드를 완료하지 않은 사용자에게 2초 후 자동으로 가이드 시작
+  if (!guideCompleted.value && postCards.value.length > 0) {
     setTimeout(() => {
-      startTour()
+      startGuide()
     }, 2000)
   }
 
@@ -844,50 +749,4 @@ const getPositionName = (position: string) => {
 
 <style scoped>
 /* 이제 대부분의 스타일이 각 컴포넌트로 이동했습니다 */
-@keyframes bounce-soft {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-bounce-soft {
-  animation: bounce-soft 2s infinite;
-  animation-timing-function: cubic-bezier(0.28, 0.84, 0.42, 1);
-}
-
-/* 색종이 효과 스타일 */
-.confetti-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 9999;
-  overflow: hidden;
-}
-
-.confetti-piece {
-  position: absolute;
-  top: -10px;
-  animation: confetti-fall 3s linear forwards;
-  border-radius: 3px;
-  opacity: 0.8;
-}
-
-@keyframes confetti-fall {
-  0% {
-    top: -20px;
-    transform: rotate(0deg) translateX(0);
-    opacity: 1;
-  }
-  100% {
-    top: 100vh;
-    transform: rotate(720deg) translateX(calc(5vw - 2.5vw * var(--random, 0.5)));
-    opacity: 0;
-  }
-}
 </style>
