@@ -232,21 +232,7 @@ const handleTourStepChange = (step: number) => {
   // 현재 스텝 저장
   currentTourStep.value = step
   
-  // 특정 단계에 대한 준비
-  if (step === 3) {
-    // 가상 파티 카드에 대한 준비 - 요소가 DOM에 완전히 렌더링되도록 지연 처리
-    setTimeout(() => {
-      const mockCard = document.querySelector('#mock-party-grid > div:first-child')
-      if (mockCard) {
-        // 애니메이션 재시작을 위해 클래스 재적용
-        mockCard.classList.remove('highlight-effect')
-        void mockCard.offsetWidth // reflow 강제로 트리거
-        mockCard.classList.add('highlight-effect')
-      }
-    }, 200)
-  }
-  
-  // 로그
+  // 특정 스텝에서 필요한 추가 액션 처리
   console.log(`Tour step changed to ${step}`)
 }
 
