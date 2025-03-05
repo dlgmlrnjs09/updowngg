@@ -71,9 +71,8 @@
           :has-highlight="currentTourStep >= 4"
       />
 
-      <!-- 듀오 카드 그리드 - 실제 카드들 (투어가 아닐 때만 표시) -->
+      <!-- 듀오 카드 그리드 -->
       <PartyGrid
-          v-if="!showTour"
           id="party-grid"
           :cards="postCards"
           :my-puuid="myPuuid"
@@ -83,11 +82,6 @@
           @apply="applyForPosition"
           @load-more="onLoadMore"
       />
-
-      <!-- 투어를 위한 가상 파티 카드 (투어 중에만 표시) -->
-      <div v-if="showTour" id="mock-party-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 card-transition">
-        <MockPartyCard :has-highlight="currentTourStep === 3" />
-      </div>
       
       <!-- 투어 시작 버튼 -->
       <button
@@ -112,7 +106,6 @@ import { RefreshCcw, HelpCircle } from 'lucide-vue-next'
 import PartyFilter from '@/components/community/party/PartyFilter.vue'
 import MyActiveParty from '@/components/community/party/MyActiveParty.vue'
 import MockActiveParty from '@/components/community/party/MockActiveParty.vue'
-import MockPartyCard from '@/components/community/party/MockPartyCard.vue'
 import PartyGrid from '@/components/community/party/PartyGrid.vue'
 import WriteModal from '@/components/community/party/WriteModal.vue'
 import TourGuide from '@/components/common/TourGuide.vue'
@@ -167,7 +160,7 @@ const baseSteps = [
     margin: 5
   },
   {
-    target: '#mock-party-grid > div:first-child',
+    target: '.card-transition > div:first-child',
     title: '파티 카드',
     content: '각 카드에는 파티 정보와 참여 가능한 포지션이 표시됩니다. 원하는 파티를 찾아 참가해보세요.',
     position: 'right',
