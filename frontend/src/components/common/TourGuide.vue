@@ -122,11 +122,27 @@ const positionTooltip = () => {
   // Tooltip dimensions (approximate)
   const tooltipWidth = 280
   const tooltipHeight = 180
-  const position = currentStepData.value.position || 'bottom'
+  const defaultPosition = currentStepData.value.position || 'bottom'
   
-  // Position the tooltip based on specified position
+  // Get device type
+  const isMobile = window.innerWidth < 768
+  
+  // Position the tooltip based on specified position and device type
+  let position = defaultPosition
   let top, left
 
+  // For mobile, prefer left/right positioning to avoid covering the element
+  if (isMobile && (defaultPosition === 'top' || defaultPosition === 'bottom')) {
+    // Check if we have enough space on either side
+    if (targetRect.left > tooltipWidth + 40) {
+      position = 'left'
+    } else if (window.innerWidth - targetRect.right > tooltipWidth + 40) {
+      position = 'right'
+    }
+    // If neither side has enough space, keep the original position but adjust later
+  }
+
+  // Calculate initial position based on the determined position
   switch (position) {
     case 'top':
       top = targetRect.top - tooltipHeight - 20 + window.scrollY
@@ -150,14 +166,44 @@ const positionTooltip = () => {
   const viewportWidth = window.innerWidth
   const viewportHeight = window.innerHeight
   
+  // Adjust horizontal position if needed
   if (left < 20) left = 20
   if (left + tooltipWidth > viewportWidth - 20) left = viewportWidth - tooltipWidth - 20
+  
+  // Adjust vertical position if needed
   if (top < 20) top = 20
+  
+  // If the tooltip would go below viewport, try another position
   if (top + tooltipHeight > viewportHeight + window.scrollY - 20) {
-    // If it would go below viewport, try to position it above the element instead
-    top = targetRect.top - tooltipHeight - 20 + window.scrollY
+    if (position === 'bottom') {
+      // If bottom doesn't fit, try top
+      const topPosition = targetRect.top - tooltipHeight - 20 + window.scrollY
+      if (topPosition > 20) {
+        // If top position is viable, use it
+        top = topPosition
+      } else {
+        // If neither top nor bottom fits well, try left or right
+        if (targetRect.left > tooltipWidth + 40) {
+          // Use left position
+          top = targetRect.top + (targetRect.height / 2) - (tooltipHeight / 2) + window.scrollY
+          left = targetRect.left - tooltipWidth - 20 + window.scrollX
+        } else if (viewportWidth - targetRect.right > tooltipWidth + 40) {
+          // Use right position
+          top = targetRect.top + (targetRect.height / 2) - (tooltipHeight / 2) + window.scrollY
+          left = targetRect.right + 20 + window.scrollX
+        }
+        // If all else fails, just make sure it's on screen
+        if (top + tooltipHeight > viewportHeight + window.scrollY - 20) {
+          top = viewportHeight + window.scrollY - tooltipHeight - 20
+        }
+      }
+    } else if (position === 'left' || position === 'right') {
+      // Adjust vertical alignment for left/right tooltips
+      top = Math.min(top, viewportHeight + window.scrollY - tooltipHeight - 20)
+    }
   }
   
+  // Final position
   tooltipPosition.value = { top, left }
   
   // Scroll target into view if needed
@@ -168,7 +214,7 @@ const positionTooltip = () => {
   const viewportBottom = window.scrollY + window.innerHeight
   
   if (elementTop < viewportTop + buffer) {
-    window.scrollTo({ top: elementTop - buffer, behavior: 'smooth' })
+    window.scrollTo({ top: Math.max(0, elementTop - buffer), behavior: 'smooth' })
   } else if (elementBottom > viewportBottom - buffer) {
     window.scrollTo({ top: elementBottom - window.innerHeight + buffer, behavior: 'smooth' })
   }
@@ -227,12 +273,24 @@ defineExpose({
 
 .highlight-box {
   position: absolute;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
   border-radius: 4px;
   z-index: 10000;
   background-color: transparent;
   border: 2px solid #2979FF;
   transition: all 0.3s ease;
+  animation: highlight-pulse 2s infinite alternate;
+}
+
+@keyframes highlight-pulse {
+  0% {
+    border-color: rgba(41, 121, 255, 0.7);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 0 2px rgba(41, 121, 255, 0.2);
+  }
+  100% {
+    border-color: rgba(41, 121, 255, 1);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 0 4px rgba(41, 121, 255, 0.4);
+  }
 }
 
 .tour-tooltip {
@@ -241,11 +299,27 @@ defineExpose({
   background-color: #141414;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(41, 121, 255, 0.3);
   z-index: 10001;
   color: white;
   transition: all 0.3s ease;
   overflow: hidden;
+  animation: pulse 1.5s infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(41, 121, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(41, 121, 255, 0.4);
+  }
+}
+
+@media (max-width: 640px) {
+  .tour-tooltip {
+    width: min(280px, calc(100vw - 40px));
+  }
 }
 
 .tooltip-header {
@@ -287,13 +361,30 @@ defineExpose({
   margin-bottom: 8px;
   font-size: 16px;
   font-weight: 600;
+  color: #2979FF;
 }
 
 .tooltip-content p {
   margin: 0;
   font-size: 14px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 640px) {
+  .tooltip-content {
+    padding: 16px;
+  }
+  
+  .tooltip-content h3 {
+    font-size: 17px;
+    margin-bottom: 10px;
+  }
+  
+  .tooltip-content p {
+    font-size: 15px;
+    line-height: 1.7;
+  }
 }
 
 .tooltip-footer {
@@ -305,11 +396,14 @@ defineExpose({
 }
 
 .tour-btn {
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 4px;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  min-width: 80px;
+  text-align: center;
 }
 
 .tour-btn.prev {
@@ -320,15 +414,39 @@ defineExpose({
 
 .tour-btn.prev:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
 }
 
 .tour-btn.next, .tour-btn.finish {
   background-color: #2979FF;
   border: none;
   color: white;
+  position: relative;
+  overflow: hidden;
 }
 
 .tour-btn.next:hover, .tour-btn.finish:hover {
   background-color: #1A67E0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(41, 121, 255, 0.4);
+}
+
+.tour-btn.finish {
+  background-color: #4CAF50;
+}
+
+.tour-btn.finish:hover {
+  background-color: #3d8b40;
+}
+
+@media (max-width: 640px) {
+  .tour-btn {
+    padding: 10px 16px;
+    min-width: 90px;
+  }
+  
+  .tooltip-footer {
+    padding: 16px;
+  }
 }
 </style>
