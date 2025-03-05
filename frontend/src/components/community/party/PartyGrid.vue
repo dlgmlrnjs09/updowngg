@@ -8,12 +8,11 @@
         class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
     >
       <PartyCard
-          v-for="(card, index) in memoizedCards"
+          v-for="card in memoizedCards"
           :key="card.postId"
           :card="card"
           :my-puuid="myPuuid"
           :applied-positions="appliedPositions"
-          :class="{ 'first-card-highlight': index === 0 && isGuideActive }"
           @apply="handleApply"
           @profile-click="handleProfileClick"
       />
@@ -47,13 +46,11 @@ interface Props {
   appliedPositions: Map<string, boolean>
   isLoading?: boolean
   showReadMore?: boolean
-  isGuideActive?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isLoading: false,
-  showReadMore: true,
-  isGuideActive: false
+  showReadMore: true
 })
 
 const { cards, myPuuid, appliedPositions, isLoading, showReadMore } = toRefs(props)
@@ -127,24 +124,6 @@ const handleProfileClick = (summoner: SummonerBasicInfoDto) => {
 @media (min-width: 1024px) {
   .card-transition-leave-active {
     width: calc(33.333% - 1rem);
-  }
-}
-
-/* 가이드 모드에서 첫 번째 카드 강조 스타일 */
-.first-card-highlight {
-  position: relative;
-  transform: scale(1.02);
-  box-shadow: 0 0 0 3px rgba(41, 121, 255, 0.6), 0 4px 20px rgba(0, 0, 0, 0.3);
-  z-index: 5;
-  animation: card-pulse 2s infinite alternate;
-}
-
-@keyframes card-pulse {
-  0% {
-    box-shadow: 0 0 0 3px rgba(41, 121, 255, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
-  }
-  100% {
-    box-shadow: 0 0 0 5px rgba(41, 121, 255, 0.7), 0 4px 25px rgba(0, 0, 0, 0.4);
   }
 }
 </style>
