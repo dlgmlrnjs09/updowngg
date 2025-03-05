@@ -124,11 +124,11 @@
             <div class="flex items-center gap-2 w-full">
               <img :src="getPositionImage(position.code)" :alt="position.code" class="w-5 h-5">
 
-              <template v-if="position.code === 'TOP' || position.code === 'MID'">
+              <template v-if="position.code === 'SUP' || position.code === 'MID'">
                 <div class="flex-1 text-left min-w-0">
                   <div class="flex items-center gap-1">
                     <div class="text-xs font-medium text-white hover:text-[#2979FF] cursor-pointer truncate max-w-full">
-                      {{ position.code === 'TOP' ? '임시파티장' : '탑티어정글러' }}
+                      {{ position.code === 'SUP' ? '임시파티장' : '탑티어정글러' }}
                     </div>
                     <div class="text-[10px] text-gray-400 truncate">
                       #KR123
@@ -138,15 +138,22 @@
               </template>
 
               <template v-else>
-                <div class="flex flex-1 items-center">
+                <div class="flex flex-1 items-center justify-between">
                   <div class="text-gray-500 text-xs">
                     모집 중
                   </div>
-                  <template v-if="position.code === 'SUP'">
-                    <div class="flex items-center gap-1 text-[#2979FF] text-xs ml-2 applicant-button">
-                      (2)
+                  <template v-if="position.code === 'TOP'">
+                    <!-- 신청자가 있는 경우 신청자 보기 버튼 - applicant-button 클래스 추가 -->
+                    <button class="flex items-center gap-1 bg-[#1A1A1A] border border-[#2979FF] text-[#2979FF] text-xs px-2 py-1 rounded-md applicant-button">
+                      신청자 (2)
                       <ChevronDown class="w-3 h-3" />
-                    </div>
+                    </button>
+                  </template>
+                  <template v-else>
+                    <!-- 다른 포지션의 신청 버튼 -->
+                    <button class="bg-[#1A1A1A] border border-[#333] text-[#2979FF] text-xs px-2 py-1 rounded-md">
+                      신청
+                    </button>
                   </template>
                 </div>
               </template>

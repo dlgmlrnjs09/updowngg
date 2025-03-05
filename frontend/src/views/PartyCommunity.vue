@@ -143,64 +143,80 @@ const TOUR_COMPLETED_KEY = 'party_tour_completed'
 const currentTourStep = ref(1)
 const shouldShowMockParty = ref(false)
 
-// 온보딩 투어 스텝 정의 - 기본 스텝
-const baseSteps = [
+// 모바일용 투어 단계
+const getMobileSteps = () => [
   {
     target: '#party-filter',
-    title: '파티 필터',
-    content: '원하는 게임 모드, 티어, 포지션을 선택하여 맞춤형 파티를 찾을 수 있습니다.',
+    title: '검색 필터',
+    content: '원하는 조건을 선택하여 원하는 파티를 찾아보세요!',
     position: 'bottom',
     margin: 5
   },
   {
     target: '#party-filter .write-button',
     title: '파티 생성',
-    content: '이 버튼을 클릭하여 새로운 파티를 생성할 수 있습니다. 게임 모드, 마이크 사용 여부, 모집할 포지션을 선택하세요.',
-    position: 'left',
-    margin: 5
-  },
-  {
-    target: '.card-transition > div:first-child',
-    title: '파티 카드',
-    content: '각 카드에는 파티 정보와 참여 가능한 포지션이 표시됩니다. 원하는 파티를 찾아 참가해보세요.',
-    position: 'right',
-    margin: 10
-  },
-  {
-    target: '.apply-btn-container.position-buttons',
-    title: '포지션 신청',
-    content: '원하는 포지션의 신청 버튼을 클릭하여 파티 참가를 신청하세요. 파티장이 승인하면 파티에 합류됩니다.',
-    position: 'right',
-    margin: 5
-  }
-]
-
-// 내 활성 파티 관련 스텝
-const myPartySteps = [
-  {
-    target: '#active-party',
-    title: '내 활성 파티',
-    content: '내가 참여중인 파티 정보입니다. 파티장이면 신청자 관리, 모집 마감, 취소가 가능하며, 일반 멤버는 파티에서 나갈 수 있습니다.',
+    content: '로그인 상태라면 누구나 새로운 파티를 만들 수 있어요.',
     position: 'bottom',
     margin: 5
   },
   {
-    target: '.applicant-button',
+    target: '#active-party',
+    title: '내 파티',
+    content: '참여중인 파티 정보에요. 파티장은 모집을 마감할 수 있어요.',
+    position: 'top',
+    margin: 5
+  },
+  {
+    // 모바일에 더 구체적인 선택자
+    target: '.sm\\:hidden .applicant-button',
     title: '신청자 관리',
-    content: '파티장은 이 버튼을 통해 포지션별 신청자를 확인하고 승인하거나 거절할 수 있습니다. 신청자가 있으면 숫자로 표시됩니다.',
+    content: '파티장은 이 버튼을 통해 포지션별 신청자를 관리할 수 있어요.',
+    position: 'top',
+    margin: 5
+  }
+];
+
+// 데스크톱용 투어 단계
+const getDesktopSteps = () => [
+  {
+    target: '#party-filter',
+    title: '검색 필터',
+    content: '원하는 조건을 선택하여 원하는 파티를 찾아보세요!',
+    position: 'bottom',
+    margin: 5
+  },
+  {
+    target: '#party-filter .write-button',
+    title: '파티 생성',
+    content: '로그인 상태라면 누구나 새로운 파티를 만들 수 있어요.',
+    position: 'left',
+    margin: 5
+  },
+  {
+    target: '#active-party',
+    title: '내 파티',
+    content: '참여중인 파티 정보에요. 파티장은 모집을 마감할 수 있어요.',
+    position: 'bottom',
+    margin: 5
+  },
+  {
+    // 데스크톱에 더 구체적인 선택자
+    target: '.hidden.sm\\:flex .applicant-button',
+    title: '신청자 관리',
+    content: '파티장은 이 버튼을 통해 포지션별 신청자를 관리할 수 있어요.',
     position: 'right',
     margin: 5
   }
-]
+];
 
-// 모든 사용자에게 전체 투어 스텝을 보여줌 (항상 모든 단계 표시)
 const tourSteps = computed(() => {
-  return [...baseSteps, ...myPartySteps]
-})
+  const isMobile = window.innerWidth < 640;
+  return [...(isMobile ? getMobileSteps() : getDesktopSteps())];
+});
 
 const toast = useToast()
 const authStore = useAuthStore()
-const myPuuid = computed(() => authStore.user?.puuid)
+const myPuuid = computed(() => authStore.user?.puuid || '')
 const myActiveParty = ref<MyPartyPostDto | null>(null)
 const hasNewApplicant = ref(false)
 const participantCount = ref<number | null>(null)
@@ -209,11 +225,30 @@ const previousApplicationsStatus = ref<Map<string, string>>(new Map());
 const isApplyingPosition = ref(false);
 const lastAppliedTime = ref(new Map<string, number>());
 
-// 투어 관련 메서드
 const startTour = () => {
-  // 리셋 및 초기화
-  currentTourStep.value = 1
-  showTour.value = true
+  // 현재 스크롤 위치 저장
+  const currentScrollPos = window.scrollY;
+
+  // 맨 위로 스크롤
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+
+  // 스크롤이 완료되었는지 확인하는 함수
+  const checkScrollComplete = () => {
+    if (window.scrollY <= 10) { // 거의 맨 위에 도달했는지 확인
+      // 스크롤 완료됨, 투어 시작
+      currentTourStep.value = 1
+      showTour.value = true
+    } else {
+      // 아직 스크롤 중, 재확인
+      setTimeout(checkScrollComplete, 50);
+    }
+  };
+
+  // 스크롤 체크 시작
+  setTimeout(checkScrollComplete, 100);
 }
 
 const closeTour = () => {
@@ -302,7 +337,7 @@ onMounted(async () => {
   if (!tourCompleted.value && postCards.value.length > 0) {
     setTimeout(() => {
       startTour()
-    }, 2000)
+    }, 1000)
   }
 
   // 10초마다 전체 업데이트

@@ -101,130 +101,177 @@ const handleOverlayClick = (event: MouseEvent) => {
 }
 
 const positionTooltip = () => {
-  const targetElement = document.querySelector(currentStepData.value.target)
-  
+  // 스크롤 위치를 조정한 후 지연 시간을 추가하는 함수
+  const scrollWithDelay = async (scrollTop) => {
+    window.scrollTo({ top: scrollTop, behavior: 'smooth' });
+
+    // 스크롤 완료를 기다리기 위한 지연
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve();
+      }, 500); // 0.5초 지연 - 모바일 스크롤에 충분한 시간
+    });
+  };
+
+  const targetElement = document.querySelector(currentStepData.value.target);
+
   if (!targetElement) {
-    console.error(`Tour target element not found: ${currentStepData.value.target}`)
-    return
-  }
-  
-  const targetRect = targetElement.getBoundingClientRect()
-  const margin = currentStepData.value.margin || 10
-  
-  // Position the highlight box
-  highlightPosition.value = {
-    top: targetRect.top - margin + window.scrollY,
-    left: targetRect.left - margin + window.scrollX,
-    width: targetRect.width + margin * 2,
-    height: targetRect.height + margin * 2
-  }
-  
-  // Tooltip dimensions (approximate)
-  const tooltipWidth = 280
-  const tooltipHeight = 180
-  const defaultPosition = currentStepData.value.position || 'bottom'
-  
-  // Get device type
-  const isMobile = window.innerWidth < 768
-  
-  // Position the tooltip based on specified position and device type
-  let position = defaultPosition
-  let top, left
-
-  // For mobile, prefer left/right positioning to avoid covering the element
-  if (isMobile && (defaultPosition === 'top' || defaultPosition === 'bottom')) {
-    // Check if we have enough space on either side
-    if (targetRect.left > tooltipWidth + 40) {
-      position = 'left'
-    } else if (window.innerWidth - targetRect.right > tooltipWidth + 40) {
-      position = 'right'
-    }
-    // If neither side has enough space, keep the original position but adjust later
+    return;
   }
 
-  // Calculate initial position based on the determined position
-  switch (position) {
-    case 'top':
-      top = targetRect.top - tooltipHeight - 20 + window.scrollY
-      left = targetRect.left + (targetRect.width / 2) - (tooltipWidth / 2) + window.scrollX
-      break
-    case 'right':
-      top = targetRect.top + (targetRect.height / 2) - (tooltipHeight / 2) + window.scrollY
-      left = targetRect.right + 20 + window.scrollX
-      break
-    case 'left':
-      top = targetRect.top + (targetRect.height / 2) - (tooltipHeight / 2) + window.scrollY
-      left = targetRect.left - tooltipWidth - 20 + window.scrollX
-      break
-    case 'bottom':
-    default:
-      top = targetRect.bottom + 20 + window.scrollY
-      left = targetRect.left + (targetRect.width / 2) - (tooltipWidth / 2) + window.scrollX
+  // 먼저 요소가 뷰포트에 보이도록 스크롤
+  const targetRect = targetElement.getBoundingClientRect();
+  const buffer = 150;
+  const elementTop = targetRect.top + window.scrollY;
+  const elementBottom = targetRect.bottom + window.scrollY;
+  const viewportTop = window.scrollY;
+  const viewportBottom = window.scrollY + window.innerHeight;
+
+  // 스크롤이 필요한지 확인하고 실행
+  let scrollNeeded = false;
+  // if (elementTop < viewportTop + buffer) {
+  //   scrollNeeded = true;
+  //   scrollWithDelay(Math.max(0, elementTop - buffer)).then(() => {
+  //     // 스크롤 후 위치 다시 계산
+  //     setTimeout(calculatePositions, 100);
+  //   });
+  // } else if (elementBottom > viewportBottom - buffer) {
+  //   scrollNeeded = true;
+  //   scrollWithDelay(elementBottom - window.innerHeight + buffer).then(() => {
+  //     // 스크롤 후 위치 다시 계산
+  //     setTimeout(calculatePositions, 100);
+  //   });
+  // }
+
+  // 스크롤이 필요하지 않으면 바로 위치 계산
+  if (!scrollNeeded) {
+    calculatePositions();
   }
-  
-  // Make sure tooltip stays within viewport
-  const viewportWidth = window.innerWidth
-  const viewportHeight = window.innerHeight
-  
-  // Adjust horizontal position if needed
-  if (left < 20) left = 20
-  if (left + tooltipWidth > viewportWidth - 20) left = viewportWidth - tooltipWidth - 20
-  
-  // Adjust vertical position if needed
-  if (top < 20) top = 20
-  
-  // If the tooltip would go below viewport, try another position
-  if (top + tooltipHeight > viewportHeight + window.scrollY - 20) {
-    if (position === 'bottom') {
-      // If bottom doesn't fit, try top
-      const topPosition = targetRect.top - tooltipHeight - 20 + window.scrollY
-      if (topPosition > 20) {
-        // If top position is viable, use it
-        top = topPosition
-      } else {
-        // If neither top nor bottom fits well, try left or right
-        if (targetRect.left > tooltipWidth + 40) {
-          // Use left position
-          top = targetRect.top + (targetRect.height / 2) - (tooltipHeight / 2) + window.scrollY
-          left = targetRect.left - tooltipWidth - 20 + window.scrollX
-        } else if (viewportWidth - targetRect.right > tooltipWidth + 40) {
-          // Use right position
-          top = targetRect.top + (targetRect.height / 2) - (tooltipHeight / 2) + window.scrollY
-          left = targetRect.right + 20 + window.scrollX
-        }
-        // If all else fails, just make sure it's on screen
-        if (top + tooltipHeight > viewportHeight + window.scrollY - 20) {
-          top = viewportHeight + window.scrollY - tooltipHeight - 20
-        }
+
+  // 위치 계산 함수
+  function calculatePositions() {
+    // 스크롤 후 DOM이 업데이트 되었을 수 있으므로 요소 다시 찾기
+    const updatedElement = document.querySelector(currentStepData.value.target);
+    if (!updatedElement) return;
+
+    const updatedRect = updatedElement.getBoundingClientRect();
+    const margin = currentStepData.value.margin || 10;
+
+    // 하이라이트 박스 위치 지정
+    highlightPosition.value = {
+      top: updatedRect.top - margin + window.scrollY,
+      left: updatedRect.left - margin + window.scrollX,
+      width: updatedRect.width + margin * 2,
+      height: updatedRect.height + margin * 2
+    };
+
+    // 툴팁 차원 (근사값)
+    const tooltipWidth = 280;
+    const tooltipHeight = 180;
+    const defaultPosition = currentStepData.value.position || 'bottom';
+
+    // 디바이스 유형 가져오기
+    const isMobile = window.innerWidth < 768;
+
+    // 지정된 위치와 디바이스 유형에 따라 툴팁 배치
+    let position = defaultPosition;
+    let top, left;
+
+    // 모바일의 경우 요소를 가리지 않도록 왼쪽/오른쪽 위치를 선호
+    if (isMobile && (defaultPosition === 'top' || defaultPosition === 'bottom')) {
+      // 양쪽에 충분한 공간이 있는지 확인
+      if (updatedRect.left > tooltipWidth + 40) {
+        position = 'left';
+      } else if (window.innerWidth - updatedRect.right > tooltipWidth + 40) {
+        position = 'right';
       }
-    } else if (position === 'left' || position === 'right') {
-      // Adjust vertical alignment for left/right tooltips
-      top = Math.min(top, viewportHeight + window.scrollY - tooltipHeight - 20)
+      // 양쪽에 충분한 공간이 없는 경우 원래 위치를 유지하되 나중에 조정
     }
+
+    // 결정된 위치에 따라 초기 위치 계산
+    switch (position) {
+      case 'top':
+        top = updatedRect.top - tooltipHeight - 20 + window.scrollY;
+        left = updatedRect.left + (updatedRect.width / 2) - (tooltipWidth / 2) + window.scrollX;
+        break;
+      case 'right':
+        top = updatedRect.top + (updatedRect.height / 2) - (tooltipHeight / 2) + window.scrollY;
+        left = updatedRect.right + 20 + window.scrollX;
+        break;
+      case 'left':
+        top = updatedRect.top + (updatedRect.height / 2) - (tooltipHeight / 2) + window.scrollY;
+        left = updatedRect.left - tooltipWidth - 20 + window.scrollX;
+        break;
+      case 'bottom':
+      default:
+        top = updatedRect.bottom + 20 + window.scrollY;
+        left = updatedRect.left + (updatedRect.width / 2) - (tooltipWidth / 2) + window.scrollX;
+    }
+
+    // 툴팁이 뷰포트 내에 머무르도록 함
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // 필요한 경우 가로 위치 조정
+    if (left < 20) left = 20;
+    if (left + tooltipWidth > viewportWidth - 20) left = viewportWidth - tooltipWidth - 20;
+
+    // 필요한 경우 세로 위치 조정
+    if (top < 20) top = 20;
+
+    // 툴팁이 뷰포트 아래로 내려갈 경우 다른 위치 시도
+    if (top + tooltipHeight > viewportHeight + window.scrollY - 20) {
+      if (position === 'bottom') {
+        // 아래쪽이 맞지 않으면 위쪽 시도
+        const topPosition = updatedRect.top - tooltipHeight - 20 + window.scrollY;
+        if (topPosition > 20) {
+          // 위쪽 위치가 가능하면 사용
+          top = topPosition;
+        } else {
+          // 위쪽이나 아래쪽이 잘 맞지 않으면 왼쪽이나 오른쪽 시도
+          if (updatedRect.left > tooltipWidth + 40) {
+            // 왼쪽 위치 사용
+            top = updatedRect.top + (updatedRect.height / 2) - (tooltipHeight / 2) + window.scrollY;
+            left = updatedRect.left - tooltipWidth - 20 + window.scrollX;
+          } else if (viewportWidth - updatedRect.right > tooltipWidth + 40) {
+            // 오른쪽 위치 사용
+            top = updatedRect.top + (updatedRect.height / 2) - (tooltipHeight / 2) + window.scrollY;
+            left = updatedRect.right + 20 + window.scrollX;
+          }
+          // 모든 것이 실패하면 화면에 있도록만 확인
+          if (top + tooltipHeight > viewportHeight + window.scrollY - 20) {
+            top = viewportHeight + window.scrollY - tooltipHeight - 20;
+          }
+        }
+      } else if (position === 'left' || position === 'right') {
+        // 왼쪽/오른쪽 툴팁의 세로 정렬 조정
+        top = Math.min(top, viewportHeight + window.scrollY - tooltipHeight - 20);
+      }
+    }
+
+    if (window.innerWidth <= 480 && position === 'top') {
+      // 모든 툴팁을 화면 상단에 고정
+      top = 200 + window.scrollY;
+      left = (viewportWidth - tooltipWidth) / 2; // 화면 중앙
+    }
+
+    // 최종 위치
+    tooltipPosition.value = { top, left };
   }
-  
-  // Final position
-  tooltipPosition.value = { top, left }
-  
-  // Scroll target into view if needed
-  const buffer = 150 // Extra buffer to scroll before the element
-  const elementTop = targetRect.top + window.scrollY
-  const elementBottom = targetRect.bottom + window.scrollY
-  const viewportTop = window.scrollY
-  const viewportBottom = window.scrollY + window.innerHeight
-  
-  if (elementTop < viewportTop + buffer) {
-    window.scrollTo({ top: Math.max(0, elementTop - buffer), behavior: 'smooth' })
-  } else if (elementBottom > viewportBottom - buffer) {
-    window.scrollTo({ top: elementBottom - window.innerHeight + buffer, behavior: 'smooth' })
-  }
-}
+};
 
 const updatePosition = () => {
+  // 모바일에서 더 긴 지연 추가
+  const isMobile = window.innerWidth < 640;
+  const delay = isMobile ? 100 : 100;
+
   nextTick(() => {
-    positionTooltip()
-  })
-}
+    // 레이아웃이 안정화 될 때까지 짧은 지연
+    setTimeout(() => {
+      positionTooltip();
+    }, delay);
+  });
+};
 
 watch(() => props.show, (newVal) => {
   if (newVal) {
@@ -261,7 +308,7 @@ defineExpose({
   right: 0;
   bottom: 0;
   z-index: 9999;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.1);
   pointer-events: all;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -273,13 +320,17 @@ defineExpose({
 
 .highlight-box {
   position: absolute;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
+  box-shadow: none;
   border-radius: 4px;
   z-index: 10000;
   background-color: transparent;
   border: 2px solid #2979FF;
   transition: all 0.3s ease;
   animation: highlight-pulse 2s infinite alternate;
+  -webkit-mask: none;
+  mask: none;
+  /* 오버레이에서 해당 부분을 잘라내는 효과 */
+  filter: drop-shadow(0 0 0 transparent);
 }
 
 @keyframes highlight-pulse {
@@ -316,9 +367,86 @@ defineExpose({
   }
 }
 
+/* 툴팁 전체 크기를 모바일에서 더 작게 조정 */
 @media (max-width: 640px) {
   .tour-tooltip {
-    width: min(280px, calc(100vw - 40px));
+    width: min(260px, calc(100vw - 40px));
+    font-size: 0.9rem; /* 전체 폰트 크기 약간 줄임 */
+  }
+
+  .tooltip-header {
+    padding: 10px 12px; /* 헤더 패딩 줄임 */
+  }
+
+  .step-indicator {
+    font-size: 11px; /* 단계 표시 텍스트 크기 줄임 */
+  }
+
+  .close-button {
+    padding: 3px; /* 닫기 버튼 패딩 줄임 */
+  }
+
+  .tooltip-content {
+    padding: 12px; /* 내용 패딩 줄임 */
+  }
+
+  .tooltip-content h3 {
+    font-size: 15px; /* 제목 크기 줄임 */
+    margin-bottom: 6px;
+  }
+
+  .tooltip-content p {
+    font-size: 13px; /* 내용 텍스트 크기 줄임 */
+    line-height: 1.5;
+  }
+
+  .tooltip-footer {
+    padding: 10px 12px; /* 푸터 패딩 줄임 */
+  }
+
+  .tour-btn {
+    padding: 6px 12px; /* 버튼 패딩 줄임 */
+    min-width: 70px; /* 버튼 최소 너비 줄임 */
+    font-size: 12px; /* 버튼 텍스트 크기 줄임 */
+  }
+
+  /* 하이라이트 박스 테두리 두께 줄임 */
+  .highlight-box {
+    border-width: 1.5px;
+  }
+
+  /* 더 작은 모바일 화면에서 추가 조정 */
+  @media (max-width: 375px) {
+    .tour-tooltip {
+      width: min(240px, calc(100vw - 30px));
+      font-size: 0.85rem;
+    }
+
+    .tooltip-content h3 {
+      font-size: 14px;
+    }
+
+    .tooltip-content p {
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .tour-btn {
+      padding: 5px 10px;
+      min-width: 60px;
+      font-size: 11px;
+    }
+  }
+
+  @keyframes highlight-pulse {
+    0% {
+      border-color: rgba(41, 121, 255, 0.7);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65), 0 0 0 1.5px rgba(41, 121, 255, 0.2);
+    }
+    100% {
+      border-color: rgba(41, 121, 255, 1);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65), 0 0 0 3px rgba(41, 121, 255, 0.4);
+    }
   }
 }
 
@@ -369,22 +497,6 @@ defineExpose({
   font-size: 14px;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.9);
-}
-
-@media (max-width: 640px) {
-  .tooltip-content {
-    padding: 16px;
-  }
-  
-  .tooltip-content h3 {
-    font-size: 17px;
-    margin-bottom: 10px;
-  }
-  
-  .tooltip-content p {
-    font-size: 15px;
-    line-height: 1.7;
-  }
 }
 
 .tooltip-footer {
