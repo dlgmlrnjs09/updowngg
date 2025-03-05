@@ -70,30 +70,6 @@
         @delete="handleReviewDelete"
       />
     </template>
-    
-    <!-- 가이드 모달 -->
-    <GuideModal
-      v-if="showGuide"
-      :pages="guidePages"
-      :show="showGuide"
-      :close-on-overlay-click="true"
-      @close="closeGuide"
-      @page-changed="handleGuidePageChange"
-      @complete="completeGuide"
-    />
-    
-    <!-- 가이드 시작 버튼 -->
-    <button
-      v-if="!showGuide && !guideCompleted && !isLoading"
-      @click="startGuide"
-      class="fixed bottom-8 right-8 bg-[#2979FF] text-white p-3 rounded-full shadow-lg hover:bg-[#1A67E0] transition-all z-50 flex items-center group"
-      aria-label="소환사 프로필 설명 보기"
-    >
-      <HelpCircle class="w-6 h-6" />
-      <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-500 ease-linear bg-[#2979FF] rounded-l-full -ml-3 pl-5 pr-2">
-        프로필 설명
-      </span>
-    </button>
   </div>
 </template>
 
@@ -107,8 +83,6 @@ import DetailModal from '@/components/review/modal/DetailModal.vue'
 import ReviewModal from '@/components/review/modal/ReviewModal.vue'
 import ProfileSkeleton from '@/components/summoner/SummonerProfileSkeleton.vue'
 import MatchListSkeleton from '@/components/match/MatchListSkeleton.vue'
-import GuideModal from '@/components/common/GuideModal.vue'
-import { HelpCircle } from 'lucide-vue-next'
 import {summonerApi} from '@/api/summoner'
 import {matchApi} from '@/api/match'
 import {reviewApi} from '@/api/review'
@@ -157,36 +131,6 @@ const suggestTag = ref<ReviewTagSuggestDto[]>([])
 const writtenReview = ref<ReviewRequestDto | null>(null)
 const playTogetherLatestMatch = ref<LolMatchInfoRes | null>(null);
 const currentMatchInfo = ref<CurrentMatchInfoDto>();
-
-// 가이드 모달 관련 상태
-const showGuide = ref(false);
-const guideCompleted = ref(false);
-const GUIDE_COMPLETED_KEY = 'summoner_guide_completed';
-const currentGuidePageIndex = ref(0);
-
-// 가이드 페이지 정의
-const guidePages = [
-  {
-    title: '소환사 프로필',
-    content: '소환사의 기본 정보, 티어, 주요 챔피언 정보를 볼 수 있습니다. 프로필 사진을 클릭하면 상세 정보를 볼 수 있으며, 매치 데이터 업데이트 버튼을 통해 최신 경기 기록을 불러올 수 있습니다.'
-    // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
-  },
-  {
-    title: '평가 정보',
-    content: '소환사에 대한 다른 유저들의 평가 정보를 확인할 수 있습니다. 평가 점수, 좋아요/싫어요 비율, 자주 받은 태그와 최근 받은 평가 내용을 볼 수 있습니다. 포지션별, 챔피언별 평가 통계도 확인할 수 있습니다.'
-    // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
-  },
-  {
-    title: '현재 게임 정보',
-    content: '소환사가 현재 게임 중이라면 현재 진행 중인 게임의 정보를 확인할 수 있습니다. 팀원들의 정보와 상대 팀 구성, 각 소환사의 최근 승률 등 유용한 정보를 제공합니다.'
-    // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
-  },
-  {
-    title: '경기 기록',
-    content: '소환사의 과거 경기 기록을 볼 수 있습니다. 각 게임의 결과, KDA, 아이템 빌드, 룬 선택 등 상세 정보를 확인할 수 있으며, 같이 플레이한 다른 소환사에 대한 평가도 남길 수 있습니다. 게임 모드나 평가 여부로 필터링이 가능합니다.'
-    // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
-  }
-];
 
 const currentMatchFilters = ref({
   gameMode: 'ALL',
@@ -541,56 +485,15 @@ watchEffect(async () => {
       toast.error('소환사 정보를 불러오는데 실패했습니다.');
     } finally {
       isLoading.value = false;
-      
-      // 처음 방문한 사용자에게 2초 후 가이드 표시
-      if (!guideCompleted.value) {
-        setTimeout(() => {
-          startGuide();
-        }, 2000);
-      }
     }
   }
 });
 
-// 가이드 관련 메서드
-const startGuide = () => {
-  currentGuidePageIndex.value = 0;
-  showGuide.value = true;
-};
-
-const closeGuide = () => {
-  showGuide.value = false;
-};
-
-const handleGuidePageChange = (pageIndex: number) => {
-  currentGuidePageIndex.value = pageIndex;
-};
-
-const completeGuide = () => {
-  showGuide.value = false;
-  guideCompleted.value = true;
-  
-  // 로컬 스토리지에 가이드 완료 상태 저장
-  localStorage.setItem(GUIDE_COMPLETED_KEY, 'true');
-  
-  // 완료 메시지
-  toast.success('소환사 프로필 설명을 완료했습니다!');
-  
-  // 5분 후에 도움 버튼 다시 표시
-  setTimeout(() => {
-    guideCompleted.value = false;
-  }, 300000); // 5분
-};
-
 onMounted(async () => {
-  await fetchReviewTags();
+  await fetchReviewTags()
   await fetchReviewTagCategories();
   writtenReview.value = null;
   playTogetherLatestMatch.value = null;
-  
-  // 로컬 스토리지에서 가이드 완료 상태 확인
-  const completedStatus = localStorage.getItem(GUIDE_COMPLETED_KEY);
-  guideCompleted.value = completedStatus === 'true';
 })
 </script>
 <style scoped>
