@@ -51,9 +51,9 @@
 
       <!-- 내 파티 미니바 -->
       <MyActiveParty
-          v-if="myActiveParty"
+          v-if="myActiveParty || showGuide"
           id="active-party"
-          :party="myActiveParty"
+          :party="myActiveParty || dummyActiveParty"
           :my-puuid="myPuuid"
           :has-new-applicant="hasNewApplicant"
           :participant-count="participantCount"
@@ -73,6 +73,7 @@
           :applied-positions="appliedPositions"
           :is-loading="isLoading"
           :show-read-more="showReadMore"
+          :is-guide-active="showGuide && currentGuidePageIndex === 2"
           @apply="applyForPosition"
           @load-more="onLoadMore"
       />
@@ -142,13 +143,13 @@ const guidePages = [
     // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
   },
   {
-    title: '파티 목록',
-    content: '이곳에서 다양한 파티를 확인할 수 있습니다. 각 카드에는 파티 정보와 참여 가능한 포지션이 표시됩니다. 원하는 포지션의 신청 버튼을 클릭하여 파티 참가를 신청하세요. 파티장이 승인하면 파티에 합류됩니다.'
+    title: '내 활성 파티',
+    content: '내가 참여중인 파티 정보입니다. 파티장이면 신청자 관리, 모집 마감, 취소가 가능합니다. 파티장은 포지션별 신청자를 확인하고 승인하거나 거절할 수 있으며, 신청자가 있으면 숫자로 표시됩니다. 일반 멤버는 파티에서 나갈 수 있습니다.'
     // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
   },
   {
-    title: '내 활성 파티',
-    content: '내가 참여중인 파티 정보입니다. 파티장이면 신청자 관리, 모집 마감, 취소가 가능합니다. 파티장은 포지션별 신청자를 확인하고 승인하거나 거절할 수 있으며, 신청자가 있으면 숫자로 표시됩니다. 일반 멤버는 파티에서 나갈 수 있습니다.'
+    title: '파티 목록',
+    content: '이곳에서 다양한 파티를 확인할 수 있습니다. 각 카드에는 파티 정보와 참여 가능한 포지션이 표시됩니다. 원하는 포지션의 신청 버튼을 클릭하여 파티 참가를 신청하세요. 파티장이 승인하면 파티에 합류됩니다.'
     // image: '/path/to/your/image.jpg' - 이미지는 직접 추가 예정
   },
   {
@@ -168,6 +169,75 @@ const myApplicationsStatus = ref<Map<string, string>>(new Map()); // key: `${pos
 const previousApplicationsStatus = ref<Map<string, string>>(new Map());
 const isApplyingPosition = ref(false);
 const lastAppliedTime = ref(new Map<string, number>());
+
+// 가이드용 더미 파티 데이터
+const dummyActiveParty = {
+  postCardDto: {
+    postId: 99999,
+    writerPuuid: myPuuid.value || 'dummy-puuid',
+    gameMode: 'FLEX_RANK',
+    isUseMic: true,
+    tierMin: 'GOLD',
+    tierMax: 'DIAMOND',
+    participantCount: 3,
+    recruitCount: 5,
+    participantDtoList: [
+      {
+        position: 'TOP',
+        isOpenPosition: true,
+        summonerInfoDto: {
+          summonerBasicInfoDto: {
+            puuid: myPuuid.value || 'dummy-puuid',
+            gameName: '가이드용소환사',
+            tagLine: 'KR1',
+            tier: 'PLATINUM',
+            profileIconUrl: ''
+          }
+        }
+      },
+      {
+        position: 'JG',
+        isOpenPosition: true,
+        summonerInfoDto: null
+      },
+      {
+        position: 'MID',
+        isOpenPosition: true,
+        summonerInfoDto: {
+          summonerBasicInfoDto: {
+            puuid: 'dummy-mid-puuid',
+            gameName: '미드유저',
+            tagLine: 'KR1',
+            tier: 'DIAMOND',
+            profileIconUrl: ''
+          }
+        }
+      },
+      {
+        position: 'AD',
+        isOpenPosition: true,
+        summonerInfoDto: {
+          summonerBasicInfoDto: {
+            puuid: 'dummy-ad-puuid',
+            gameName: '원딜유저',
+            tagLine: 'KR1',
+            tier: 'PLATINUM',
+            profileIconUrl: ''
+          }
+        }
+      },
+      {
+        position: 'SUP',
+        isOpenPosition: true,
+        summonerInfoDto: null
+      }
+    ]
+  },
+  applicantByPositionMap: {
+    'JG': [],
+    'SUP': []
+  }
+};
 
 // 가이드 관련 메서드
 const startGuide = () => {
@@ -367,6 +437,16 @@ const compareApplicants = (oldApplicantMap: any, newApplicantMap: any) => {
 };
 
 const handleUpdatePartyStatus = async (postId: number, status: string) => {
+  // 가이드용 더미 파티인 경우 무시
+  if (postId === 99999) {
+    if (status === 'CLOSE') {
+      toast.success('모집 마감되었습니다.')
+    } else {
+      toast.success('모집 취소되었습니다.')
+    }
+    return
+  }
+
   if (status === 'CLOSE') {
     await communityApi.closeParty(postId)
     toast.success('모집 마감되었습니다.')
@@ -381,12 +461,24 @@ const handleUpdatePartyStatus = async (postId: number, status: string) => {
 }
 
 const handleApprove = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
+  // 가이드용 더미 파티인 경우 무시
+  if (postId === 99999) {
+    toast.success('승인되었습니다.')
+    return
+  }
+
   await communityApi.approvePartyApplicant(postId, applicantPuuid, applicantSeq, position)
   toast.success('승인되었습니다.')
   await checkUpdates()
 }
 
 const handleReject = async (postId: number, applicantPuuid: string, applicantSeq: number, position: string) => {
+  // 가이드용 더미 파티인 경우 무시
+  if (postId === 99999) {
+    toast.success('거절되었습니다.')
+    return
+  }
+
   await communityApi.rejectPartyApplicant(postId, applicantPuuid, applicantSeq, position)
   toast.success('거절되었습니다.')
   await checkUpdates()
@@ -718,12 +810,24 @@ const applyForPosition = async (postId: number, position: string) => {
 };
 
 const handleLeaveParty = async (postId: number) => {
+  // 가이드용 더미 파티인 경우 무시
+  if (postId === 99999) {
+    toast.success('파티 탈퇴되었습니다.')
+    return
+  }
+
   await communityApi.leaveMyParty(postId)
   toast.success('파티 탈퇴되었습니다.')
   await checkUpdates()
 }
 
 const handleKickMember = async (postId: number, memberPuuid: string) => {
+  // 가이드용 더미 파티인 경우 무시
+  if (postId === 99999) {
+    toast.success('파티원이 강퇴되었습니다.')
+    return
+  }
+
   try {
     await communityApi.kickPartyMember(postId, memberPuuid)
     toast.success('파티원이 강퇴되었습니다.')
