@@ -79,8 +79,16 @@ const tooltipStyle = computed(() => {
 
 const nextStep = () => {
   if (currentStep.value < props.steps.length) {
-    currentStep.value++
-    emit('step-changed', currentStep.value)
+    // 단계 변경 전에 잠시 딜레이를 주어 스크롤 및 요소 준비 시간 확보
+    setTimeout(() => {
+      currentStep.value++
+      emit('step-changed', currentStep.value)
+      
+      // 단계 변경 후 추가 딜레이로 화면이 준비될 시간 제공
+      setTimeout(() => {
+        positionTooltip()
+      }, 300)
+    }, 100)
   } else {
     emit('tour-completed')
   }
@@ -88,8 +96,16 @@ const nextStep = () => {
 
 const prevStep = () => {
   if (currentStep.value > 1) {
-    currentStep.value--
-    emit('step-changed', currentStep.value)
+    // 단계 변경 전에 잠시 딜레이를 주어 스크롤 및 요소 준비 시간 확보
+    setTimeout(() => {
+      currentStep.value--
+      emit('step-changed', currentStep.value)
+      
+      // 단계 변경 후 추가 딜레이로 화면이 준비될 시간 제공
+      setTimeout(() => {
+        positionTooltip()
+      }, 300)
+    }, 100)
   }
 }
 
@@ -206,17 +222,32 @@ const positionTooltip = () => {
   // Final position
   tooltipPosition.value = { top, left }
   
-  // Scroll target into view if needed
-  const buffer = 150 // Extra buffer to scroll before the element
+  // 개선된 스크롤 로직: 대상 요소가 화면 중앙에 오도록 함
+  const buffer = 200 // 더 큰 버퍼로 여유 공간 확보
   const elementTop = targetRect.top + window.scrollY
   const elementBottom = targetRect.bottom + window.scrollY
+  const elementHeight = targetRect.height
   const viewportTop = window.scrollY
-  const viewportBottom = window.scrollY + window.innerHeight
+  const viewportHeight = window.innerHeight
+  const viewportBottom = viewportTop + viewportHeight
   
-  if (elementTop < viewportTop + buffer) {
-    window.scrollTo({ top: Math.max(0, elementTop - buffer), behavior: 'smooth' })
-  } else if (elementBottom > viewportBottom - buffer) {
-    window.scrollTo({ top: elementBottom - window.innerHeight + buffer, behavior: 'smooth' })
+  // 요소의 중앙 위치 계산
+  const elementCenter = elementTop + (elementHeight / 2)
+  // 화면 중앙으로 스크롤할 위치 계산
+  const targetScrollPosition = elementCenter - (viewportHeight / 2)
+  
+  // 요소가 화면에 완전히 보이지 않을 경우 스크롤
+  if (elementTop < viewportTop + buffer || elementBottom > viewportBottom - buffer) {
+    // 요소를 화면 중앙에 배치하도록 스크롤
+    window.scrollTo({ 
+      top: Math.max(0, targetScrollPosition), 
+      behavior: 'smooth' 
+    })
+    
+    // 스크롤 애니메이션이 완료된 후 위치 업데이트를 위해 약간의 지연 추가
+    setTimeout(() => {
+      positionTooltip()
+    }, 500)
   }
 }
 
