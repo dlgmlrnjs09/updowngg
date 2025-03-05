@@ -64,9 +64,10 @@
           @kick-member="handleKickMember"
       />
       
-      <!-- 투어를 위한 가상 파티 -->
+      <!-- 투어를 위한 가상 파티 - 항상 표시 (투어 모드일 때) -->
       <MockActiveParty 
-          v-if="!myActiveParty && showTour && shouldShowMockParty" 
+          v-if="!myActiveParty && showTour" 
+          id="active-party"
           :has-highlight="currentTourStep >= 4"
       />
 
@@ -159,10 +160,10 @@ const baseSteps = [
     margin: 5
   },
   {
-    target: '#party-grid',
-    title: '파티 목록',
-    content: '이곳에서 다양한 파티를 확인할 수 있습니다. 각 카드에는 파티 정보와 참여 가능한 포지션이 표시됩니다.',
-    position: 'top',
+    target: '.card-transition > div:first-child',
+    title: '파티 카드',
+    content: '각 카드에는 파티 정보와 참여 가능한 포지션이 표시됩니다. 원하는 파티를 찾아 참가해보세요.',
+    position: 'right',
     margin: 10
   },
   {
@@ -192,7 +193,7 @@ const myPartySteps = [
   }
 ]
 
-// 모든 사용자에게 전체 투어 스텝을 보여줌 (없는 경우 목업 파티 사용)
+// 모든 사용자에게 전체 투어 스텝을 보여줌 (항상 모든 단계 표시)
 const tourSteps = computed(() => {
   return [...baseSteps, ...myPartySteps]
 })
@@ -212,7 +213,6 @@ const lastAppliedTime = ref(new Map<string, number>());
 const startTour = () => {
   // 리셋 및 초기화
   currentTourStep.value = 1
-  shouldShowMockParty.value = false
   showTour.value = true
 }
 
@@ -224,15 +224,6 @@ const closeTour = () => {
 const handleTourStepChange = (step: number) => {
   // 현재 스텝 저장
   currentTourStep.value = step
-  
-  // 파티 관련 스텝에 진입하면 목업 파티 표시
-  const partyStepIndex = myActiveParty.value ? 4 : 3 // 파티가 있으면 기본스텝+1, 없으면 기본스텝
-  
-  if (!myActiveParty.value && step >= partyStepIndex) {
-    shouldShowMockParty.value = true
-  } else if (!myActiveParty.value && step < partyStepIndex) {
-    shouldShowMockParty.value = false
-  }
   
   // 특정 스텝에서 필요한 추가 액션 처리
   console.log(`Tour step changed to ${step}`)
