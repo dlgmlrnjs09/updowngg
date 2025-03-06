@@ -15,6 +15,12 @@
           :show-profile="true"
       />
     </div>
+    
+    <!-- 온보딩 모달 -->
+    <OnboardingModal 
+      :is-open="showOnboarding" 
+      @close="hideOnboarding" 
+    />
   </div>
 </template>
 
@@ -22,19 +28,34 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import Search from '@/components/common/Search.vue';
 import ReviewRolling from '@/components/review/ReviewRolling.vue';
+import OnboardingModal from '@/components/onboarding/OnboardingModal.vue';
 import type {ReviewRequestDto} from "@/types/review.ts";
 import {reviewApi} from "@/api/review.ts";
 
-const recentReviews = ref<ReviewRequestDto[]>([])
+const recentReviews = ref<ReviewRequestDto[]>([]);
+const showOnboarding = ref(false);
 
 onMounted(async () => {
   await fetchRecentReviews();
+  checkOnboarding();
 });
 
 const fetchRecentReviews = async () => {
   const response = await reviewApi.getRecentReviews(20);
   recentReviews.value = response.data;
-}
+};
+
+const checkOnboarding = () => {
+  // 이미 온보딩을 본 사용자인지 확인
+  const onboardingShown = localStorage.getItem('onboardingShown');
+  if (!onboardingShown) {
+    showOnboarding.value = true;
+  }
+};
+
+const hideOnboarding = () => {
+  showOnboarding.value = false;
+};
 
 </script>
 
