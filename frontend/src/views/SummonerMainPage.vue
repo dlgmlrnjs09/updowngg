@@ -94,6 +94,7 @@ import {summonerApi} from '@/api/summoner'
 import {matchApi} from '@/api/match'
 import {reviewApi} from '@/api/review'
 import {useOnboardingStore} from '@/stores/onboarding'
+import onboardingUtil from '@/utils/onboardingUtil'
 import type {LolSummonerProfileResDto} from '@/types/summoner'
 import type {CurrentMatchInfoDto, LolMatchInfoRes, LolMatchParticipant} from '@/types/match'
 import type {
@@ -121,14 +122,8 @@ const isUpdatedMatchList = ref(false);
 const currentStartIndex = ref(0);
 const noMoreMatches = ref(false);
 
-// 온보딩 타겟 셀렉터 (각 단계별 가이드할 요소의 CSS 셀렉터)
-const onboardingTargets = [
-  '.profile-info', // 프로필 정보
-  '.no-review-message', // 통계 정보 (데이터가 없는 경우)
-  '.rank-section', // 티어 정보
-  '.no-match-container', // 매치 리스트 (데이터가 없는 경우)
-  '.button-group' // 리뷰 버튼
-];
+// 온보딩 타겟 셀렉터 (프로필 페이지용)
+const onboardingTargets = onboardingUtil.getPageSelectors('profile');
 
 const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
 const reviewStatsInfo = ref<ReviewStatsDto | null>(null)
@@ -513,8 +508,8 @@ onMounted(async () => {
   writtenReview.value = null;
   playTogetherLatestMatch.value = null;
   
-  // 온보딩 초기화 - 최초 1회는 자동으로 온보딩 활성화
-  onboardingStore.initOnboarding();
+  // 프로필 페이지 온보딩 초기화 - 페이지별로 온보딩 완료 여부를 저장
+  onboardingUtil.initPageOnboarding('profile');
 })
 </script>
 <style scoped>

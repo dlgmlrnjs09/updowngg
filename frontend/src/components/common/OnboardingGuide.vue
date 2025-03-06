@@ -68,12 +68,14 @@ const currentContent = computed(() => {
 // 이전 버튼 처리
 const handlePrev = () => {
   removeHighlight()
+  cleanupVirtualElement()
   onboardingStore.prevStep()
 }
 
 // 다음 버튼 처리
 const handleNext = () => {
   removeHighlight()
+  cleanupVirtualElement()
   onboardingStore.nextStep()
 }
 
@@ -84,6 +86,14 @@ const removeHighlight = () => {
     currentHighlightedElement.value.style.removeProperty('box-shadow')
     currentHighlightedElement.value.style.removeProperty('transition')
     currentHighlightedElement.value = null
+  }
+}
+
+// 가상 요소 정리
+const cleanupVirtualElement = () => {
+  const virtualElement = document.getElementById('virtual-onboarding-element');
+  if (virtualElement) {
+    virtualElement.remove();
   }
 }
 
@@ -102,38 +112,143 @@ const highlightElement = (element: HTMLElement) => {
   }
 }
 
+// 요소가 화면에 보이는지 확인
+const isElementInViewport = (element: HTMLElement) => {
+  const rect = element.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= window.innerHeight &&
+    rect.right <= window.innerWidth
+  );
+};
+
+// 요소로 스크롤
+const scrollToElement = (element: HTMLElement) => {
+  // 요소가 화면에 보이지 않으면 스크롤
+  if (!isElementInViewport(element)) {
+    // 가장 가까운 스크롤 가능한 부모 요소를 찾기
+    let scrollParent = element.parentElement;
+    while (scrollParent && getComputedStyle(scrollParent).overflow === 'visible') {
+      scrollParent = scrollParent.parentElement;
+    }
+    
+    // 스크롤 가능한 부모가 없으면 window로 스크롤
+    if (!scrollParent || scrollParent === document.documentElement) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    } else {
+      // 부모 요소 내에서 스크롤
+      const parentRect = scrollParent.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const scrollTo = elementRect.top - parentRect.top - (parentRect.height / 2) + (elementRect.height / 2);
+      
+      scrollParent.scrollBy({
+        top: scrollTo,
+        behavior: 'smooth'
+      });
+    }
+    
+    // 스크롤 완료까지 잠시 대기 (애니메이션 시간 고려)
+    return new Promise(resolve => setTimeout(resolve, 500));
+  }
+  
+  return Promise.resolve();
+};
+
+// 가상 요소 생성 및 추가
+const createVirtualElement = () => {
+  // 이미 생성된 가상 요소가 있으면 제거
+  const existingVirtual = document.getElementById('virtual-onboarding-element');
+  if (existingVirtual) {
+    existingVirtual.remove();
+  }
+  
+  // 새 가상 요소 생성
+  const virtualElement = document.createElement('div');
+  virtualElement.id = 'virtual-onboarding-element';
+  virtualElement.style.position = 'relative';
+  virtualElement.style.width = '280px';
+  virtualElement.style.height = '100px';
+  virtualElement.style.margin = '40px auto';
+  virtualElement.style.backgroundColor = 'rgba(41, 121, 255, 0.1)';
+  virtualElement.style.borderRadius = '8px';
+  virtualElement.style.display = 'flex';
+  virtualElement.style.alignItems = 'center';
+  virtualElement.style.justifyContent = 'center';
+  virtualElement.style.color = '#2979FF';
+  virtualElement.style.fontSize = '14px';
+  virtualElement.style.fontWeight = '500';
+  virtualElement.style.zIndex = '9998';
+  
+  // 현재 단계에 맞는 텍스트 추가
+  const stepTexts = [
+    '프로필 정보 영역',
+    '통계 정보 영역',
+    '티어 정보 영역',
+    '게임 기록 영역',
+    '리뷰 영역'
+  ];
+  virtualElement.textContent = stepTexts[onboardingStore.currentStep] || '안내 영역';
+  
+  // 페이지의 적절한 위치에 요소 추가
+  // 컨테이너를 찾아보고 없으면 body에 직접 추가
+  const container = document.querySelector('.container') || document.body;
+  container.appendChild(virtualElement);
+  
+  return virtualElement;
+};
+
 // 툴팁 위치 계산 및 설정
 const updateTooltipPosition = async () => {
-  await nextTick()
+  await nextTick();
   
-  const targetSelector = props.targetSelectors[onboardingStore.currentStep]
-  if (!targetSelector) return
+  // 현재 단계에 해당하는 셀렉터 가져오기
+  const targetSelector = props.targetSelectors[onboardingStore.currentStep];
+  if (!targetSelector) return;
   
-  const targetElement = document.querySelector(targetSelector) as HTMLElement
-  if (!targetElement || !tooltipRef.value) return
+  // 해당 셀렉터에 맞는 요소 찾기
+  let targetElement = document.querySelector(targetSelector) as HTMLElement;
+  let isVirtualElement = false;
   
-  // 요소 강조 표시
-  highlightElement(targetElement)
+  // 요소가 없으면 가상 요소 생성
+  if (!targetElement) {
+    targetElement = createVirtualElement();
+    isVirtualElement = true;
+  }
   
-  const targetRect = targetElement.getBoundingClientRect()
-  const tooltipRect = tooltipRef.value.getBoundingClientRect()
+  if (!targetElement || !tooltipRef.value) return;
+  
+  // 요소가 화면에 보이도록 스크롤
+  await scrollToElement(targetElement);
+  
+  // 요소 강조 표시 (가상 요소가 아닌 경우에만)
+  if (!isVirtualElement) {
+    highlightElement(targetElement);
+  }
+  
+  // 요소의 위치 가져오기
+  const targetRect = targetElement.getBoundingClientRect();
+  const tooltipRect = tooltipRef.value.getBoundingClientRect();
   
   // 화면 크기
-  const viewportWidth = window.innerWidth
-  const viewportHeight = window.innerHeight
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
   
   // 기본 위치 계산 (모바일에서는 상단에, 데스크탑에서는 요소 옆에 표시)
-  let top = 0
-  let left = 0
+  let top = 0;
+  let left = 0;
   
   if (viewportWidth < 768) {
     // 모바일: 화면 상단에 고정
-    top = Math.max(10, targetRect.top - tooltipRect.height - 10)
-    left = (viewportWidth - tooltipRect.width) / 2
+    top = Math.max(10, targetRect.top - tooltipRect.height - 10);
+    left = (viewportWidth - tooltipRect.width) / 2;
     
     // 모바일에서 요소가 화면 상단에 있으면 아래쪽에 표시
     if (top < 10) {
-      top = Math.min(targetRect.bottom + 10, viewportHeight - tooltipRect.height - 10)
+      top = Math.min(targetRect.bottom + 10, viewportHeight - tooltipRect.height - 10);
     }
     
     // 화살표 위치 설정
@@ -142,38 +257,38 @@ const updateTooltipPosition = async () => {
       top: top === Math.max(10, targetRect.top - tooltipRect.height - 10) ? '100%' : 'auto',
       bottom: top !== Math.max(10, targetRect.top - tooltipRect.height - 10) ? '100%' : 'auto',
       transform: 'translate(-50%, 0) rotate(45deg)'
-    }
+    };
   } else {
     // 데스크탑: 요소 우측에 표시
-    top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2)
-    left = targetRect.right + 15
+    top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+    left = targetRect.right + 15;
     
     // 우측 공간이 부족하면 좌측에 표시
     if (left + tooltipRect.width > viewportWidth - 10) {
-      left = targetRect.left - tooltipRect.width - 15
+      left = targetRect.left - tooltipRect.width - 15;
       
       // 좌측 공간도 부족하면 상단이나 하단에 표시
       if (left < 10) {
-        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2)
+        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
         
         if (targetRect.top > tooltipRect.height + 15) {
           // 상단에 표시
-          top = targetRect.top - tooltipRect.height - 15
+          top = targetRect.top - tooltipRect.height - 15;
           arrowStyle.value = {
             bottom: '-6px',
             top: 'auto',
             left: '50%',
             transform: 'translate(-50%, 0) rotate(45deg)'
-          }
+          };
         } else {
           // 하단에 표시
-          top = targetRect.bottom + 15
+          top = targetRect.bottom + 15;
           arrowStyle.value = {
             top: '-6px',
             bottom: 'auto',
             left: '50%',
             transform: 'translate(-50%, 0) rotate(45deg)'
-          }
+          };
         }
       } else {
         // 좌측에 표시
@@ -182,7 +297,7 @@ const updateTooltipPosition = async () => {
           left: 'auto',
           top: '50%',
           transform: 'translate(0, -50%) rotate(45deg)'
-        }
+        };
       }
     } else {
       // 우측에 표시
@@ -191,7 +306,7 @@ const updateTooltipPosition = async () => {
         right: 'auto',
         top: '50%',
         transform: 'translate(0, -50%) rotate(45deg)'
-      }
+      };
     }
   }
   
@@ -199,7 +314,7 @@ const updateTooltipPosition = async () => {
   positionStyle.value = {
     top: `${Math.max(10, Math.min(viewportHeight - tooltipRect.height - 10, top))}px`,
     left: `${Math.max(10, Math.min(viewportWidth - tooltipRect.width - 10, left))}px`
-  }
+  };
 }
 
 // 단계가 변경될 때마다 위치 업데이트
@@ -210,7 +325,9 @@ watch(() => onboardingStore.isOnboardingActive, (newVal) => {
   if (newVal) {
     nextTick(updateTooltipPosition)
   } else {
+    // 온보딩 종료 시 모든 요소 정리
     removeHighlight()
+    cleanupVirtualElement()
   }
 })
 
@@ -222,10 +339,11 @@ onMounted(() => {
   }
 })
 
-// 컴포넌트 언마운트 시 이벤트 리스너 제거 및 강조 효과 제거
+// 컴포넌트 언마운트 시 이벤트 리스너 제거 및 모든 요소 정리
 onUnmounted(() => {
   window.removeEventListener('resize', updateTooltipPosition)
   removeHighlight()
+  cleanupVirtualElement()
 })
 </script>
 
