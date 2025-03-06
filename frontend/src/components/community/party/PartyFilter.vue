@@ -52,9 +52,9 @@
     <!-- 듀오 등록 버튼 -->
     <button
         @click="$emit('write')"
-        class="write-button w-full sm:w-auto bg-[#2979FF] text-white px-4 py-3 sm:py-1.5 rounded-lg hover:bg-[#2565D1] transition-colors text-sm font-medium sm:h-12"
+        class="w-full sm:w-auto bg-[#2979FF] text-white px-4 py-3 sm:py-1.5 rounded-lg hover:bg-[#2565D1] transition-colors text-sm font-medium sm:h-12"
     >
-      {{ isMobile ? '듀오 등록' : '파티 등록하기' }}
+      {{ isMobile ? '듀오 등록' : '듀오 등록하기' }}
     </button>
   </div>
 </template>

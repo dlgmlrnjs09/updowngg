@@ -8,17 +8,6 @@
         @close="showWriteModal = false"
     />
 
-    <!-- 온보딩 투어 가이드 -->
-    <TourGuide 
-      v-if="showTour" 
-      :steps="tourSteps" 
-      :show="showTour"
-      :close-on-overlay-click="true"
-      @close="closeTour"
-      @step-changed="handleTourStepChange"
-      @tour-completed="completeTour"
-    />
-
     <div class="max-w-6xl mx-auto mb-8">
       <!-- 새로고침 영역 -->
       <div class="flex justify-end items-center mb-4 gap-3">
@@ -41,7 +30,6 @@
     <div class="max-w-6xl mx-auto mb-8">
       <!-- 필터 영역 -->
       <PartyFilter
-          id="party-filter"
           :initial-game-mode="selectedGameMode"
           :initial-position="selectedPosition"
           :initial-tier="selectedTier"
@@ -52,7 +40,6 @@
       <!-- 내 파티 미니바 -->
       <MyActiveParty
           v-if="myActiveParty"
-          id="active-party"
           :party="myActiveParty"
           :my-puuid="myPuuid"
           :has-new-applicant="hasNewApplicant"
@@ -63,17 +50,9 @@
           @leave-party="handleLeaveParty"
           @kick-member="handleKickMember"
       />
-      
-      <!-- 투어를 위한 가상 파티 - 항상 표시 (투어 모드일 때) -->
-      <MockActiveParty 
-          v-if="!myActiveParty && showTour" 
-          id="active-party"
-          :has-highlight="currentTourStep >= 4"
-      />
 
       <!-- 듀오 카드 그리드 -->
       <PartyGrid
-          id="party-grid"
           :cards="postCards"
           :my-puuid="myPuuid"
           :applied-positions="appliedPositions"
@@ -82,33 +61,17 @@
           @apply="applyForPosition"
           @load-more="onLoadMore"
       />
-      
-      <!-- 투어 시작 버튼 -->
-      <button
-        v-if="!showTour && !tourCompleted"
-        @click="startTour"
-        class="fixed bottom-8 right-8 bg-[#2979FF] text-white p-3 rounded-full shadow-lg hover:bg-[#1A67E0] transition-all z-50 animate-bounce-soft flex items-center group"
-        style="animation-delay: 1s;"
-        aria-label="파티 기능 설명 보기"
-      >
-        <HelpCircle class="w-6 h-6" />
-        <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-500 ease-linear bg-[#2979FF] rounded-l-full -ml-3 pl-5 pr-2">
-          파티 기능 설명
-        </span>
-      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { RefreshCcw, HelpCircle } from 'lucide-vue-next'
+import { RefreshCcw } from 'lucide-vue-next'
 import PartyFilter from '@/components/community/party/PartyFilter.vue'
 import MyActiveParty from '@/components/community/party/MyActiveParty.vue'
-import MockActiveParty from '@/components/community/party/MockActiveParty.vue'
 import PartyGrid from '@/components/community/party/PartyGrid.vue'
 import WriteModal from '@/components/community/party/WriteModal.vue'
-import TourGuide from '@/components/common/TourGuide.vue'
 import type {
   CommunityPostDto, MyPartyPostDto,
   PartyCommunityApplicantDetailDto, PartyCommunityApplicantDto, PartyParticipantDto,
@@ -136,87 +99,9 @@ const UPDATE_INTERVAL = 10000
 const countdown = ref(10)
 const countdownInterval = ref<number>()
 
-// 온보딩 투어 관련 상태
-const showTour = ref(false)
-const tourCompleted = ref(false)
-const TOUR_COMPLETED_KEY = 'party_tour_completed'
-const currentTourStep = ref(1)
-const shouldShowMockParty = ref(false)
-
-// 모바일용 투어 단계
-const getMobileSteps = () => [
-  {
-    target: '#party-filter',
-    title: '검색 필터',
-    content: '원하는 조건을 선택하여 원하는 파티를 찾아보세요!',
-    position: 'bottom',
-    margin: 5
-  },
-  {
-    target: '#party-filter .write-button',
-    title: '파티 생성',
-    content: '로그인 상태라면 누구나 새로운 파티를 만들 수 있어요.',
-    position: 'bottom',
-    margin: 5
-  },
-  {
-    target: '#active-party',
-    title: '내 파티',
-    content: '참여중인 파티 정보에요. 파티장은 모집을 마감할 수 있어요.',
-    position: 'top',
-    margin: 5
-  },
-  {
-    // 모바일에 더 구체적인 선택자
-    target: '.sm\\:hidden .applicant-button',
-    title: '신청자 관리',
-    content: '파티장은 이 버튼을 통해 포지션별 신청자를 관리할 수 있어요.',
-    position: 'top',
-    margin: 5
-  }
-];
-
-// 데스크톱용 투어 단계
-const getDesktopSteps = () => [
-  {
-    target: '#party-filter',
-    title: '검색 필터',
-    content: '원하는 조건을 선택하여 원하는 파티를 찾아보세요!',
-    position: 'bottom',
-    margin: 5
-  },
-  {
-    target: '#party-filter .write-button',
-    title: '파티 생성',
-    content: '로그인 상태라면 누구나 새로운 파티를 만들 수 있어요.',
-    position: 'left',
-    margin: 5
-  },
-  {
-    target: '#active-party',
-    title: '내 파티',
-    content: '참여중인 파티 정보에요. 파티장은 모집을 마감할 수 있어요.',
-    position: 'bottom',
-    margin: 5
-  },
-  {
-    // 데스크톱에 더 구체적인 선택자
-    target: '.hidden.sm\\:flex .applicant-button',
-    title: '신청자 관리',
-    content: '파티장은 이 버튼을 통해 포지션별 신청자를 관리할 수 있어요.',
-    position: 'right',
-    margin: 5
-  }
-];
-
-const tourSteps = computed(() => {
-  const isMobile = window.innerWidth < 640;
-  return [...(isMobile ? getMobileSteps() : getDesktopSteps())];
-});
-
 const toast = useToast()
 const authStore = useAuthStore()
-const myPuuid = computed(() => authStore.user?.puuid || '')
+const myPuuid = computed(() => authStore.user?.puuid)
 const myActiveParty = ref<MyPartyPostDto | null>(null)
 const hasNewApplicant = ref(false)
 const participantCount = ref<number | null>(null)
@@ -225,102 +110,6 @@ const previousApplicationsStatus = ref<Map<string, string>>(new Map());
 const isApplyingPosition = ref(false);
 const lastAppliedTime = ref(new Map<string, number>());
 
-const startTour = () => {
-  // 현재 스크롤 위치 저장
-  const currentScrollPos = window.scrollY;
-
-  // 맨 위로 스크롤
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-
-  // 스크롤이 완료되었는지 확인하는 함수
-  const checkScrollComplete = () => {
-    if (window.scrollY <= 10) { // 거의 맨 위에 도달했는지 확인
-      // 스크롤 완료됨, 투어 시작
-      currentTourStep.value = 1
-      showTour.value = true
-    } else {
-      // 아직 스크롤 중, 재확인
-      setTimeout(checkScrollComplete, 50);
-    }
-  };
-
-  // 스크롤 체크 시작
-  setTimeout(checkScrollComplete, 100);
-}
-
-const closeTour = () => {
-  showTour.value = false
-  shouldShowMockParty.value = false
-}
-
-const handleTourStepChange = (step: number) => {
-  // 현재 스텝 저장
-  currentTourStep.value = step
-  
-  // 특정 스텝에서 필요한 추가 액션 처리
-  console.log(`Tour step changed to ${step}`)
-}
-
-const completeTour = () => {
-  showTour.value = false
-  tourCompleted.value = true
-  shouldShowMockParty.value = false
-  
-  // 로컬 스토리지에 투어 완료 상태 저장
-  localStorage.setItem(TOUR_COMPLETED_KEY, 'true')
-  
-  // 축하 메시지 및 시각적 피드백
-  toast.success('축하합니다! 파티 기능 설명을 완료했습니다. 이제 파티에 참여해보세요.')
-  
-  // 애니메이션 효과를 위한 임시 요소 생성 및 제거
-  const confetti = document.createElement('div')
-  confetti.className = 'confetti-container'
-  document.body.appendChild(confetti)
-  
-  // 브랜드 색상 - 주로 파란색(파티 테마), 하얀색, 그린
-  const colors = ['#2979FF', '#1A67E0', '#FFFFFF', '#4CAF50', '#1976D2', '#E3F2FD', '#64B5F6']
-  
-  // 40개의 색종이 생성
-  for (let i = 0; i < 40; i++) {
-    const confettiPiece = document.createElement('div')
-    confettiPiece.className = 'confetti-piece'
-    
-    // 랜덤 위치 및 크기
-    confettiPiece.style.left = `${Math.random() * 100}%`
-    const size = Math.random() * 10 + 5
-    confettiPiece.style.width = `${size}px`
-    confettiPiece.style.height = `${size}px`
-    
-    // 색상 및 모양
-    confettiPiece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
-    confettiPiece.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px'
-    
-    // 애니메이션 랜덤화
-    confettiPiece.style.animationDelay = `${Math.random() * 1.5}s`
-    confettiPiece.style.animationDuration = `${Math.random() * 2 + 2}s`
-    
-    // 랜덤 좌우 이동 (CSS 변수 설정)
-    confettiPiece.style.setProperty('--random', Math.random().toString())
-    
-    confetti.appendChild(confettiPiece)
-  }
-  
-  // 3.5초 후 색종이 효과 제거
-  setTimeout(() => {
-    if (document.body.contains(confetti)) {
-      document.body.removeChild(confetti)
-    }
-  }, 3500)
-  
-  // 1분 후에 도움 버튼 다시 표시
-  setTimeout(() => {
-    tourCompleted.value = false
-  }, 60000)
-}
-
 onMounted(async () => {
   setupVisibilityHandler()
   await fetchPosts({})
@@ -328,17 +117,6 @@ onMounted(async () => {
   await fetchMyPartyPost()
   await fetchMyApplicationStatus();
   startCountdown()
-
-  // 로컬 스토리지에서 투어 완료 상태 확인
-  const completedStatus = localStorage.getItem(TOUR_COMPLETED_KEY)
-  tourCompleted.value = completedStatus === 'true'
-  
-  // 첫 방문이고 투어를 완료하지 않은 사용자에게 2초 후 자동으로 투어 시작
-  if (!tourCompleted.value && postCards.value.length > 0) {
-    setTimeout(() => {
-      startTour()
-    }, 1000)
-  }
 
   // 10초마다 전체 업데이트
   updateInterval.value = window.setInterval(async () => {
@@ -545,7 +323,7 @@ const fetchAppliedPositions = async() => {
     // 현재 활성 상태인 신청만 가져옴
     const response = await communityApi.getApplyList(postIds)
     response.data.forEach((application: PartyCommunityApplicantDetailDto) => {
-        appliedPositions.value.set(`${application.postId}-${application.position}`, true)
+      appliedPositions.value.set(`${application.postId}-${application.position}`, true)
     })
   }
 }
@@ -870,50 +648,4 @@ const getPositionName = (position: string) => {
 
 <style scoped>
 /* 이제 대부분의 스타일이 각 컴포넌트로 이동했습니다 */
-@keyframes bounce-soft {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-bounce-soft {
-  animation: bounce-soft 2s infinite;
-  animation-timing-function: cubic-bezier(0.28, 0.84, 0.42, 1);
-}
-
-/* 색종이 효과 스타일 */
-.confetti-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 9999;
-  overflow: hidden;
-}
-
-.confetti-piece {
-  position: absolute;
-  top: -10px;
-  animation: confetti-fall 3s linear forwards;
-  border-radius: 3px;
-  opacity: 0.8;
-}
-
-@keyframes confetti-fall {
-  0% {
-    top: -20px;
-    transform: rotate(0deg) translateX(0);
-    opacity: 1;
-  }
-  100% {
-    top: 100vh;
-    transform: rotate(720deg) translateX(calc(5vw - 2.5vw * var(--random, 0.5)));
-    opacity: 0;
-  }
-}
 </style>

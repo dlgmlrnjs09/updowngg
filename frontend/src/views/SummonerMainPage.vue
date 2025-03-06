@@ -62,12 +62,12 @@
       />
 
       <PreviousReviewModal
-        v-if="showPreviousReviewModal"
-        :reviewed-match="reviewedMatch"
-        :player="selectedPlayer"
-        @close="showPreviousReviewModal = false"
-        @rewrite="handleReviewModify"
-        @delete="handleReviewDelete"
+          v-if="showPreviousReviewModal"
+          :reviewed-match="reviewedMatch"
+          :player="selectedPlayer"
+          @close="showPreviousReviewModal = false"
+          @rewrite="handleReviewModify"
+          @delete="handleReviewDelete"
       />
     </template>
   </div>
