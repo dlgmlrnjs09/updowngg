@@ -513,18 +513,8 @@ onMounted(async () => {
   writtenReview.value = null;
   playTogetherLatestMatch.value = null;
   
-  // 온보딩 초기화
+  // 온보딩 초기화 - 최초 1회는 자동으로 온보딩 활성화
   onboardingStore.initOnboarding();
-  
-  // 처음 방문하는 사용자인 경우 온보딩 자동 시작 (옵션)
-  // 여기서는 localStorage를 사용해 온보딩 완료 여부를 추적
-  /*
-  const hasCompletedOnboarding = localStorage.getItem('onboarding_completed');
-  if (!hasCompletedOnboarding) {
-    // 첫 방문자에게는 온보딩을 자동으로 표시
-    onboardingStore.toggleOnboarding(true);
-  }
-  */
 })
 </script>
 <style scoped>

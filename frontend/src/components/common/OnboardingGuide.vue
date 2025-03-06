@@ -1,45 +1,28 @@
 <template>
-  <div 
-    v-if="onboardingStore.isOnboardingActive && currentContent"
-    class="onboarding-overlay" 
-    @click.self="handleOverlayClick"
-  >
+  <div v-if="onboardingStore.isOnboardingActive">
+    <!-- 현재 단계의 가이드 모달 -->
     <div ref="tooltipRef" class="onboarding-tooltip" :style="positionStyle">
       <div class="tooltip-header">
         <span class="step-indicator">{{ onboardingStore.currentStep + 1 }}/{{ onboardingStore.totalSteps }}</span>
-        <button @click="onboardingStore.toggleOnboarding(false)" class="close-button">
-          <XIcon size="16" />
+        <button @click="onboardingStore.completeOnboarding()" class="close-button">
+          <XIcon size="14" />
         </button>
       </div>
       
       <div class="tooltip-content">
-        <h3 class="tooltip-title">{{ currentContent.title }}</h3>
         <p class="tooltip-description">{{ currentContent.description }}</p>
-        
-        <!-- 데이터가 없는 경우 추가 설명 -->
-        <p v-if="currentContent.emptyStateDescription" class="empty-state-description">
-          {{ currentContent.emptyStateDescription }}
-        </p>
-        
-        <!-- 예시 이미지 표시 (데이터가 없을 때) -->
-        <img 
-          v-if="currentContent.exampleImage" 
-          :src="currentContent.exampleImage" 
-          alt="예시 이미지" 
-          class="example-image"
-        />
       </div>
       
       <div class="tooltip-footer">
         <button 
           v-if="onboardingStore.currentStep > 0" 
-          @click="onboardingStore.prevStep" 
+          @click="handlePrev" 
           class="prev-button"
         >
           이전
         </button>
         <button 
-          @click="onboardingStore.nextStep" 
+          @click="handleNext" 
           class="next-button"
         >
           {{ onboardingStore.currentStep < onboardingStore.totalSteps - 1 ? '다음' : '완료' }}
@@ -52,57 +35,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted, nextTick } from 'vue'
 import { XIcon } from 'lucide-vue-next'
 import { useOnboardingStore } from '@/stores/onboarding'
 
-// 타겟 요소의 셀렉터와 온보딩 진행 방향
+// 타겟 요소의 셀렉터
 interface Props {
   targetSelectors: string[]  // 각 단계별 타겟 요소 셀렉터
-  allowOverlayClose?: boolean // 오버레이 클릭으로 닫기 허용 여부
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  allowOverlayClose: true
-})
-
+const props = defineProps<Props>()
 const onboardingStore = useOnboardingStore()
 const tooltipRef = ref<HTMLElement | null>(null)
 const positionStyle = ref({})
 const arrowStyle = ref({})
+const currentHighlightedElement = ref<HTMLElement | null>(null)
 
-// 온보딩 내용 정의
+// 온보딩 내용 정의 - 간결하게 유지
 const onboardingContents = [
-  {
-    title: '프로필 정보',
-    description: '여기서 소환사의 기본 정보와 평가 점수를 확인할 수 있어요.',
-    emptyStateDescription: null,
-    exampleImage: null
-  },
-  {
-    title: '통계 정보',
-    description: '소환사가 받은 태그와 최근 평가를 확인할 수 있어요.',
-    emptyStateDescription: '아직 받은 평가가 없어요. 게임을 더 플레이하고 평가를 받으면 여기에 표시됩니다.',
-    exampleImage: '/images/onboarding/stats_example.png'
-  },
-  {
-    title: '티어 정보',
-    description: '소환사의 솔로랭크와 자유랭크 티어 정보를 확인할 수 있어요.',
-    emptyStateDescription: null,
-    exampleImage: null
-  },
-  {
-    title: '매치 기록',
-    description: '소환사의 최근 게임 기록을 확인할 수 있어요.',
-    emptyStateDescription: '아직 매치 기록이 없거나 불러오지 못했어요. 전적을 갱신하거나 게임을 더 플레이하면 여기에 표시됩니다.',
-    exampleImage: '/images/onboarding/match_example.png'
-  },
-  {
-    title: '리뷰 작성하기',
-    description: '소환사에 대한 리뷰를 작성하고 평가할 수 있어요.',
-    emptyStateDescription: null,
-    exampleImage: null
-  }
+  { description: '소환사의 기본 정보와 평가 점수를 확인할 수 있어요.' },
+  { description: '받은 태그와 평가를 확인할 수 있어요.' },
+  { description: '솔로랭크와 자유랭크 티어 정보를 확인할 수 있어요.' },
+  { description: '최근 게임 기록을 확인할 수 있어요.' },
+  { description: '소환사에 대한 리뷰를 작성하고 평가할 수 있어요.' }
 ]
 
 // 현재 단계의 온보딩 내용
@@ -110,10 +65,40 @@ const currentContent = computed(() => {
   return onboardingContents[onboardingStore.currentStep]
 })
 
-// 오버레이 클릭 처리
-const handleOverlayClick = () => {
-  if (props.allowOverlayClose) {
-    onboardingStore.toggleOnboarding(false)
+// 이전 버튼 처리
+const handlePrev = () => {
+  removeHighlight()
+  onboardingStore.prevStep()
+}
+
+// 다음 버튼 처리
+const handleNext = () => {
+  removeHighlight()
+  onboardingStore.nextStep()
+}
+
+// 강조 효과 제거
+const removeHighlight = () => {
+  if (currentHighlightedElement.value) {
+    currentHighlightedElement.value.style.removeProperty('outline')
+    currentHighlightedElement.value.style.removeProperty('box-shadow')
+    currentHighlightedElement.value.style.removeProperty('transition')
+    currentHighlightedElement.value = null
+  }
+}
+
+// 요소 강조
+const highlightElement = (element: HTMLElement) => {
+  if (element) {
+    // 이전 강조 효과 제거
+    removeHighlight()
+    
+    // 새로운 요소 강조
+    element.style.outline = '2px solid #2979FF'
+    element.style.boxShadow = '0 0 0 2px rgba(41, 121, 255, 0.3)'
+    element.style.transition = 'outline 0.3s, box-shadow 0.3s'
+    
+    currentHighlightedElement.value = element
   }
 }
 
@@ -127,6 +112,9 @@ const updateTooltipPosition = async () => {
   const targetElement = document.querySelector(targetSelector) as HTMLElement
   if (!targetElement || !tooltipRef.value) return
   
+  // 요소 강조 표시
+  highlightElement(targetElement)
+  
   const targetRect = targetElement.getBoundingClientRect()
   const tooltipRect = tooltipRef.value.getBoundingClientRect()
   
@@ -134,50 +122,83 @@ const updateTooltipPosition = async () => {
   const viewportWidth = window.innerWidth
   const viewportHeight = window.innerHeight
   
-  // 기본 위치 (타겟 아래)
-  let top = targetRect.bottom + 15
-  let left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2)
-  let arrowPosition = '0'
+  // 기본 위치 계산 (모바일에서는 상단에, 데스크탑에서는 요소 옆에 표시)
+  let top = 0
+  let left = 0
   
-  // 툴팁이 화면 하단을 벗어나는 경우 위로 배치
-  if (top + tooltipRect.height > viewportHeight) {
-    top = targetRect.top - tooltipRect.height - 15
+  if (viewportWidth < 768) {
+    // 모바일: 화면 상단에 고정
+    top = Math.max(10, targetRect.top - tooltipRect.height - 10)
+    left = (viewportWidth - tooltipRect.width) / 2
+    
+    // 모바일에서 요소가 화면 상단에 있으면 아래쪽에 표시
+    if (top < 10) {
+      top = Math.min(targetRect.bottom + 10, viewportHeight - tooltipRect.height - 10)
+    }
+    
+    // 화살표 위치 설정
     arrowStyle.value = {
-      top: '100%',
-      bottom: 'auto',
+      left: `${targetRect.left + targetRect.width/2 - left}px`,
+      top: top === Math.max(10, targetRect.top - tooltipRect.height - 10) ? '100%' : 'auto',
+      bottom: top !== Math.max(10, targetRect.top - tooltipRect.height - 10) ? '100%' : 'auto',
       transform: 'translate(-50%, 0) rotate(45deg)'
     }
   } else {
-    arrowStyle.value = {
-      top: 'auto',
-      bottom: '100%',
-      transform: 'translate(-50%, 0) rotate(45deg)'
+    // 데스크탑: 요소 우측에 표시
+    top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2)
+    left = targetRect.right + 15
+    
+    // 우측 공간이 부족하면 좌측에 표시
+    if (left + tooltipRect.width > viewportWidth - 10) {
+      left = targetRect.left - tooltipRect.width - 15
+      
+      // 좌측 공간도 부족하면 상단이나 하단에 표시
+      if (left < 10) {
+        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2)
+        
+        if (targetRect.top > tooltipRect.height + 15) {
+          // 상단에 표시
+          top = targetRect.top - tooltipRect.height - 15
+          arrowStyle.value = {
+            bottom: '-6px',
+            top: 'auto',
+            left: '50%',
+            transform: 'translate(-50%, 0) rotate(45deg)'
+          }
+        } else {
+          // 하단에 표시
+          top = targetRect.bottom + 15
+          arrowStyle.value = {
+            top: '-6px',
+            bottom: 'auto',
+            left: '50%',
+            transform: 'translate(-50%, 0) rotate(45deg)'
+          }
+        }
+      } else {
+        // 좌측에 표시
+        arrowStyle.value = {
+          right: '-6px',
+          left: 'auto',
+          top: '50%',
+          transform: 'translate(0, -50%) rotate(45deg)'
+        }
+      }
+    } else {
+      // 우측에 표시
+      arrowStyle.value = {
+        left: '-6px',
+        right: 'auto',
+        top: '50%',
+        transform: 'translate(0, -50%) rotate(45deg)'
+      }
     }
   }
   
-  // 툴팁이 화면 왼쪽을 벗어나는 경우
-  if (left < 10) {
-    arrowPosition = `${targetRect.left + targetRect.width/2 - left - 10}px`
-    left = 10
-  } 
-  // 툴팁이 화면 오른쪽을 벗어나는 경우
-  else if (left + tooltipRect.width > viewportWidth - 10) {
-    arrowPosition = `${targetRect.left + targetRect.width/2 - (viewportWidth - tooltipRect.width - 10)}px`
-    left = viewportWidth - tooltipRect.width - 10
-  } else {
-    arrowPosition = '50%'
-  }
-  
-  // 화살표 위치 설정
-  arrowStyle.value = {
-    ...arrowStyle.value,
-    left: arrowPosition
-  }
-  
-  // 툴팁 위치 설정
+  // 최종 위치 설정
   positionStyle.value = {
-    top: `${top}px`,
-    left: `${left}px`
+    top: `${Math.max(10, Math.min(viewportHeight - tooltipRect.height - 10, top))}px`,
+    left: `${Math.max(10, Math.min(viewportWidth - tooltipRect.width - 10, left))}px`
   }
 }
 
@@ -188,6 +209,8 @@ watch(() => onboardingStore.currentStep, updateTooltipPosition)
 watch(() => onboardingStore.isOnboardingActive, (newVal) => {
   if (newVal) {
     nextTick(updateTooltipPosition)
+  } else {
+    removeHighlight()
   }
 })
 
@@ -195,30 +218,25 @@ watch(() => onboardingStore.isOnboardingActive, (newVal) => {
 onMounted(() => {
   window.addEventListener('resize', updateTooltipPosition)
   if (onboardingStore.isOnboardingActive) {
-    updateTooltipPosition()
+    nextTick(updateTooltipPosition)
   }
+})
+
+// 컴포넌트 언마운트 시 이벤트 리스너 제거 및 강조 효과 제거
+onUnmounted(() => {
+  window.removeEventListener('resize', updateTooltipPosition)
+  removeHighlight()
 })
 </script>
 
 <style scoped>
-.onboarding-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 9999;
-  backdrop-filter: blur(2px);
-}
-
 .onboarding-tooltip {
-  position: absolute;
+  position: fixed;
   background: #222222;
-  border-radius: 8px;
-  padding: 16px;
-  width: 320px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  padding: 12px;
+  width: 240px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 10000;
   border: 1px solid #444;
 }
@@ -227,11 +245,11 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .step-indicator {
-  font-size: 12px;
+  font-size: 11px;
   color: #999;
 }
 
@@ -240,7 +258,10 @@ onMounted(() => {
   border: none;
   color: #999;
   cursor: pointer;
-  padding: 4px;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .close-button:hover {
@@ -248,49 +269,25 @@ onMounted(() => {
 }
 
 .tooltip-content {
-  margin-bottom: 16px;
-}
-
-.tooltip-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .tooltip-description {
-  font-size: 14px;
-  color: #ccc;
-  line-height: 1.5;
-}
-
-.empty-state-description {
-  margin-top: 12px;
   font-size: 13px;
-  color: #999;
-  padding: 8px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  font-style: italic;
-}
-
-.example-image {
-  margin-top: 12px;
-  width: 100%;
-  border-radius: 4px;
-  border: 1px solid #444;
+  color: #eee;
+  line-height: 1.4;
 }
 
 .tooltip-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
 }
 
 .prev-button, .next-button {
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -321,12 +318,23 @@ onMounted(() => {
   height: 12px;
   background: #222222;
   border: 1px solid #444;
+  z-index: -1;
 }
 
 @media (max-width: 480px) {
   .onboarding-tooltip {
-    width: 90%;
-    max-width: 320px;
+    width: 80%;
+    max-width: 280px;
+    padding: 10px;
+  }
+  
+  .tooltip-description {
+    font-size: 12px;
+  }
+  
+  .prev-button, .next-button {
+    padding: 4px 8px;
+    font-size: 11px;
   }
 }
 </style>

@@ -165,58 +165,111 @@
           <div v-if="frequentTags && frequentTags.length > 0" class="tags-slider">
             <TagList :tags="frequentTags" size="medium" is-show-count/>
           </div>
+          <div v-else-if="onboardingStore.isOnboardingActive" class="tags-slider">
+            <!-- 온보딩용 샘플 태그 데이터 -->
+            <div class="sample-tags-wrapper">
+              <div class="sample-tag">
+                <span class="tag-name">좋은 CS</span>
+                <span class="tag-count">12</span>
+              </div>
+              <div class="sample-tag">
+                <span class="tag-name">갱킹 맛집</span>
+                <span class="tag-count">8</span>
+              </div>
+              <div class="sample-tag">
+                <span class="tag-name">킬각 판단 좋음</span>
+                <span class="tag-count">6</span>
+              </div>
+              <div class="sample-tag">
+                <span class="tag-name">오브젝트 뚝딱</span>
+                <span class="tag-count">5</span>
+              </div>
+            </div>
+          </div>
           <div v-else class="no-review-message">
             받은 태그가 없습니다.
           </div>
         </div>
-        <ReviewRolling :reviews="recentReviews" title="최근 받은 평가" wrapper-height="90px"/>
+        <div class="review-section">
+          <div class="stats-title">최근 받은 평가</div>
+          <div v-if="recentReviews.length > 0">
+            <ReviewRolling :reviews="recentReviews" wrapper-height="90px"/>
+          </div>
+          <div v-else-if="onboardingStore.isOnboardingActive" class="sample-reviews">
+            <!-- 온보딩용 샘플 리뷰 데이터 -->
+            <div class="sample-review">
+              <div class="reviewer-info">
+                <div class="reviewer-icon"></div>
+                <div class="reviewer-name">유저123</div>
+              </div>
+              <div class="review-content">
+                "탑에서 갱 와줘서 고마웠어요! 덕분에 라인전 이겼어요"
+              </div>
+              <div class="review-time">30분 전</div>
+            </div>
+          </div>
+          <div v-else class="no-review-message">
+            받은 리뷰가 없습니다.
+          </div>
+        </div>
       </div>
     </Transition>
 
-    <div v-if="!recentReviews.length" class="no-review-message" ref="noReviewSection">
-      아직 작성된 리뷰가 없습니다.
-      
-      <!-- 온보딩 모드에서 샘플 리뷰 데이터 표시 -->
-      <div v-if="onboardingStore.isOnboardingActive" class="sample-review-container">
-        <div class="sample-label">샘플 리뷰 데이터 (온보딩용)</div>
-        <div class="sample-tags-section">
-          <div class="sample-tag">좋은 CS</div>
-          <div class="sample-tag">갱킹 맛집</div>
-          <div class="sample-tag">킬각 판단 좋음</div>
-          <div class="sample-tag">오브젝트 뚝딱</div>
-        </div>
-        <div class="sample-reviews">
-          <div class="sample-review">
-            <div class="reviewer-info">
-              <div class="reviewer-icon"></div>
-              <div class="reviewer-name">유저123</div>
+    <div v-if="!recentReviews.length" class="stats-empty-state" ref="noReviewSection">
+      <div v-if="onboardingStore.isOnboardingActive" class="expanded-section">
+        <div class="tags-section">
+          <div class="stats-title">자주 받은 태그</div>
+          <div class="tags-slider">
+            <!-- 온보딩용 샘플 태그 데이터 -->
+            <div class="sample-tags-wrapper">
+              <div class="sample-tag">
+                <span class="tag-name">좋은 CS</span>
+                <span class="tag-count">12</span>
+              </div>
+              <div class="sample-tag">
+                <span class="tag-name">갱킹 맛집</span>
+                <span class="tag-count">8</span>
+              </div>
+              <div class="sample-tag">
+                <span class="tag-name">킬각 판단 좋음</span>
+                <span class="tag-count">6</span>
+              </div>
+              <div class="sample-tag">
+                <span class="tag-name">오브젝트 뚝딱</span>
+                <span class="tag-count">5</span>
+              </div>
             </div>
-            <div class="review-content">
-              "탑에서 갱 와줘서 고마웠어요! 덕분에 라인전 이겼어요"
-            </div>
-            <div class="review-time">30분 전</div>
           </div>
-          <div class="sample-review">
-            <div class="reviewer-info">
-              <div class="reviewer-icon"></div>
-              <div class="reviewer-name">소환사456</div>
+        </div>
+        <div class="review-section">
+          <div class="stats-title">최근 받은 평가</div>
+          <div class="sample-reviews">
+            <!-- 온보딩용 샘플 리뷰 데이터 -->
+            <div class="sample-review">
+              <div class="reviewer-info">
+                <div class="reviewer-icon"></div>
+                <div class="reviewer-name">유저123</div>
+              </div>
+              <div class="review-content">
+                "탑에서 갱 와줘서 고마웠어요! 덕분에 라인전 이겼어요"
+              </div>
+              <div class="review-time">30분 전</div>
             </div>
-            <div class="review-content">
-              "정글링 동선이 너무 좋아요. 다음에 또 같이해요!"
+            <div class="sample-review">
+              <div class="reviewer-info">
+                <div class="reviewer-icon"></div>
+                <div class="reviewer-name">소환사456</div>
+              </div>
+              <div class="review-content">
+                "정글링 동선이 너무 좋아요. 다음에 또 같이해요!"
+              </div>
+              <div class="review-time">2시간 전</div>
             </div>
-            <div class="review-time">2시간 전</div>
           </div>
         </div>
       </div>
-      
-      <div class="action-area">
-        <button 
-          v-if="!onboardingStore.isOnboardingActive" 
-          class="guide-button"
-          @click="showStatGuide"
-        >
-          가이드 보기
-        </button>
+      <div v-else class="no-review-message">
+        아직 작성된 리뷰가 없습니다.
       </div>
     </div>
   </div>
@@ -671,44 +724,48 @@ onMounted(() => {
   margin-top: 20px;
 }
 
-.sample-review-container {
-  width: 100%;
+.stats-empty-state {
   margin-top: 20px;
-  border: 1px dashed #444;
-  border-radius: 8px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
 }
 
-.sample-label {
-  font-size: 12px;
-  color: #888;
-  margin-bottom: 16px;
-  text-align: center;
-  font-style: italic;
-}
-
-.sample-tags-section {
+.sample-tags-wrapper {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 20px;
+  gap: 10px;
+  padding: 12px;
 }
 
 .sample-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: 16px;
   background: rgba(41, 121, 255, 0.1);
   color: #2979FF;
   font-size: 12px;
   white-space: nowrap;
 }
 
+.tag-name {
+  font-weight: 500;
+}
+
+.tag-count {
+  background: rgba(41, 121, 255, 0.2);
+  color: #4b93ff;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
 .sample-reviews {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
 }
 
 .sample-review {
@@ -751,23 +808,8 @@ onMounted(() => {
   text-align: right;
 }
 
-.action-area {
-  margin-top: 16px;
-}
-
-.guide-button {
-  background: #2979FF;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.guide-button:hover {
-  background: #1c68e3;
+.review-section {
+  margin-top: 20px;
 }
 
 .toggle-button {

@@ -1,75 +1,69 @@
 <template>
   <div class="no-match-container" ref="container">
-    <div class="content-wrapper">
+    <div v-if="onboardingStore.isOnboardingActive" class="match-sample-wrapper">
+      <!-- 온보딩용 샘플 매치 데이터 -->
+      <div class="sample-match win">
+        <div class="match-left">
+          <div class="match-result-badge">승리</div>
+          <div class="match-time">22분 전</div>
+          <div class="match-type">솔로랭크</div>
+        </div>
+        
+        <div class="match-champion">
+          <div class="champion-icon"></div>
+          <div class="champion-name">이즈리얼</div>
+        </div>
+        
+        <div class="match-stats">
+          <div class="kda">10/2/8</div>
+          <div class="kda-ratio">9.0:1 평점</div>
+        </div>
+        
+        <div class="match-items">
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+        </div>
+      </div>
+      
+      <div class="sample-match loss">
+        <div class="match-left">
+          <div class="match-result-badge">패배</div>
+          <div class="match-time">1시간 전</div>
+          <div class="match-type">솔로랭크</div>
+        </div>
+        
+        <div class="match-champion">
+          <div class="champion-icon"></div>
+          <div class="champion-name">야스오</div>
+        </div>
+        
+        <div class="match-stats">
+          <div class="kda">3/5/7</div>
+          <div class="kda-ratio">2.0:1 평점</div>
+        </div>
+        
+        <div class="match-items">
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+          <div class="item-box"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div v-else class="content-wrapper">
       <img src="@/assets/icon/emoji/towa.webp" alt="no-match" class="history-icon"/>
       <div class="text-wrapper">
         <h3 class="title">매치 기록이 없습니다</h3>
         <p class="description">
           최근 진행한 게임이 없거나 전적이 갱신되지 않았습니다.
         </p>
-      </div>
-      
-      <!-- 샘플 매치 표시 (온보딩 모드에서만) -->
-      <div v-if="onboardingStore.isOnboardingActive" class="sample-match-container">
-        <div class="sample-label">샘플 매치 데이터 (온보딩용)</div>
-        <div class="sample-match">
-          <div class="sample-champion">
-            <img src="/images/onboarding/champion_sample.png" alt="챔피언 샘플" class="champion-icon"/>
-          </div>
-          <div class="sample-info">
-            <div class="match-result win">승리</div>
-            <div class="match-mode">솔로랭크</div>
-            <div class="match-time">22분 전</div>
-          </div>
-          <div class="sample-stats">
-            <div class="kda">10/2/8</div>
-            <div class="cs">CS 205</div>
-          </div>
-          <div class="sample-items">
-            <div class="item-grid">
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-            </div>
-          </div>
-        </div>
-        <div class="sample-match">
-          <div class="sample-champion">
-            <img src="/images/onboarding/champion_sample.png" alt="챔피언 샘플" class="champion-icon"/>
-          </div>
-          <div class="sample-info">
-            <div class="match-result loss">패배</div>
-            <div class="match-mode">솔로랭크</div>
-            <div class="match-time">1시간 전</div>
-          </div>
-          <div class="sample-stats">
-            <div class="kda">3/5/7</div>
-            <div class="cs">CS 178</div>
-          </div>
-          <div class="sample-items">
-            <div class="item-grid">
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-              <div class="item-box"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="action-area">
-        <button 
-          v-if="!onboardingStore.isOnboardingActive" 
-          class="guide-button"
-          @click="showGuide"
-        >
-          가이드 보기
-        </button>
       </div>
     </div>
   </div>
@@ -81,19 +75,13 @@ import { useOnboardingStore } from '@/stores/onboarding';
 
 const container = ref(null);
 const onboardingStore = useOnboardingStore();
-
-// 가이드 보기 버튼 클릭 시 온보딩 활성화
-const showGuide = () => {
-  onboardingStore.toggleOnboarding(true);
-  onboardingStore.currentStep = 3; // 매치 섹션으로 바로 이동
-};
 </script>
 
 <style scoped>
 .no-match-container {
   background: #141414;
   border-radius: 12px;
-  padding: 40px 2rem;
+  padding: 20px;
   border: 1px solid rgba(255,255,255,.05);
   margin-top: 15px;
 }
@@ -104,11 +92,12 @@ const showGuide = () => {
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
+  padding: 40px 0;
 }
 
 .history-icon {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   color: #666;
 }
 
@@ -128,78 +117,82 @@ const showGuide = () => {
   color: #666;
 }
 
-.sample-match-container {
-  width: 100%;
-  max-width: 600px;
-  margin-top: 20px;
-  border: 1px dashed #444;
-  border-radius: 8px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.sample-label {
-  font-size: 12px;
-  color: #888;
-  margin-bottom: 10px;
-  text-align: center;
-  font-style: italic;
+/* 온보딩용 샘플 매치 스타일 */
+.match-sample-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .sample-match {
   display: flex;
   align-items: center;
-  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 10px;
+  gap: 20px;
 }
 
-.sample-champion {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #222;
+.sample-match.win {
+  border-left: 4px solid #4CAF50;
 }
 
-.champion-icon {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.sample-match.loss {
+  border-left: 4px solid #FF5252;
 }
 
-.sample-info {
+.match-left {
+  width: 70px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: 80px;
 }
 
-.match-result {
+.match-result-badge {
   font-weight: 600;
   font-size: 14px;
+  margin-bottom: 2px;
 }
 
-.match-result.win {
+.sample-match.win .match-result-badge {
   color: #4CAF50;
 }
 
-.match-result.loss {
+.sample-match.loss .match-result-badge {
   color: #FF5252;
 }
 
-.match-mode, .match-time {
+.match-time, .match-type {
   font-size: 12px;
   color: #777;
 }
 
-.sample-stats {
+.match-champion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 60px;
+}
+
+.champion-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #333;
+}
+
+.champion-name {
+  font-size: 12px;
+  color: #ccc;
+  white-space: nowrap;
+}
+
+.match-stats {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  width: 60px;
+  width: 100px;
 }
 
 .kda {
@@ -207,59 +200,41 @@ const showGuide = () => {
   color: #eee;
 }
 
-.cs {
+.kda-ratio {
   font-size: 12px;
-  color: #777;
+  color: #aaa;
 }
 
-.sample-items {
+.match-items {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   flex: 1;
 }
 
-.item-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
-}
-
 .item-box {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   background: #333;
   border-radius: 4px;
-}
-
-.action-area {
-  margin-top: 10px;
-}
-
-.guide-button {
-  background: #2979FF;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.guide-button:hover {
-  background: #1c68e3;
 }
 
 @media (max-width: 600px) {
   .sample-match {
     flex-wrap: wrap;
+    padding: 12px;
+    gap: 10px;
   }
   
-  .sample-items {
+  .match-left {
+    width: 60px;
+  }
+  
+  .match-items {
     width: 100%;
-    margin-top: 8px;
-  }
-  
-  .item-grid {
-    justify-content: center;
+    justify-content: flex-start;
+    margin-top: 6px;
   }
 }
 </style>

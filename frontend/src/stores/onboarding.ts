@@ -11,8 +11,11 @@ export const useOnboardingStore = defineStore('onboarding', () => {
   // 온보딩에서 다뤄야 하는 모든 섹션
   const totalSteps = 5 // 프로필, 통계, 티어, 매치목록, 리뷰 작성
   
-  // 이미 완료한 온보딩 단계 (로컬 스토리지에 저장)
-  const completedSteps = ref<number[]>([])
+  // 온보딩을 완료했는지 여부
+  const isCompleted = ref(false)
+  
+  // 현재 강조 중인 요소의 셀렉터
+  const highlightedElement = ref('')
   
   // 온보딩 모드 전환
   function toggleOnboarding(value?: boolean) {
@@ -21,6 +24,7 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     // 온보딩 모드가 꺼질 때 현재 진행 단계 초기화
     if (!isOnboardingActive.value) {
       currentStep.value = 0
+      highlightedElement.value = ''
     }
   }
   
@@ -28,16 +32,9 @@ export const useOnboardingStore = defineStore('onboarding', () => {
   function nextStep() {
     if (currentStep.value < totalSteps - 1) {
       currentStep.value++
-      
-      // 현재 단계를 완료한 것으로 표시
-      if (!completedSteps.value.includes(currentStep.value - 1)) {
-        completedSteps.value.push(currentStep.value - 1)
-        // 로컬 스토리지에 저장
-        localStorage.setItem('onboarding_completed', JSON.stringify(completedSteps.value))
-      }
     } else {
-      // 마지막 단계가 끝나면 온보딩 종료
-      toggleOnboarding(false)
+      // 마지막 단계가 끝나면 온보딩 완료 처리
+      completeOnboarding()
     }
   }
   
@@ -48,22 +45,49 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     }
   }
   
+  // 강조할 요소 변경
+  function setHighlightedElement(selector: string) {
+    highlightedElement.value = selector
+  }
+  
+  // 온보딩 완료 처리
+  function completeOnboarding() {
+    isCompleted.value = true
+    localStorage.setItem('onboarding_completed', 'true')
+    toggleOnboarding(false)
+  }
+  
   // 온보딩 초기화 (앱 시작 시 호출)
   function initOnboarding() {
-    const saved = localStorage.getItem('onboarding_completed')
-    if (saved) {
-      completedSteps.value = JSON.parse(saved)
+    const completed = localStorage.getItem('onboarding_completed')
+    isCompleted.value = completed === 'true'
+    
+    // 첫 방문 시 자동으로 온보딩 활성화
+    if (!isCompleted.value) {
+      toggleOnboarding(true)
     }
+  }
+  
+  // 온보딩 다시 보기 (온보딩을 이미 완료한 사용자도 다시 볼 수 있도록)
+  function resetOnboarding() {
+    isCompleted.value = false
+    localStorage.removeItem('onboarding_completed')
+    currentStep.value = 0
+    toggleOnboarding(true)
   }
   
   return {
     isOnboardingActive,
     currentStep,
     totalSteps,
-    completedSteps,
+    isCompleted,
+    highlightedElement,
     toggleOnboarding,
     nextStep,
     prevStep,
-    initOnboarding
+    setHighlightedElement,
+    completeOnboarding,
+    initOnboarding,
+    resetOnboarding
   }
 })
