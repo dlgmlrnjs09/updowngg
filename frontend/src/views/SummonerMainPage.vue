@@ -69,6 +69,12 @@
           @rewrite="handleReviewModify"
           @delete="handleReviewDelete"
       />
+      
+      <!-- 온보딩 가이드 -->
+      <OnboardingGuide
+        :target-selectors="onboardingTargets"
+        :allow-overlay-close="false"
+      />
     </template>
   </div>
 </template>
@@ -83,9 +89,11 @@ import DetailModal from '@/components/review/modal/DetailModal.vue'
 import ReviewModal from '@/components/review/modal/ReviewModal.vue'
 import ProfileSkeleton from '@/components/summoner/SummonerProfileSkeleton.vue'
 import MatchListSkeleton from '@/components/match/MatchListSkeleton.vue'
+import OnboardingGuide from '@/components/common/OnboardingGuide.vue'
 import {summonerApi} from '@/api/summoner'
 import {matchApi} from '@/api/match'
 import {reviewApi} from '@/api/review'
+import {useOnboardingStore} from '@/stores/onboarding'
 import type {LolSummonerProfileResDto} from '@/types/summoner'
 import type {CurrentMatchInfoDto, LolMatchInfoRes, LolMatchParticipant} from '@/types/match'
 import type {
@@ -105,12 +113,22 @@ import {cookieUtils} from "@/utils/cookieUtil.ts";
 const pageCount = 10;
 const toast = useToast();
 const authStore = useAuthStore();
+const onboardingStore = useOnboardingStore();
 const route = useRoute();
 const isLoading = ref(true);
 const isLoadingMore = ref(false);
 const isUpdatedMatchList = ref(false);
 const currentStartIndex = ref(0);
 const noMoreMatches = ref(false);
+
+// 온보딩 타겟 셀렉터 (각 단계별 가이드할 요소의 CSS 셀렉터)
+const onboardingTargets = [
+  '.profile-info', // 프로필 정보
+  '.no-review-message', // 통계 정보 (데이터가 없는 경우)
+  '.rank-section', // 티어 정보
+  '.no-match-container', // 매치 리스트 (데이터가 없는 경우)
+  '.button-group' // 리뷰 버튼
+];
 
 const summonerInfo = ref<LolSummonerProfileResDto | null>(null)
 const reviewStatsInfo = ref<ReviewStatsDto | null>(null)
@@ -494,6 +512,19 @@ onMounted(async () => {
   await fetchReviewTagCategories();
   writtenReview.value = null;
   playTogetherLatestMatch.value = null;
+  
+  // 온보딩 초기화
+  onboardingStore.initOnboarding();
+  
+  // 처음 방문하는 사용자인 경우 온보딩 자동 시작 (옵션)
+  // 여기서는 localStorage를 사용해 온보딩 완료 여부를 추적
+  /*
+  const hasCompletedOnboarding = localStorage.getItem('onboarding_completed');
+  if (!hasCompletedOnboarding) {
+    // 첫 방문자에게는 온보딩을 자동으로 표시
+    onboardingStore.toggleOnboarding(true);
+  }
+  */
 })
 </script>
 <style scoped>

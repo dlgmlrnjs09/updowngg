@@ -173,8 +173,51 @@
       </div>
     </Transition>
 
-    <div v-if="!recentReviews.length" class="no-review-message">
+    <div v-if="!recentReviews.length" class="no-review-message" ref="noReviewSection">
       아직 작성된 리뷰가 없습니다.
+      
+      <!-- 온보딩 모드에서 샘플 리뷰 데이터 표시 -->
+      <div v-if="onboardingStore.isOnboardingActive" class="sample-review-container">
+        <div class="sample-label">샘플 리뷰 데이터 (온보딩용)</div>
+        <div class="sample-tags-section">
+          <div class="sample-tag">좋은 CS</div>
+          <div class="sample-tag">갱킹 맛집</div>
+          <div class="sample-tag">킬각 판단 좋음</div>
+          <div class="sample-tag">오브젝트 뚝딱</div>
+        </div>
+        <div class="sample-reviews">
+          <div class="sample-review">
+            <div class="reviewer-info">
+              <div class="reviewer-icon"></div>
+              <div class="reviewer-name">유저123</div>
+            </div>
+            <div class="review-content">
+              "탑에서 갱 와줘서 고마웠어요! 덕분에 라인전 이겼어요"
+            </div>
+            <div class="review-time">30분 전</div>
+          </div>
+          <div class="sample-review">
+            <div class="reviewer-info">
+              <div class="reviewer-icon"></div>
+              <div class="reviewer-name">소환사456</div>
+            </div>
+            <div class="review-content">
+              "정글링 동선이 너무 좋아요. 다음에 또 같이해요!"
+            </div>
+            <div class="review-time">2시간 전</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="action-area">
+        <button 
+          v-if="!onboardingStore.isOnboardingActive" 
+          class="guide-button"
+          @click="showStatGuide"
+        >
+          가이드 보기
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -194,12 +237,15 @@ import TagList from "@/components/common/TagList.vue"
 import ReviewRolling from "@/components/review/ReviewRolling.vue"
 import type { LolMatchInfoRes } from "@/types/match.ts"
 import { useAuthStore } from "@/stores/auth.ts"
+import { useOnboardingStore } from '@/stores/onboarding'
 import type {LolSummonerLeagueDto, LolSummonerLeagueEntity} from "@/types/league.ts"
 import { useImageUrl } from "@/utils/imageUtil.ts"
 import HelpTooltip from "@/components/common/HelpTooltip.vue";
 
 const authStore = useAuthStore()
+const onboardingStore = useOnboardingStore()
 const { getTierImage } = useImageUrl()
+const noReviewSection = ref<HTMLElement | null>(null)
 
 const props = defineProps<{
   profileData: LolSummonerProfileResDto
@@ -259,6 +305,12 @@ const hideTooltip = () => {
 const toggleExpanded = () => {
   isExpanded.value = !isExpanded.value
 }
+
+// 통계 가이드 버튼 클릭 시 온보딩 활성화
+const showStatGuide = () => {
+  onboardingStore.toggleOnboarding(true);
+  onboardingStore.currentStep = 1; // 통계 섹션으로 바로 이동
+};
 
 onMounted(() => {
   if (props.profileData.leagueEntityList.length > 0) {
@@ -617,6 +669,105 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 6px;
   margin-top: 20px;
+}
+
+.sample-review-container {
+  width: 100%;
+  margin-top: 20px;
+  border: 1px dashed #444;
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sample-label {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 16px;
+  text-align: center;
+  font-style: italic;
+}
+
+.sample-tags-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.sample-tag {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(41, 121, 255, 0.1);
+  color: #2979FF;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.sample-reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sample-review {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: left;
+}
+
+.reviewer-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.reviewer-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #333;
+}
+
+.reviewer-name {
+  font-size: 13px;
+  color: #ccc;
+  font-weight: 500;
+}
+
+.review-content {
+  font-size: 13px;
+  color: #eee;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.review-time {
+  font-size: 11px;
+  color: #777;
+  text-align: right;
+}
+
+.action-area {
+  margin-top: 16px;
+}
+
+.guide-button {
+  background: #2979FF;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.guide-button:hover {
+  background: #1c68e3;
 }
 
 .toggle-button {
