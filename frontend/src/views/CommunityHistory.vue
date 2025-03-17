@@ -56,7 +56,16 @@
                 <span class="text-sm text-gray-400">{{ formatTimeAgo(party.regDt) }}</span>
                 <div class="flex items-center gap-2 mt-1">
                   <span class="text-white font-medium">{{ getGameModeName(party.gameMode) }}</span>
-                  <span :class="getStatusColor(party.postStatus)" class="text-sm">
+                  <span
+                      v-if="activeHistoryTab === 'applied'"
+                      :class="getApplyStatusColor(party.applicantDto.applyStatus)" class="text-sm"
+                  >
+                    {{ getApplyStatusName(party.applicantDto.applyStatus)}}
+                  </span>
+                  <span
+                      v-else
+                      :class="getStatusColor(party.postStatus)" class="text-sm"
+                  >
                     {{ getPostStatusName(party.postStatus) }}
                   </span>
                 </div>
@@ -243,12 +252,36 @@ const getStatusColor = (status: string) => {
   return colors[status] || 'text-gray-400'
 }
 
+const getApplyStatusColor = (status: string) => {
+  const colors = {
+    'PENDING': 'text-[#FFC107]', // 노란색 계열 (대기중)
+    'APPROVE': 'text-[#4CAF50]', // 초록색 계열 (승인)
+    'REJECT': 'text-[#FF5252]',  // 빨간색 계열 (거절)
+    'CANCEL': 'text-[#9E9E9E]',  // 회색 계열 (취소)
+  }
+  return colors[status] || 'text-gray-400'
+}
+
 const getPostStatusName = (postStatus: string) => {
   if (postStatus === 'OPEN') {
     return '대기중'
   } else if (postStatus === 'CLOSE') {
     return '마감'
   } else if (postStatus === 'CANCEL') {
+    return '취소'
+  } else {
+    return ''
+  }
+}
+
+const getApplyStatusName = (applyStatus: string) => {
+  if (applyStatus === 'PENDING') {
+    return '대기중'
+  } else if (applyStatus === 'APPROVE') {
+    return '승인'
+  } else if (applyStatus === 'REJECT') {
+    return '거절'
+  } else if (applyStatus === 'CANCEL') {
     return '취소'
   } else {
     return ''
