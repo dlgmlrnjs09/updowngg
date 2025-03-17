@@ -37,10 +37,13 @@
 			sub_seq,
 			icon_url,
 			action_dt
-		FROM site_notification
-		WHERE target_puuid = #{puuid}
-		  AND reg_dt >= NOW() - INTERVAL '30 days'
-		ORDER BY notification_seq desc
+		FROM
+		    site_notification
+		WHERE
+		    target_puuid = #{puuid}
+		  	AND reg_dt >= NOW() - INTERVAL '30 days'
+		ORDER BY
+		    notification_seq desc
 		LIMIT 10
 	</select>
 
