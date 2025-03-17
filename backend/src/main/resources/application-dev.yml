@@ -44,7 +44,7 @@ spring:
             redirect-uri: "{baseUrl}/login/oauth2/code/discord"
         provider:
           riot:
-            authorization-uri: https://auth.riotgames.com/authorize
+            authorization-uri: https://auth.riotgames.com/authorize?prompt=login
             token-uri: https://auth.riotgames.com/token
             jwk-set-uri: https://auth.riotgames.com/.well-known/jwks.json
             user-info-uri: https://auth.riotgames.com/userinfo
