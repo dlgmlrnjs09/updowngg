@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.main.api.external.mapper.ApiCallHistoryMapper">
+    <insert id="insertApiCallHistory" parameterType="gg.updown.backend.main.api.external.model.ApiCallHistoryEntity">
+        INSERT INTO api_call_history (
+            type,
+            url,
+            request,
+            response,
+            reg_dt
+        ) VALUES (
+            #{type},
+            #{url},
+            #{request},
+            #{response},
+            #{regDt}
+        )
+    </insert>
+</mapper>

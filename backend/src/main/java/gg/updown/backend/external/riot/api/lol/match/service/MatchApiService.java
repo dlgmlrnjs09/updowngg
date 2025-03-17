@@ -3,6 +3,7 @@ package gg.updown.backend.external.riot.api.lol.match.service;
 import gg.updown.backend.external.riot.api.lol.match.model.GetMatchIdListReqDto;
 import gg.updown.backend.external.riot.api.lol.match.model.MatchDto;
 import gg.updown.backend.external.riot.exception.RiotApiException;
+import gg.updown.backend.main.api.external.service.ApiCallHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -21,6 +22,7 @@ public class MatchApiService {
     private final String basePath = "/lol/match/v5/matches";
 
     private final WebClient riotAsiaWebClient;
+    private final ApiCallHistoryService apiCallHistoryService;
 
     /**
      * puuid로 경기 ID 리스트 가져오기
@@ -28,7 +30,8 @@ public class MatchApiService {
      * @return
      */
     public List<String> getMatchIdListByPuuid(GetMatchIdListReqDto reqDto) {
-        return riotAsiaWebClient.get()
+        String url = basePath + "/by-puuid/" + reqDto.getPuuid() + "/ids";
+        List<String> response = riotAsiaWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(basePath + "/by-puuid/{puuid}/ids")
                         .queryParamIfPresent("startTime", Optional.ofNullable(reqDto.getStartTime()))
@@ -40,11 +43,16 @@ public class MatchApiService {
                         .build(reqDto.getPuuid())
                 )
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, response -> {
-                    return Mono.error(new RiotApiException(response.statusCode(), RiotApiException.defaultMessage));
+                .onStatus(HttpStatusCode::isError, responseError -> {
+                    return Mono.error(new RiotApiException(responseError.statusCode(), RiotApiException.defaultMessage));
                 })
                 .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
                 .block();
+                
+        // Log API call
+        apiCallHistoryService.logApiCall("match", url, reqDto, response);
+        
+        return response;
     }
 
     /**
@@ -53,12 +61,18 @@ public class MatchApiService {
      * @return
      */
     public MatchDto getMatchDetailByMatchId(String matchId) {
-        return riotAsiaWebClient.get()
+        String url = basePath + "/" + matchId;
+        MatchDto response = riotAsiaWebClient.get()
                 .uri(basePath + "/{matchId}", matchId).retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, response -> {
-                    return Mono.error(new RiotApiException(response.statusCode(), RiotApiException.defaultMessage));
+                .onStatus(HttpStatusCode::is4xxClientError, responseError -> {
+                    return Mono.error(new RiotApiException(responseError.statusCode(), RiotApiException.defaultMessage));
                 })
                 .bodyToMono(MatchDto.class)
                 .block();
+                
+        // Log API call
+        apiCallHistoryService.logApiCall("match", url, matchId, response);
+        
+        return response;
     }
 }
