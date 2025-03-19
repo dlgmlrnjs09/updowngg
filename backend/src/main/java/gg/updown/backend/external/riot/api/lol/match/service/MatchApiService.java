@@ -23,6 +23,7 @@ public class MatchApiService {
 
     private final WebClient riotAsiaWebClient;
     private final ApiCallHistoryService apiCallHistoryService;
+    private final RiotMatchRawService riotMatchRawService;
 
     /**
      * puuid로 경기 ID 리스트 가져오기
@@ -61,6 +62,14 @@ public class MatchApiService {
      * @return
      */
     public MatchDto getMatchDetailByMatchId(String matchId) {
+        // First check if we already have the data in our raw storage
+        MatchDto cachedResponse = riotMatchRawService.getRawMatchData(matchId);
+        if (cachedResponse != null) {
+            log.info("Retrieved match data from local storage for matchId: {}", matchId);
+            return cachedResponse;
+        }
+        
+        // If not in local storage, fetch from Riot API
         String url = basePath + "/" + matchId;
         MatchDto response = riotAsiaWebClient.get()
                 .uri(basePath + "/{matchId}", matchId).retrieve()
@@ -72,6 +81,17 @@ public class MatchApiService {
                 
         // Log API call
         apiCallHistoryService.logApiCall("match", url, matchId, response);
+        
+        // Save raw data to database
+        if (response != null) {
+            // Extract region from matchId (e.g., KR_6123456789)
+            String region = "KR";
+            if (matchId.contains("_")) {
+                region = matchId.substring(0, matchId.indexOf("_"));
+            }
+            
+            riotMatchRawService.saveRawMatchData(matchId, response, region);
+        }
         
         return response;
     }

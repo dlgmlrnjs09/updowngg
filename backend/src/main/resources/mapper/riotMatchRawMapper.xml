@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gg.updown.backend.external.riot.api.lol.match.mapper.RiotMatchRawMapper">
+
+    <insert id="insertRiotMatchRaw" parameterType="gg.updown.backend.external.riot.api.lol.match.model.RiotMatchRawEntity">
+        INSERT INTO RIOT_MATCH_RAW (match_id, match_data, region, saved_at)
+        VALUES (#{matchId}, #{matchData}, #{region}, NOW())
+        ON DUPLICATE KEY UPDATE
+            match_data = #{matchData},
+            region = #{region},
+            saved_at = NOW()
+    </insert>
+    
+    <select id="findByMatchId" resultType="gg.updown.backend.external.riot.api.lol.match.model.RiotMatchRawEntity">
+        SELECT 
+            id,
+            match_id as matchId,
+            match_data as matchData,
+            region,
+            saved_at as savedAt
+        FROM RIOT_MATCH_RAW
+        WHERE match_id = #{matchId}
+    </select>
+    
+</mapper>
