@@ -3,22 +3,22 @@
 <mapper namespace="gg.updown.backend.external.riot.api.lol.match.mapper.RiotMatchRawMapper">
 
     <insert id="insertRiotMatchRaw" parameterType="gg.updown.backend.external.riot.api.lol.match.model.RiotMatchRawEntity">
-        INSERT INTO RIOT_MATCH_RAW (match_id, match_data, region, saved_at)
-        VALUES (#{matchId}, #{matchData}, #{region}, NOW())
-        ON DUPLICATE KEY UPDATE
-            match_data = #{matchData},
-            region = #{region},
-            saved_at = NOW()
+        INSERT INTO lol_match_raw (match_id, match_data, region, reg_dt)
+        VALUES (#{matchId}, #{matchData}::jsonb, #{region}, NOW())
+        ON CONFLICT (match_id) DO UPDATE SET
+                                             match_data = #{matchData}::jsonb,
+                                             region = #{region},
+                                             reg_dt = NOW()
     </insert>
     
     <select id="findByMatchId" resultType="gg.updown.backend.external.riot.api.lol.match.model.RiotMatchRawEntity">
         SELECT 
-            id,
+            seq,
             match_id as matchId,
             match_data as matchData,
             region,
-            saved_at as savedAt
-        FROM RIOT_MATCH_RAW
+            reg_dt as savedAt
+        FROM lol_match_raw
         WHERE match_id = #{matchId}
     </select>
     
