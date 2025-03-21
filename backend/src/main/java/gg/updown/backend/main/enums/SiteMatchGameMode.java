@@ -22,7 +22,7 @@ public enum SiteMatchGameMode {
     NEXUS_BLITZ("NEXUS_BLITZ", "넥서스 블리츠", "", 1300),
     ULTIMATE_SPELLBOOK("ULTIMATE_SPELLBOOK", "궁극기 주문서", "", 1400),
     ARENA("ARENA", "아레나", "", 1700),
-    CHERRY("CHERRY", "집중포화", "", 1200);
+    CHERRY("CHERRY", "아레나", "", 1700);
 
     private final String queueCode;
     private final String queueName;

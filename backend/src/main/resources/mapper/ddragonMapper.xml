@@ -35,4 +35,118 @@
         FROM
             lol_champion
     </select>
+
+    <!-- Augment CRUD -->
+    <insert id="insertArenaAugment" parameterType="ArenaAugmentEntity">
+        INSERT INTO lol_arena_augment (id, api_name, name, description, tooltip, rarity_id, icon_large, icon_small, created_at, updated_at)
+        VALUES (#{id}, #{apiName}, #{name}, #{description}, #{tooltip}, #{rarityId}, #{iconLarge}, #{iconSmall}, NOW(), NOW())
+        ON CONFLICT (id) DO UPDATE SET
+                                       api_name = #{apiName},
+                                       name = #{name},
+                                       description = #{description},
+                                       tooltip = #{tooltip},
+                                       rarity_id = #{rarityId},
+                                       icon_large = #{iconLarge},
+                                       icon_small = #{iconSmall},
+                                       updated_at = NOW()
+    </insert>
+
+    <select id="findAugmentById" resultType="ArenaAugmentEntity">
+        SELECT
+            id,
+            api_name as apiName,
+            name,
+            description,
+            tooltip,
+            rarity_id as rarityId,
+            icon_large as iconLarge,
+            icon_small as iconSmall,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM lol_arena_augment
+        WHERE id = #{id}
+    </select>
+
+    <select id="findAugmentListById" parameterType="list" resultType="ArenaAugmentEntity">
+        SELECT
+            id,
+            api_name as apiName,
+            name,
+            description,
+            tooltip,
+            rarity_id as rarityId,
+            icon_large as iconLarge,
+            icon_small as iconSmall,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM lol_arena_augment
+        WHERE id IN
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findAllAugments" resultType="ArenaAugmentEntity">
+        SELECT
+            id,
+            api_name as apiName,
+            name,
+            description,
+            tooltip,
+            rarity_id as rarityId,
+            icon_large as iconLarge,
+            icon_small as iconSmall,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM lol_arena_augment
+        ORDER BY id
+    </select>
+
+    <select id="findAugmentsByRarityId" resultType="ArenaAugmentEntity">
+        SELECT
+            id,
+            api_name as apiName,
+            name,
+            description,
+            tooltip,
+            rarity_id as rarityId,
+            icon_large as iconLarge,
+            icon_small as iconSmall,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM lol_arena_augment
+        WHERE rarity_id = #{rarityId}
+        ORDER BY id
+    </select>
+
+    <!-- Augment Data Values CRUD -->
+    <insert id="insertAugmentDataValue" parameterType="ArenaAugmentDataValueEntity">
+        INSERT INTO lol_arena_augment_data_values (augment_id, key, value, created_at, updated_at)
+        VALUES (#{augmentId}, #{key}, #{value}, NOW(), NOW())
+    </insert>
+
+    <insert id="insertAugmentDataValues" parameterType="java.util.List">
+        INSERT INTO lol_arena_augment_data_values (augment_id, key, value, created_at, updated_at)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.augmentId}, #{item.key}, #{item.value}, NOW(), NOW())
+        </foreach>
+    </insert>
+
+    <delete id="deleteAugmentDataValuesByAugmentId">
+        DELETE FROM lol_arena_augment_data_values
+        WHERE augment_id = #{augmentId}
+    </delete>
+
+    <select id="findDataValuesByAugmentId" resultType="ArenaAugmentDataValueEntity">
+        SELECT
+            id,
+            augment_id as augmentId,
+            key,
+            value,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM lol_arena_augment_data_values
+        WHERE augment_id = #{augmentId}
+    </select>
 </mapper>

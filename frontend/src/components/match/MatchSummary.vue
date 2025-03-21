@@ -253,21 +253,40 @@
       <!-- PC/태블릿 레이아웃 -->
       <div class="hidden md:block">
         <div class="teams-container">
-          <match-team
-              :participants="team1"
-              :all-participants="match.participantList"
-              :team-type="'blue'"
-              :profile-data="profileData"
-              @review-player="$emit('reviewPlayer', $event)"
-          />
-          <div class="teams-divider"></div>
-          <match-team
-              :participants="team2"
-              :all-participants="match.participantList"
-              :team-type="'red'"
-              :profile-data="profileData"
-              @review-player="$emit('reviewPlayer', $event)"
-          />
+          <!-- 아레나 모드가 아닌 경우 -->
+          <template v-if="!isArena">
+            <match-team
+                :game-mode="match.matchInfo.gameMode"
+                :participants="team1"
+                :all-participants="match.participantList"
+                :team-type="'blue'"
+                :profile-data="profileData"
+                @review-player="$emit('reviewPlayer', $event)"
+            />
+            <div class="teams-divider"></div>
+            <match-team
+                :game-mode="match.matchInfo.gameMode"
+                :participants="team2"
+                :all-participants="match.participantList"
+                :team-type="'red'"
+                :profile-data="profileData"
+                @review-player="$emit('reviewPlayer', $event)"
+            />
+          </template>
+
+          <!-- 아레나 모드인 경우 -->
+          <template v-else>
+            <div class="arena-teams-full-width">
+              <match-team
+                  :game-mode="match.matchInfo.gameMode"
+                  :participants="match.participantList"
+                  :all-participants="match.participantList"
+                  :team-type="'all'"
+                  :profile-data="profileData"
+                  @review-player="$emit('reviewPlayer', $event)"
+              />
+            </div>
+          </template>
         </div>
       </div>
 
@@ -287,7 +306,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { LolMatchInfoRes, LolMatchParticipant } from '@/types/match';
+import {type LolMatchInfoRes, type LolMatchParticipant, MatchGameMode} from '@/types/match';
 import type { LolSummonerProfileResDto } from '@/types/summoner';
 import { ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, PenLine, FileEdit, PencilIcon } from 'lucide-vue-next';
 import MatchTeam from './MatchTeam.vue';
@@ -346,6 +365,46 @@ const formatDuration = (seconds: number) => {
   const remainingSeconds = seconds % 60;
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
+
+const isArena = computed(() => {
+  return props.match.matchInfo.gameMode === MatchGameMode.CHERRY;
+});
+
+const arenaTeams = computed(() => {
+  if (!isArena.value) return [];
+
+  // playerSubteamId로 그룹핑
+  const teams: { [key: number]: LolMatchParticipant[] } = {};
+  props.match.participantList.forEach(player => {
+    const teamId = player.playerSubteamId || 0;
+    if (!teams[teamId]) {
+      teams[teamId] = [];
+    }
+    teams[teamId].push(player);
+  });
+
+  // 팀별로 subteamPlacement 값을 가져와서 오름차순 정렬
+  const sortedTeams = Object.values(teams).sort((teamA, teamB) => {
+    // 각 팀에서 첫 플레이어의 subteamPlacement를 기준으로 정렬
+    // (팀 내 모든 플레이어의 subteamPlacement는 동일해야 함)
+    const placementA = teamA[0]?.subteamPlacement ?? Number.MAX_SAFE_INTEGER;
+    const placementB = teamB[0]?.subteamPlacement ?? Number.MAX_SAFE_INTEGER;
+    return placementA - placementB;
+  });
+
+  return sortedTeams;
+});
+
+const getPlacementText = (placement) => {
+  if (!placement && placement !== 0) return '';
+
+  switch (placement) {
+    case 1: return '1st';
+    case 2: return '2nd';
+    case 3: return '3rd';
+    default: return `${placement}th`;
+  }
+}
 </script>
 
 <style scoped>
@@ -382,7 +441,6 @@ const formatDuration = (seconds: number) => {
 
 .game-item {
   background: #141414;
-  padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   transition: transform 0.2s ease, border-color 0.2s ease;
@@ -424,9 +482,14 @@ const formatDuration = (seconds: number) => {
 
 .teams-container {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto 1fr; /* 기본 레이아웃 */
   gap: 24px;
   align-items: start;
+}
+
+.arena-teams-full-width {
+  width: 100%;
+  grid-column: 1 / -1; /* 모든 열을 차지하도록 함 */
 }
 
 .teams-divider {
@@ -444,5 +507,42 @@ const formatDuration = (seconds: number) => {
 
 .player-icon img {
   @apply transition-transform hover:scale-110;
+}
+
+.arena-team-row {
+  width: 100%;
+  margin-bottom: 2px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(30, 30, 30, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.arena-team-header {
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.arena-team-players {
+  padding: 4px;
+}
+
+.arena-participant {
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  margin-bottom: 2px;
+  padding: 4px 6px;
+}
+
+.arena-participant:last-child {
+  margin-bottom: 0;
+}
+
+.arena-placement {
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.3);
 }
 </style>

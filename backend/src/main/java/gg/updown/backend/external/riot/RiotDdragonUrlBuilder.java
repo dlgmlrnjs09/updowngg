@@ -8,4 +8,8 @@ public class RiotDdragonUrlBuilder {
     public static String getSummonerIconUrl(String gameVersion, String iconId) {
         return RiotApiBasePath.DDRAGON.getUrl() + "/cdn/" + gameVersion +"/img/profileicon/" + iconId + ".png";
     }
+
+    public static String getAugmentIconUrl(String imgPath) {
+        return RiotApiBasePath.DDRAGON_RAW.getUrl() + "/latest/game/" + imgPath;
+    }
 }

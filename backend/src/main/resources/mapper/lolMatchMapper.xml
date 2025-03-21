@@ -76,7 +76,13 @@
            total_damage_taken,
             champ_id,
             champ_name,
-            is_win
+            is_win,
+            player_augment1,
+            player_augment2,
+            player_augment3,
+            player_augment4,
+            player_subteam_id,
+            subteam_placement
         FROM
             lol_match_participant
         WHERE

@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum RiotApiBasePath {
     API("https://%s.api.riotgames.com"),
-    DDRAGON("https://ddragon.leagueoflegends.com");
+    DDRAGON("https://ddragon.leagueoflegends.com"),
+    DDRAGON_RAW("https://raw.communitydragon.org");
 
     private final String url;
 

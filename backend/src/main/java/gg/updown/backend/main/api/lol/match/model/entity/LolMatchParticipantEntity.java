@@ -1,5 +1,6 @@
 package gg.updown.backend.main.api.lol.match.model.entity;
 
+import gg.updown.backend.main.riot.ddragon.model.ArenaAugmentEntity;
 import lombok.*;
 
 @Getter
@@ -95,6 +96,10 @@ public class LolMatchParticipantEntity {
     private int playerAugment2;
     private int playerAugment3;
     private int playerAugment4;
+    private ArenaAugmentEntity playerAugmentEntity1;
+    private ArenaAugmentEntity playerAugmentEntity2;
+    private ArenaAugmentEntity playerAugmentEntity3;
+    private ArenaAugmentEntity playerAugmentEntity4;
     private int playerSubteamId;
     private int pushPings;
     private int profileIcon;

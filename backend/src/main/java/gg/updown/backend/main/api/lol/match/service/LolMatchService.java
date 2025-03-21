@@ -28,6 +28,8 @@ import gg.updown.backend.main.api.review.service.ReviewService;
 import gg.updown.backend.main.enums.SiteLeagueTier;
 import gg.updown.backend.main.enums.SiteMatchFilter;
 import gg.updown.backend.main.enums.SiteMatchGameMode;
+import gg.updown.backend.main.riot.ddragon.model.ArenaAugmentEntity;
+import gg.updown.backend.main.riot.ddragon.service.DdragonService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -56,6 +58,7 @@ public class LolMatchService {
     private final ReviewService reviewService;
     private final LolMatchMapper lolMatchMapper;
     private final SiteRankingMapper siteRankingMapper;
+    private final DdragonService ddragonService;
 
     /**
      * 기간 내 저장되지 않은 match 전부 불러와 matchId, 갱신정보만 저장하기
@@ -175,6 +178,7 @@ public class LolMatchService {
         if (matchMapper.countingMatchByMatchId(matchId) > 0) {
             matchInfoEntity = matchMapper.getMatchInfo(matchId);
             participantList = matchMapper.getMatchParticipantList(matchId);
+            this.setAugmentEntity(participantList);
         } else {
             MatchDto matchDto = matchApiService.getMatchDetailByMatchId(matchId);
             matchInfoEntity = lolMatchModelConverter.convertMatchDtoToLolMatchEntity(matchDto);
@@ -329,6 +333,13 @@ public class LolMatchService {
                     LolMatchParticipantDto entity = new LolMatchParticipantDto();
                     BeanUtils.copyProperties(participant, entity);
                     entity.setChampProfileIconUrl(RiotDdragonUrlBuilder.getChampionIconUrl(latestVersion, participant.getChampName()));
+
+                    if (matchEntity.getQueueId() == SiteMatchGameMode.CHERRY.getQueueId()) {
+                        entity.setPlayerAugmentEntity1(this.createAugmentEntity(participant.getPlayerAugmentEntity1()));
+                        entity.setPlayerAugmentEntity2(this.createAugmentEntity(participant.getPlayerAugmentEntity2()));
+                        entity.setPlayerAugmentEntity3(this.createAugmentEntity(participant.getPlayerAugmentEntity3()));
+                        entity.setPlayerAugmentEntity4(this.createAugmentEntity(participant.getPlayerAugmentEntity4()));
+                    }
                     return entity;
                 })
                 .toList();
@@ -452,5 +463,60 @@ public class LolMatchService {
                 .frequentTagDtoList(frequentTagDtoList)
                 .playerDto(playerDto)
                 .build();
+    }
+
+    private void setAugmentEntity(List<LolMatchParticipantEntity> participants) {
+        // 모든 증강 ID 수집 (중복 제거)
+        Set<Integer> augmentIds = new HashSet<>();
+        for (LolMatchParticipantEntity participant : participants) {
+            if (participant.getPlayerAugment1() != 0) augmentIds.add(participant.getPlayerAugment1());
+            if (participant.getPlayerAugment2() != 0) augmentIds.add(participant.getPlayerAugment2());
+            if (participant.getPlayerAugment3() != 0) augmentIds.add(participant.getPlayerAugment3());
+            if (participant.getPlayerAugment4() != 0) augmentIds.add(participant.getPlayerAugment4());
+        }
+
+        //  증강 정보 일괄 조회
+        List<ArenaAugmentEntity> augments = Collections.emptyList();
+        if (!augmentIds.isEmpty()) {
+            augments = ddragonService.findAugmentListById(new ArrayList<>(augmentIds));
+        }
+
+        //  ID와 증강 객체를 매핑하는 맵 생성
+        Map<Integer, ArenaAugmentEntity> augmentMap = augments.stream()
+                .collect(Collectors.toMap(ArenaAugmentEntity::getId, entity -> entity));
+
+        //  각 참가자 객체에 증강 정보 설정
+        for (LolMatchParticipantEntity participant : participants) {
+            if (participant.getPlayerAugment1() != 0) {
+                participant.setPlayerAugmentEntity1(augmentMap.get(participant.getPlayerAugment1()));
+            }
+            if (participant.getPlayerAugment2() != 0) {
+                participant.setPlayerAugmentEntity2(augmentMap.get(participant.getPlayerAugment2()));
+            }
+            if (participant.getPlayerAugment3() != 0) {
+                participant.setPlayerAugmentEntity3(augmentMap.get(participant.getPlayerAugment3()));
+            }
+            if (participant.getPlayerAugment4() != 0) {
+                participant.setPlayerAugmentEntity4(augmentMap.get(participant.getPlayerAugment4()));
+            }
+        }
+    }
+
+    /**
+     * 증강(Augment) 엔티티를 생성하는 헬퍼 메소드
+     *
+     * @param sourceAugment 소스 증강 엔티티
+     * @return 복사된 증강 엔티티 (URL 정보 포함) 또는 null이 아닌 경우 새 엔티티
+     */
+    private ArenaAugmentEntity createAugmentEntity(ArenaAugmentEntity sourceAugment) {
+        ArenaAugmentEntity augment = new ArenaAugmentEntity();
+
+        if (sourceAugment != null) {
+            BeanUtils.copyProperties(sourceAugment, augment);
+            augment.setIconSmallUrl(RiotDdragonUrlBuilder.getAugmentIconUrl(augment.getIconSmall()));
+            augment.setIconLargeUrl(RiotDdragonUrlBuilder.getAugmentIconUrl(augment.getIconLarge()));
+        }
+
+        return augment;
     }
 }

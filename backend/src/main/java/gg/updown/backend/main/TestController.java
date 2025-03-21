@@ -2,6 +2,7 @@ package gg.updown.backend.main;
 
 import gg.updown.backend.config.JasyptConfigDES;
 import gg.updown.backend.external.riot.api.account.service.AccountApiService;
+import gg.updown.backend.external.riot.api.lol.match.service.RiotMatchRawService;
 import gg.updown.backend.main.api.community.duo.service.DuoCommunityService;
 import gg.updown.backend.main.api.lol.match.service.LolMatchService;
 import gg.updown.backend.main.riot.account.service.RiotAccountService;
@@ -22,10 +23,11 @@ public class TestController {
     private final LolMatchService matchService;
     private final JasyptConfigDES jasyptConfig;
     private final DuoCommunityService duoCommunityService;
+    private final RiotMatchRawService rawService;
 
     @GetMapping("/test")
     public void test() {
-        ddragonService.insertChampionNameList();
+        rawService.syncArenaAugmentData("ko_kr");
     }
 
     @GetMapping("/encodeing")

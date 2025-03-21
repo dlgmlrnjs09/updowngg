@@ -6,13 +6,20 @@ import gg.updown.backend.external.riot.api.lol.match.model.MatchDto;
 import gg.updown.backend.external.riot.api.lol.match.model.ParticipantDto;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchEntity;
 import gg.updown.backend.main.api.lol.match.model.entity.LolMatchParticipantEntity;
+import gg.updown.backend.main.riot.ddragon.model.ArenaAugmentEntity;
+import gg.updown.backend.main.riot.ddragon.service.DdragonService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class LolMatchModelConverter {
+
+    private final DdragonService ddragonService;
+
     public LolMatchEntity convertMatchDtoToLolMatchEntity(MatchDto matchDto) {
         InfoDto infoDto = matchDto.getInfo();
         return LolMatchEntity.builder()
@@ -34,6 +41,55 @@ public class LolMatchModelConverter {
         List<LolMatchParticipantEntity> resultParticipantDtoList = new ArrayList<>();
         List<ParticipantDto> participantDtoList = matchDto.getInfo().getParticipants();
         for (ParticipantDto dto : participantDtoList) {
+            List<Map<String, Integer>> augmentList = new ArrayList<>();
+            int augmentSeq = 1;
+            if (dto.getPlayerAugment1() != 0) {
+                Map<String, Integer> augmentMap = new HashMap<>();
+                augmentMap.put("seq", augmentSeq++);
+                augmentMap.put("id", dto.getPlayerAugment1());
+                augmentList.add(augmentMap);
+            }
+            if (dto.getPlayerAugment2() != 0) {
+                Map<String, Integer> augmentMap = new HashMap<>();
+                augmentMap.put("seq", augmentSeq++);
+                augmentMap.put("id", dto.getPlayerAugment2());
+                augmentList.add(augmentMap);
+            }
+            if (dto.getPlayerAugment3() != 0) {
+                Map<String, Integer> augmentMap = new HashMap<>();
+                augmentMap.put("seq", augmentSeq++);
+                augmentMap.put("id", dto.getPlayerAugment3());
+                augmentList.add(augmentMap);
+            }
+            if (dto.getPlayerAugment4() != 0) {
+                Map<String, Integer> augmentMap = new HashMap<>();
+                augmentMap.put("seq", augmentSeq);
+                augmentMap.put("id", dto.getPlayerAugment4());
+                augmentList.add(augmentMap);
+            }
+
+            // ID만 추출한 리스트 생성
+            List<Integer> augmentIds = augmentList.stream()
+                    .map(map -> map.get("id"))
+                    .collect(Collectors.toList());
+
+            // ID를 기준으로 데이터 조회
+            List<ArenaAugmentEntity> augments = ddragonService.findAugmentListById(augmentIds);
+
+            // ID와 seq 정보를 매핑하는 맵 생성
+            Map<Integer, Integer> idToSeqMap = augmentList.stream()
+                    .collect(Collectors.toMap(
+                            map -> map.get("id"),
+                            map -> map.get("seq")
+                    ));
+
+            // seq 값으로 정렬
+            augments.sort(Comparator.comparing(augment -> idToSeqMap.getOrDefault(augment.getId(), Integer.MAX_VALUE)));
+
+            // ID와 증강 객체를 매핑하는 맵 생성
+            Map<Integer, ArenaAugmentEntity> augmentMap = augments.stream()
+                    .collect(Collectors.toMap(ArenaAugmentEntity::getId, entity -> entity));
+
             resultParticipantDtoList.add(LolMatchParticipantEntity.builder()
                     .matchId(matchDto.getMetadata().getMatchId())
                     .puuid(dto.getPuuid())
@@ -120,6 +176,10 @@ public class LolMatchModelConverter {
                     .playerAugment2(dto.getPlayerAugment2())
                     .playerAugment3(dto.getPlayerAugment3())
                     .playerAugment4(dto.getPlayerAugment4())
+                    .playerAugmentEntity1(dto.getPlayerAugment1() != 0 ? augmentMap.get(dto.getPlayerAugment1()) : null)
+                    .playerAugmentEntity2(dto.getPlayerAugment2() != 0 ? augmentMap.get(dto.getPlayerAugment2()) : null)
+                    .playerAugmentEntity3(dto.getPlayerAugment3() != 0 ? augmentMap.get(dto.getPlayerAugment3()) : null)
+                    .playerAugmentEntity4(dto.getPlayerAugment4() != 0 ? augmentMap.get(dto.getPlayerAugment4()) : null)
                     .playerSubteamId(dto.getPlayerSubteamId())
                     .pushPings(dto.getPushPings())
                     .profileIcon(dto.getProfileIcon())

@@ -51,6 +51,16 @@ public class RiotWebClientConfig {
     }
 
     @Bean
+    WebClient ddragonRawWebClient() {
+        return WebClient.builder()
+                .baseUrl(RiotApiBasePath.DDRAGON_RAW.getUrl())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .filter(loggingRequestUrl())
+                .build();
+    }
+
+    @Bean
     WebClient riotRsoWebClient() {
         return WebClient.builder()
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
