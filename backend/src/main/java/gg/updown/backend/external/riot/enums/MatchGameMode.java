@@ -17,7 +17,8 @@ public enum MatchGameMode {
     URF(900, "우르프"),
     ONE_FOR_ALL(1020, "단일챔피언"),
     NEXUS_BLITZ(1300, "넥서스 블리츠"),
-    ULTIMATE_SPELLBOOK(1400, "궁극기 주문서");
+    ULTIMATE_SPELLBOOK(1400, "궁극기 주문서"),
+    ARENA(1700, "아레나");
 
     private final int queueId;
     private final String queueName;

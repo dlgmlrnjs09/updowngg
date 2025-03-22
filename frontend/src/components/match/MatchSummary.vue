@@ -37,7 +37,12 @@
               <div class="text-xs">{{ match.matchInfo.gameModeName }}</div>
               <div class="text-xs text-gray-400">{{ formatTimeAgo(match.matchInfo.gameStartDt) }}</div>
               <div class="text-xs" :class="isWin ? 'text-blue-400' : 'text-red-400'">
-                {{ isWin ? '승리' : '패배' }} · {{ formatDuration(match.matchInfo.gameDuration) }}
+                <template v-if="isArena">
+                  {{ getPlacementText(currentPlayer.subteamPlacement) }} · {{ formatDuration(match.matchInfo.gameDuration) }}
+                </template>
+                <template v-else>
+                  {{ isWin ? '승리' : '패배' }} · {{ formatDuration(match.matchInfo.gameDuration) }}
+                </template>
               </div>
             </div>
           </div>
@@ -93,12 +98,17 @@
         <!-- 태블릿/PC 레이아웃 -->
         <div class="hidden md:flex w-full">
           <!-- 기존 데스크탑 레이아웃 코드 유지 -->
-          <div class="game-info-section w-36 px-4 flex flex-col">
+          <div class="game-info-section w-36 px-4 flex flex-col self-center">
             <div class="text-sm font-medium">{{ match.matchInfo.gameModeName }}</div>
             <div class="text-xs text-gray-400">{{ formatTimeAgo(match.matchInfo.gameStartDt) }}</div>
             <div class="divider my-2 border-t border-gray-700 w-[60%]"></div>
             <div class="text-xs" :class="isWin ? 'text-blue-400' : 'text-red-400'">
-              {{ isWin ? '승리' : '패배' }}
+              <template v-if="isArena">
+                {{ getPlacementText(currentPlayer.subteamPlacement) }}
+              </template>
+              <template v-else>
+                {{ isWin ? '승리' : '패배' }}
+              </template>
             </div>
             <div class="text-xs text-gray-400">{{ formatDuration(match.matchInfo.gameDuration) }}</div>
           </div>
@@ -170,7 +180,7 @@
 
           <div class="participants-section">
             <div class="flex gap-4">
-              <div class="team-column">
+              <div v-if="!isArena" class="team-column">
                 <div v-for="player in team1"
                      :key="player.puuid"
                      class="participant-row">
@@ -180,7 +190,8 @@
                         :alt="player.champName"
                         class="w-4 h-4 rounded-sm flex-shrink-0"
                     >
-                    <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
+                    <span class="text-xs hover:text-blue-400 cursor-pointer truncate"
+                          :class="isProfileOwner(player) ? 'text-yellow-300 font-medium' : 'text-gray-300'"
                           @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
                       {{ player.riotIdGameName }}
                     </span>
@@ -204,7 +215,7 @@
                 </div>
               </div>
 
-              <div class="team-column">
+              <div v-if="!isArena" class="team-column">
                 <div v-for="player in team2"
                      :key="player.puuid"
                      class="participant-row">
@@ -214,7 +225,8 @@
                         :alt="player.champName"
                         class="w-4 h-4 rounded-sm flex-shrink-0"
                     >
-                    <span class="text-xs text-gray-300 hover:text-blue-400 cursor-pointer truncate"
+                    <span class="text-xs hover:text-blue-400 cursor-pointer truncate"
+                          :class="isProfileOwner(player) ? 'text-yellow-300 font-medium' : 'text-gray-300'"
                           @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
                       {{ player.riotIdGameName }}
                     </span>
@@ -234,6 +246,81 @@
                         class="w-[16px] h-[16px] text-gray-600 hover:text-gray-400 cursor-pointer flex-shrink-0 ml-2"
                         @click.stop="$emit('reviewPlayer', player)"
                     />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 아레나 모드 플레이어 리스트 (2x5 그리드) -->
+              <div v-if="isArena" class="arena-teams-grid">
+                <!-- 왼쪽 열 (첫 5명) -->
+                <div class="arena-team-column">
+                  <div v-for="player in displayedArenaPlayers.slice(0, 5)"
+                       :key="player.puuid"
+                       class="participant-row">
+                    <div class="flex items-center gap-1 min-w-0 flex-1">
+                      <img
+                          :src="player.champProfileIconUrl"
+                          :alt="player.champName"
+                          class="w-4 h-4 rounded-sm flex-shrink-0"
+                      >
+                      <span class="text-xs hover:text-blue-400 cursor-pointer truncate"
+                            :class="isProfileOwner(player) ? 'text-yellow-300 font-medium' : 'text-gray-300'"
+                            @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
+                        {{ player.riotIdGameName }}
+                      </span>
+                    </div>
+                    <div class="flex items-center">
+                      <FileEdit
+                          v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                                && player.puuid !== auth.user?.puuid
+                                && !player.reviewDto.reviewable"
+                          class="w-4 h-4 text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0 ml-2"
+                          @click.stop="$emit('reviewPlayer', player)"
+                      />
+                      <PencilIcon
+                          v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                                && player.puuid !== auth.user?.puuid
+                                && player.reviewDto.reviewable"
+                          class="w-[16px] h-[16px] text-gray-600 hover:text-gray-400 cursor-pointer flex-shrink-0 ml-2"
+                          @click.stop="$emit('reviewPlayer', player)"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 오른쪽 열 (남은 5명) -->
+                <div class="arena-team-column">
+                  <div v-for="player in displayedArenaPlayers.slice(5, 10)"
+                       :key="player.puuid"
+                       class="participant-row">
+                    <div class="flex items-center gap-1 min-w-0 flex-1">
+                      <img
+                          :src="player.champProfileIconUrl"
+                          :alt="player.champName"
+                          class="w-4 h-4 rounded-sm flex-shrink-0"
+                      >
+                      <span class="text-xs hover:text-blue-400 cursor-pointer truncate"
+                            :class="isProfileOwner(player) ? 'text-yellow-300 font-medium' : 'text-gray-300'"
+                            @click.stop="goSelectedSummonerProfile(player.riotIdGameName, player.riotIdTagline)">
+                        {{ player.riotIdGameName }}
+                      </span>
+                    </div>
+                    <div class="flex items-center">
+                      <FileEdit
+                          v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                                && player.puuid !== auth.user?.puuid
+                                && !player.reviewDto.reviewable"
+                          class="w-4 h-4 text-blue-400 hover:text-blue-300 cursor-pointer flex-shrink-0 ml-2"
+                          @click.stop="$emit('reviewPlayer', player)"
+                      />
+                      <PencilIcon
+                          v-if="auth.user?.puuid === profileData.riotAccountInfoEntity.puuid
+                                && player.puuid !== auth.user?.puuid
+                                && player.reviewDto.reviewable"
+                          class="w-[16px] h-[16px] text-gray-600 hover:text-gray-400 cursor-pointer flex-shrink-0 ml-2"
+                          @click.stop="$emit('reviewPlayer', player)"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -347,30 +434,11 @@ const team2 = computed(() => {
   return props.match.participantList.filter(p => p.teamId === 200);
 });
 
-const toggleDetails = () => {
-  showDetails.value = !showDetails.value;
-};
-
-const calculateKDA = (player: LolMatchParticipant) => {
-  return player.deaths === 0
-      ? ((player.kills + player.assists)).toFixed(2)
-      : ((player.kills + player.assists) / player.deaths).toFixed(2);
-};
-
-/*const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('ko-KR');
-};*/
-
-const formatDuration = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-};
-
 const isArena = computed(() => {
   return props.match.matchInfo.gameMode === MatchGameMode.CHERRY;
 });
 
+// 아레나 팀별로 그룹화
 const arenaTeams = computed(() => {
   if (!isArena.value) return [];
 
@@ -396,15 +464,99 @@ const arenaTeams = computed(() => {
   return sortedTeams;
 });
 
-const getPlacementText = (placement) => {
-  if (!placement && placement !== 0) return '';
+// 아레나 모드에서 표시할 플레이어 (1~5위 팀 최대 10명)
+const displayedArenaPlayers = computed(() => {
+  if (!isArena.value) return [];
 
-  switch (placement) {
-    case 1: return '1st';
-    case 2: return '2nd';
-    case 3: return '3rd';
-    default: return `${placement}th`;
+  const profilePuuid = props.profileData.riotAccountInfoEntity.puuid;
+  const currentPlayerTeamId = currentPlayer.value?.playerSubteamId || 0;
+
+  // 아레나 팀에서 현재 유저의 팀 정보 찾기
+  const currentPlayerTeam = arenaTeams.value.find(team =>
+      team.some(player => player.playerSubteamId === currentPlayerTeamId)
+  );
+
+  // 현재 플레이어 팀의 순위
+  const currentPlayerTeamPlacement = currentPlayerTeam?.[0]?.subteamPlacement || 0;
+
+  // 모든 플레이어를 준비
+  let allPlayers = [];
+
+  // 1. 현재 플레이어 팀 추가
+  if (currentPlayerTeam) {
+    allPlayers = [...currentPlayerTeam];
   }
+
+  // 2. 다른 팀들 정렬해서 추가 (순위 기준)
+  const otherTeams = arenaTeams.value
+      .filter(team => team[0]?.playerSubteamId !== currentPlayerTeamId)
+      .sort((a, b) => a[0].subteamPlacement - b[0].subteamPlacement);
+
+  // 3. 다른 팀의 플레이어 추가
+  for (const team of otherTeams) {
+    allPlayers = [...allPlayers, ...team];
+
+    // 10명 채우면 중단
+    if (allPlayers.length >= 10) break;
+  }
+
+  // 4. 정확히 10명으로 제한
+  allPlayers = allPlayers.slice(0, 10);
+
+  // 5. 같은 팀끼리 정렬 (팀 순위 우선, 같은 팀은 닉네임 순)
+  allPlayers.sort((a, b) => {
+    if (a.playerSubteamId === currentPlayerTeamId && b.playerSubteamId !== currentPlayerTeamId) {
+      return -1; // 현재 플레이어 팀을 맨 위로
+    }
+    if (a.playerSubteamId !== currentPlayerTeamId && b.playerSubteamId === currentPlayerTeamId) {
+      return 1;
+    }
+    if (a.subteamPlacement !== b.subteamPlacement) {
+      return a.subteamPlacement - b.subteamPlacement;
+    }
+    return a.riotIdGameName.localeCompare(b.riotIdGameName);
+  });
+
+  return allPlayers;
+});
+
+const toggleDetails = () => {
+  showDetails.value = !showDetails.value;
+};
+
+const calculateKDA = (player: LolMatchParticipant) => {
+  return player.deaths === 0
+      ? ((player.kills + player.assists)).toFixed(2)
+      : ((player.kills + player.assists) / player.deaths).toFixed(2);
+};
+
+const formatDuration = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
+// 프로필 주인인지 확인하는 함수
+const isProfileOwner = (player) => {
+  if (!player || !props.profileData) return false;
+  return player.puuid === props.profileData.riotAccountInfoEntity.puuid;
+};
+
+const isSameTeamAsCurrentPlayer = (player) => {
+  if (!currentPlayer.value || !player) return false;
+
+  // 일반 모드에서는 teamId로 판별
+  if (!isArena.value) {
+    return player.teamId === currentPlayer.value.teamId;
+  }
+
+  // 아레나 모드에서는 playerSubteamId로 판별
+  return player.playerSubteamId === currentPlayer.value.playerSubteamId;
+};
+
+const getPlacementText = (placement) => {
+  if (placement === undefined || placement === null) return '';
+  return `${placement}위`;
 }
 </script>
 
@@ -436,8 +588,18 @@ const getPlacementText = (placement) => {
   width: 120px;
 }
 
+.arena-teams-grid {
+  @apply flex gap-4;
+}
+
+.arena-team-column {
+  @apply flex flex-col;
+  width: 120px; /* 일반 모드의 team-column과 같은 너비로 설정 */
+}
+
 .participant-row {
-  @apply flex items-center mb-1 pr-1 w-[120px];
+  @apply flex items-center mb-1 pr-1;
+  width: 100%;
 }
 
 .game-item {
