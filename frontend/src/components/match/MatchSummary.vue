@@ -293,6 +293,7 @@
       <!-- 모바일 레이아웃 -->
       <div class="md:hidden">
         <match-team
+            :game-mode="match.matchInfo.gameMode"
             :participants="match.participantList"
             :all-participants="match.participantList"
             :team-type="'all'"

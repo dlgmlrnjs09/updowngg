@@ -48,12 +48,12 @@ const formatNumber = (num: number) => {
 }
 
 .bar-container {
-  display: flex;
+  display: var(--bar-display, flex);
   align-items: center;
   gap: 8px;
-  min-width: 0; /* 추가 */
   flex: 1; /* 추가 */
   width: 100%; /* 추가 */
+  min-width: var(--bar-min-width, 0)
 }
 
 .progress-bg {
