@@ -19,13 +19,13 @@
           <button
               v-for="position in positions"
               :key="position.value"
-              @click="partyLeaderPosition = position.value"
+              @click="selectLeaderPosition(position.value)"
               :class="[
-              'flex flex-col items-center p-3 rounded-lg border transition-all',
-              partyLeaderPosition === position.value
-                ? 'bg-[#1A1A1A] border-[#2979FF] text-white'
-                : 'border-[#333] text-gray-400 hover:border-gray-500'
-            ]"
+                'flex flex-col items-center p-3 rounded-lg border transition-all',
+                partyLeaderPosition === position.value
+                  ? 'bg-[#1A1A1A] border-[#2979FF] text-white'
+                  : 'border-[#333] text-gray-400 hover:border-gray-500'
+              ]"
           >
             <img
                 :src="getPositionImage(position.value)"
@@ -239,10 +239,13 @@ const getTierName = (tierCode: string) => {
 }
 
 const togglePositionOpen = (position: string) => {
-  // 파티장 포지션은 자동으로 비활성화
-  if (position !== partyLeaderPosition.value) {
-    positionsOpen.value[position] = !positionsOpen.value[position]
+  // 현재 파티장 포지션과 같은 포지션이면 토글하지 않음
+  if (position === partyLeaderPosition.value) {
+    return
   }
+
+  // 토글 로직은 그대로 유지
+  positionsOpen.value[position] = !positionsOpen.value[position]
 }
 
 const validateTierRange = () => {
@@ -264,6 +267,16 @@ const validateTierRange = () => {
   return true
 }
 
+const selectLeaderPosition = (position: string) => {
+  // 이미 해당 포지션을 모집 중이었다면 모집 상태 해제
+  if (positionsOpen.value[position]) {
+    positionsOpen.value[position] = false
+  }
+
+  // 파티장 포지션 설정
+  partyLeaderPosition.value = position
+}
+
 const queueType = ref('SOLO_RANK')
 const hasMic = ref(false)
 const content = ref('')
@@ -274,6 +287,16 @@ const { getPositionImage } = useImageUrl()
 watch(content, (newValue) => {
   if (newValue.length > maxLength) {
     content.value = newValue.slice(0, maxLength)
+  }
+})
+
+watch(partyLeaderPosition, (newPosition, oldPosition) => {
+  if (newPosition) {
+    // 새로 선택된 파티장 포지션은 모집 상태를 false로 설정
+    positionsOpen.value[newPosition] = false
+
+    // 이전에 선택된 파티장 포지션이 있었다면, 모집 상태를 그대로 유지 (원래대로 돌림)
+    // 이렇게 하면 파티장 포지션을 변경할 때 이전 포지션의 모집 상태를 원래대로 되돌릴 수 있음
   }
 })
 

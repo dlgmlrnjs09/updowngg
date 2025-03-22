@@ -1297,7 +1297,7 @@ border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 .mobile-player {
 display: flex;
 flex-direction: column;
-padding: 6px 6px; /* 8px에서 6px로 줄임 */
+padding: 15px 6px; /* 8px에서 6px로 줄임 */
 background: rgba(255, 255, 255, 0.04);
 border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 gap: 4px; /* 6px에서 4px로 줄임 */
