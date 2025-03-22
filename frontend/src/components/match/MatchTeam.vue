@@ -438,12 +438,6 @@ const props = defineProps<{
   teamType: 'blue' | 'red' | 'all'
 }>()
 
-onMounted(() => {
-  console.log('isArena:', isArena.value);
-  console.log('gameMode:', props.gameMode);
-  console.log('MatchGameMode.CHERRY:', MatchGameMode.CHERRY);
-});
-
 const emit = defineEmits<{
   (e: 'reviewPlayer', player: LolMatchParticipant): void
 }>()

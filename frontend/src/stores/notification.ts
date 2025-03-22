@@ -20,35 +20,25 @@ export const useNotificationStore = defineStore('notification', {
                 this.eventSource.close();
             }
 
-            console.log("SSE 초기화 시작");
 
             this.eventSource = notificationApi.subscribe();
-            console.log("eventSource 생성됨:", this.eventSource);
-
-            console.log("알림 타입 목록:", NOTIFICATION_TYPES);
 
             // forEach 전후에 로그 추가
-            console.log("forEach 루프 시작");
             NOTIFICATION_TYPES.forEach((type, index) => {
-                console.log(`${index}번째 타입 처리 중:`, type.code);
 
                 if (this.eventSource) {
                     this.eventSource.addEventListener(type.code, (event) => {
-                        console.log(`${type.description} 알림 수신:`, event);
                         const notification = JSON.parse(event.data);
                         this.notifications = [notification, ...this.notifications];
                         this.unreadCount++;
                     });
-                    console.log(`${type.code} 이벤트 리스너 등록 완료`);
                 } else {
                     console.error("eventSource가 null입니다");
                 }
             });
-            console.log("forEach 루프 종료");
 
             if (this.eventSource) {
                 this.eventSource.onopen = () => {
-                    console.log("SSE 연결 열림");
                 };
 
                 this.eventSource.onerror = (error) => {
