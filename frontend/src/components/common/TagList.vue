@@ -18,25 +18,22 @@
         @mouseleave="hoveredTag = null"
         @click="isClickable && $emit('tagClick', tag.tagCode)"
     >
-     <span
-         class="tag-text"
-         :class="{
-           'tag-text-up': tag.tagUpdown,
-           'tag-text-down': !tag.tagUpdown
-         }"
-     >
-       {{ tag.tagValue }}
-     </span>
+      <span
+          class="tag-text"
+          :class="{
+            'tag-text-up': tag.tagUpdown,
+            'tag-text-down': !tag.tagUpdown
+          }"
+      >
+        {{ tag.tagValue }}
+      </span>
       <span class="tag-count" v-if="isShowCount">{{ tag.frequentCount }}</span>
 
-      <div
-          v-if="tag === hoveredTag"
-          class="tooltip"
-          :style="tooltipStyle"
-      >
-        {{ tag.tagDescription }}
-        <div class="tooltip-arrow"></div>
-      </div>
+      <Tooltip
+          :is-visible="tag === hoveredTag"
+          :position-style="tooltipStyle"
+          :content="tag.tagDescription"
+      />
     </div>
   </div>
 </template>
@@ -44,6 +41,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { ReviewTagDto } from "@/types/review"
+import Tooltip from '@/components/common/Tooltip.vue'  // Tooltip 컴포넌트 import
 
 defineProps<{
   tags: ReviewTagDto[]
@@ -154,32 +152,6 @@ const handleMouseEnter = (event: MouseEvent, tag: ReviewTagDto) => {
 .tag-count {
   color: #9e9e9e;
   font-size: 11px;
-}
-
-.tooltip {
-  position: fixed;
-  transform: translate(-50%, -100%);
-  background: #323232;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  padding: 8px 12px;
-  color: white;
-  font-size: 14px;
-  border-radius: 4px;
-  white-space: normal;
-  min-width: 200px;
-  max-width: 300px;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-.tooltip-arrow {
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 8px;
-  height: 8px;
-  background: #323232;
 }
 
 .tag:not(.clickable) {

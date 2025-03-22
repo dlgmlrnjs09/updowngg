@@ -38,12 +38,13 @@
 
     <!-- Augment CRUD -->
     <insert id="insertArenaAugment" parameterType="ArenaAugmentEntity">
-        INSERT INTO lol_arena_augment (id, api_name, name, description, tooltip, rarity_id, icon_large, icon_small, created_at, updated_at)
-        VALUES (#{id}, #{apiName}, #{name}, #{description}, #{tooltip}, #{rarityId}, #{iconLarge}, #{iconSmall}, NOW(), NOW())
+        INSERT INTO lol_arena_augment (id, api_name, name, description, clean_description, tooltip, rarity_id, icon_large, icon_small, created_at, updated_at)
+        VALUES (#{id}, #{apiName}, #{name}, #{description}, #{cleanDescription}, #{tooltip}, #{rarityId}, #{iconLarge}, #{iconSmall}, NOW(), NOW())
         ON CONFLICT (id) DO UPDATE SET
                                        api_name = #{apiName},
                                        name = #{name},
                                        description = #{description},
+                                        clean_description = #{cleanDescription},
                                        tooltip = #{tooltip},
                                        rarity_id = #{rarityId},
                                        icon_large = #{iconLarge},
@@ -57,6 +58,7 @@
             api_name as apiName,
             name,
             description,
+            clean_description as cleanDescription,
             tooltip,
             rarity_id as rarityId,
             icon_large as iconLarge,
@@ -73,6 +75,7 @@
             api_name as apiName,
             name,
             description,
+            clean_description as cleanDescription,
             tooltip,
             rarity_id as rarityId,
             icon_large as iconLarge,
@@ -95,6 +98,7 @@
             api_name as apiName,
             name,
             description,
+            clean_description as cleanDescription,
             tooltip,
             rarity_id as rarityId,
             icon_large as iconLarge,
@@ -111,6 +115,7 @@
             api_name as apiName,
             name,
             description,
+            clean_description as cleanDescription,
             tooltip,
             rarity_id as rarityId,
             icon_large as iconLarge,

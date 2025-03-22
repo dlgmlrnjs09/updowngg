@@ -1,6 +1,7 @@
 package gg.updown.backend.main.riot.ddragon.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gg.updown.backend.common.util.StringUtil;
 import gg.updown.backend.external.riot.api.ddragon.model.ArenaDto;
 import gg.updown.backend.external.riot.api.ddragon.model.Champion;
 import gg.updown.backend.external.riot.api.ddragon.service.DdragonApiService;
@@ -68,11 +69,13 @@ public class DdragonService {
             for (Map<String, Object> augmentMap : arenaDto.getAugments()) {
                 try {
                     // 증강 기본 정보 저장
+                    String description = getStringValue(augmentMap, "desc");
                     ArenaAugmentEntity augmentEntity = ArenaAugmentEntity.builder()
                             .id(getIntegerValue(augmentMap, "id"))
                             .apiName(getStringValue(augmentMap, "apiName"))
                             .name(getStringValue(augmentMap, "name"))
-                            .description(getStringValue(augmentMap, "desc"))
+                            .description(description)
+                            .cleanDescription(StringUtil.removeHtmlTags(description))
                             .tooltip(getStringValue(augmentMap, "tooltip"))
                             .rarityId(getIntegerValue(augmentMap, "rarity"))
                             .iconLarge(getStringValue(augmentMap, "iconLarge"))

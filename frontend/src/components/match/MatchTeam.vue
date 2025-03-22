@@ -113,17 +113,63 @@
               <!-- 증강 그리드 영역 - 별도로 분리 -->
               <div class="grid-augments" v-if="isArena">
                 <div class="augments-grid">
-                  <div class="augment-icon" v-if="player.playerAugment1">
+                  <div
+                      class="augment-icon"
+                      v-if="player.playerAugment1"
+                      @mouseenter="handleAugmentMouseEnter($event, player.playerAugmentEntity1)"
+                      @mouseleave="handleAugmentMouseLeave"
+                  >
                     <img :src="player.playerAugmentEntity1.iconLargeUrl" alt="Augment 1">
+                    <Tooltip
+                        :is-visible="hoveredAugment === player.playerAugmentEntity1"
+                        :position-style="tooltipStyle"
+                        :title="player.playerAugmentEntity1.name"
+                        :content="player.playerAugmentEntity1.cleanDescription"
+                    />
                   </div>
-                  <div class="augment-icon" v-if="player.playerAugment2">
+                  <div
+                      class="augment-icon"
+                      v-if="player.playerAugment2"
+                      @mouseenter="handleAugmentMouseEnter($event, player.playerAugmentEntity2)"
+                      @mouseleave="handleAugmentMouseLeave"
+                  >
                     <img :src="player.playerAugmentEntity2.iconLargeUrl" alt="Augment 2">
+                    <Tooltip
+                        :is-visible="hoveredAugment === player.playerAugmentEntity2"
+                        :position-style="tooltipStyle"
+                        :title="player.playerAugmentEntity2.name"
+                        :content="player.playerAugmentEntity2.cleanDescription"
+                    />
                   </div>
-                  <div class="augment-icon" v-if="player.playerAugment3">
+
+                  <div
+                      class="augment-icon"
+                      v-if="player.playerAugment3"
+                      @mouseenter="handleAugmentMouseEnter($event, player.playerAugmentEntity3)"
+                      @mouseleave="handleAugmentMouseLeave"
+                  >
                     <img :src="player.playerAugmentEntity3.iconLargeUrl" alt="Augment 3">
+                    <Tooltip
+                        :is-visible="hoveredAugment === player.playerAugmentEntity3"
+                        :position-style="tooltipStyle"
+                        :title="player.playerAugmentEntity3.name"
+                        :content="player.playerAugmentEntity3.cleanDescription"
+                    />
                   </div>
-                  <div class="augment-icon" v-if="player.playerAugment4">
+
+                  <div
+                      class="augment-icon"
+                      v-if="player.playerAugment4"
+                      @mouseenter="handleAugmentMouseEnter($event, player.playerAugmentEntity4)"
+                      @mouseleave="handleAugmentMouseLeave"
+                  >
                     <img :src="player.playerAugmentEntity4.iconLargeUrl" alt="Augment 4">
+                    <Tooltip
+                        :is-visible="hoveredAugment === player.playerAugmentEntity4"
+                        :position-style="tooltipStyle"
+                        :title="player.playerAugmentEntity4.name"
+                        :content="player.playerAugmentEntity4.cleanDescription"
+                    />
                   </div>
                 </div>
               </div>
@@ -364,17 +410,61 @@
               <!-- 증강 그리드 -->
               <div class="mobile-augments-container" v-if="isArena">
                 <div class="mobile-augments-grid">
-                  <div class="mobile-augment-icon" v-if="player.playerAugment1">
+                  <div
+                      class="mobile-augment-icon"
+                      v-if="player.playerAugment1"
+                      @mouseenter="handleAugmentMouseEnter($event, player.playerAugmentEntity1)"
+                      @mouseleave="handleAugmentMouseLeave"
+                  >
                     <img :src="player.playerAugmentEntity1.iconLargeUrl" alt="Augment 1">
+                    <Tooltip
+                        :is-visible="hoveredAugment === player.playerAugmentEntity1"
+                        :position-style="tooltipStyle"
+                        :title="player.playerAugmentEntity1.name"
+                        :content="player.playerAugmentEntity1.cleanDescription"
+                    />
                   </div>
-                  <div class="mobile-augment-icon" v-if="player.playerAugment2">
+                  <div
+                      class="mobile-augment-icon"
+                      v-if="player.playerAugment2"
+                      @mouseenter="handleAugmentMouseEnter($event, player.playerAugmentEntity2)"
+                      @mouseleave="handleAugmentMouseLeave"
+                  >
                     <img :src="player.playerAugmentEntity2.iconLargeUrl" alt="Augment 2">
+                    <Tooltip
+                        :is-visible="hoveredAugment === player.playerAugmentEntity2"
+                        :position-style="tooltipStyle"
+                        :title="player.playerAugmentEntity2.name"
+                        :content="player.playerAugmentEntity2.cleanDescription"
+                    />
                   </div>
-                  <div class="mobile-augment-icon" v-if="player.playerAugment3">
+                  <div
+                      class="mobile-augment-icon"
+                      v-if="player.playerAugment3"
+                      @mouseenter="handleAugmentMouseEnter($event, player.playerAugmentEntity3)"
+                      @mouseleave="handleAugmentMouseLeave"
+                  >
                     <img :src="player.playerAugmentEntity3.iconLargeUrl" alt="Augment 3">
+                    <Tooltip
+                        :is-visible="hoveredAugment === player.playerAugmentEntity3"
+                        :position-style="tooltipStyle"
+                        :title="player.playerAugmentEntity3.name"
+                        :content="player.playerAugmentEntity3.cleanDescription"
+                    />
                   </div>
-                  <div class="mobile-augment-icon" v-if="player.playerAugment4">
+                  <div
+                      class="mobile-augment-icon"
+                      v-if="player.playerAugment4"
+                      @mouseenter="handleAugmentMouseEnter($event, player.playerAugmentEntity4)"
+                      @mouseleave="handleAugmentMouseLeave"
+                  >
                     <img :src="player.playerAugmentEntity4.iconLargeUrl" alt="Augment 4">
+                    <Tooltip
+                        :is-visible="hoveredAugment === player.playerAugmentEntity4"
+                        :position-style="tooltipStyle"
+                        :title="player.playerAugmentEntity4.name"
+                        :content="player.playerAugmentEntity4.cleanDescription"
+                    />
                   </div>
                 </div>
               </div>
@@ -421,13 +511,13 @@
 <script setup lang="ts">
 import {type LolMatchParticipant, MatchGameMode} from '@/types/match'
 import DamageBar from './DamageBar.vue'
-import {computed, onMounted} from 'vue'
+import {computed, ref} from 'vue'
 import {useAuthStore} from "@/stores/auth.ts";
 import type {LolSummonerProfileResDto} from "@/types/summoner.ts";
 import {useRouter} from "vue-router";
-import {getRatingColor} from "@/utils/ratingUtil.ts";
 import {ThumbsDown, ThumbsUp} from "lucide-vue-next";
 import {goSelectedSummonerProfile} from "@/utils/common.ts";
+import Tooltip from "@/components/common/Tooltip.vue";
 
 
 const props = defineProps<{
@@ -444,6 +534,9 @@ const emit = defineEmits<{
 
 const auth = useAuthStore();
 const router = useRouter();
+// 툴팁 관련 상태 추가
+const hoveredAugment = ref<any | null>(null)
+const tooltipStyle = ref({})
 
 const maxDamage = computed(() =>
     Math.max(...props.allParticipants.map(p => p.totalDamageToChampion))
@@ -506,6 +599,22 @@ const arenaTeams = computed(() => {
 
   return sortedTeams;
 });
+
+// 툴팁 위치 계산 및 표시 관련 메서드
+const handleAugmentMouseEnter = (event: MouseEvent, augment: any) => {
+  hoveredAugment.value = augment
+  const target = event.currentTarget as HTMLElement
+  const rect = target.getBoundingClientRect()
+
+  tooltipStyle.value = {
+    top: `${rect.top - 10}px`,
+    left: `${rect.left + (rect.width / 2)}px`
+  }
+}
+
+const handleAugmentMouseLeave = () => {
+  hoveredAugment.value = null
+}
 </script>
 
 <style>

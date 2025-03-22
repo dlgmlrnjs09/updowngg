@@ -199,6 +199,7 @@ interface ArenaAugmentEntity {
     apiName: string;
     name: string;
     description: string;
+    cleanDescription: string;
     tooltip: string;
     rarityId: number;
     iconLarge: string;

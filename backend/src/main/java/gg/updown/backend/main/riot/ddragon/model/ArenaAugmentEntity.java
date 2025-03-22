@@ -16,6 +16,7 @@ public class ArenaAugmentEntity {
     private String apiName;
     private String name;
     private String description;
+    private String cleanDescription;
     private String tooltip;
     private Integer rarityId;
     private String iconLarge;
