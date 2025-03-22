@@ -4,6 +4,7 @@ import gg.updown.backend.main.api.review.model.dto.ReviewByMatchSummaryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
@@ -12,7 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Schema(description = "LOL 경기/참여자/리뷰 정보 DTO")
-public class LolMatchInfoResDto {
+public class LolMatchInfoResDto implements Serializable {
+    private static final long serialVersionUID = 1L;
     private LolMatchInfoDto matchInfo;
     private List<LolMatchParticipantDto> participantList;
     private ReviewByMatchSummaryDto reviewByMatchSummaryDto;

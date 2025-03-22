@@ -2,6 +2,7 @@ package gg.updown.backend.main.api.lol.match.model.entity;
 
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
@@ -9,7 +10,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LolMatchEntity {
+public class LolMatchEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String matchId;
     private int lolMatchSeq;
     private LocalDateTime gameCreateDt;

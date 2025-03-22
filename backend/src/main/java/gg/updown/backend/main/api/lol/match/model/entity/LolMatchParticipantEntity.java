@@ -2,12 +2,15 @@ package gg.updown.backend.main.api.lol.match.model.entity;
 
 import lombok.*;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LolMatchParticipantEntity {
+public class LolMatchParticipantEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int matchParticipantSeq;
     private String matchId;
     private String puuid;

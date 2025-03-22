@@ -23,6 +23,17 @@ spring:
     url: ENC(VAz68ioTtC6JnKtbAtpIr1GOaUF3zourBWvCntal70qLZdAY7D+pdAPgJ+RjjG/PyJla1ciZ1Js6nCg5LWyGBA==)
     username: ENC(1eiVfgCpK4dwAA8T/iJTViruVkHKw+5U)
     password: ENC(1xXL/JyLoxe87uWTnkj2X54LQgRs8toK)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 3000
+      # password: ENC(your_encrypted_password) # 필요한 경우 추가
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000 # 1시간 (milliseconds)
+      cache-null-values: false
   security:
     oauth2:
       client:

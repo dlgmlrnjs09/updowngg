@@ -32,6 +32,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -65,7 +67,9 @@ public class LolMatchService {
      * @param endTime
      * @return
      */
+    @CacheEvict(value = "matchInfoResDto", allEntries = true)
     public List<String> getAndInsertMatchIdList(String puuid, Long startTime, Long endTime) {
+        log.info("Updating match list and clearing cache for puuid: {}", puuid);
         String latestMatchId = matchMapper.getLatestRequestMatchId(puuid);
         List<String> newMatchIdList = this.getNewMatchIdList(puuid, latestMatchId, startTime, endTime);
         if (!newMatchIdList.isEmpty()) {
@@ -150,7 +154,9 @@ public class LolMatchService {
      * @param matchId
      * @return
      */
+    @Cacheable(value = "matchInfoResDto", key = "'matchResDto_' + #matchId + '_' + #puuid")
     public LolMatchInfoResDto getMatchResDto(String matchId, String puuid) {
+        log.info("Cache miss for matchResDto with matchId: {}, puuid: {}", matchId, puuid);
         LolMatchInfoResDto resDto = this.getMatchResDtoAndInsertConditional(matchId);
 
         resDto.getParticipantList().forEach(player -> {
@@ -168,13 +174,15 @@ public class LolMatchService {
      * @param matchId
      * @return
      */
+    @Cacheable(value = "matchInfoResDto", key = "'matchDto_' + #matchId")
     public LolMatchInfoResDto getMatchResDtoAndInsertConditional(String matchId) {
+        log.info("Cache miss for getMatchResDtoAndInsertConditional with matchId: {}", matchId);
         LolMatchEntity matchInfoEntity = null;
         List<LolMatchParticipantEntity> participantList = null;
         // 이미 DB에 존재하면 DB에서 get, 없으면 API에서 get 및 DB 저장
         if (matchMapper.countingMatchByMatchId(matchId) > 0) {
-            matchInfoEntity = matchMapper.getMatchInfo(matchId);
-            participantList = matchMapper.getMatchParticipantList(matchId);
+            matchInfoEntity = getMatchInfo(matchId);
+            participantList = getMatchParticipant(matchId);
         } else {
             MatchDto matchDto = matchApiService.getMatchDetailByMatchId(matchId);
             matchInfoEntity = lolMatchModelConverter.convertMatchDtoToLolMatchEntity(matchDto);
@@ -204,11 +212,15 @@ public class LolMatchService {
         return this.makeMatchInfoResDto(matchInfoEntity, participantList);
     }
 
+    @Cacheable(value = "matchInfo", key = "#matchId")
     public LolMatchEntity getMatchInfo(String matchId) {
+        log.info("Cache miss for getMatchInfo with matchId: {}", matchId);
         return matchMapper.getMatchInfo(matchId);
     }
 
+    @Cacheable(value = "matchParticipants", key = "#matchId")
     public List<LolMatchParticipantEntity> getMatchParticipant(String matchId) {
+        log.info("Cache miss for getMatchParticipant with matchId: {}", matchId);
         return matchMapper.getMatchParticipantList(matchId);
     }
 
@@ -241,7 +253,9 @@ public class LolMatchService {
         return this.getMatchResDto(matchId, loginPuuid);
     }
 
+    @Cacheable(value = "currentMatchInfo", key = "#puuid", unless = "#result.matchInfoDto == null")
     public LolCurrentMatchInfoDto getCurrentMatchInfo(String puuid) {
+        log.info("Cache miss for getCurrentMatchInfo with puuid: {}", puuid);
         LolCurrentMatchInfoDto currentMatchInfoDto = new LolCurrentMatchInfoDto();
         List<LolCurrentMatchParticipantDto> participantDtoList = new ArrayList<>();
         CurrentMatchInfoDto currentMatchInfo = spectatorService.getCurrentMatchInfoByPuuid(puuid);

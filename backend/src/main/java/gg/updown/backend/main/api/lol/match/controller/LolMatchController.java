@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
@@ -34,6 +36,7 @@ public class LolMatchController {
     private String basicStartTime;
 
     private final LolMatchService lolMatchService;
+    private final CacheManager cacheManager;
 
     @Operation(summary = "LOL 경기목록 조회", description = "LOL 경기목록 및 리뷰작성내역 조회")
     @GetMapping("/list")
@@ -77,5 +80,39 @@ public class LolMatchController {
     @GetMapping("/current/{puuid}")
     public ResponseEntity<LolCurrentMatchInfoDto> getCurrentMatchInfo(@PathVariable String puuid) {
         return ResponseEntity.ok(lolMatchService.getCurrentMatchInfo(puuid));
+    }
+    
+    @Operation(summary = "매치 캐시 초기화", description = "특정 매치 관련 캐시를 초기화")
+    @PostMapping("/cache/clear/{matchId}")
+    public ResponseEntity<String> clearMatchCache(@PathVariable String matchId) {
+        // 해당 매치와 관련된 모든 캐시 삭제
+        cacheManager.getCache("matchInfo").evict(matchId);
+        cacheManager.getCache("matchParticipants").evict(matchId);
+        
+        // matchInfoResDto는 키 패턴이 다양하므로 전체 비우기
+        // 실제 서비스에서는 이렇게 하는 것은 권장하지 않으며, 특정 키만 삭제하는 것이 좋습니다.
+        cacheManager.getCache("matchInfoResDto").clear();
+        
+        log.info("Cache cleared for matchId: {}", matchId);
+        return ResponseEntity.ok("Cache cleared for matchId: " + matchId);
+    }
+    
+    @Operation(summary = "현재 매치 캐시 초기화", description = "특정 플레이어의 현재 매치 캐시 초기화")
+    @PostMapping("/cache/clear/current/{puuid}")
+    public ResponseEntity<String> clearCurrentMatchCache(@PathVariable String puuid) {
+        cacheManager.getCache("currentMatchInfo").evict(puuid);
+        log.info("Current match cache cleared for puuid: {}", puuid);
+        return ResponseEntity.ok("Current match cache cleared for puuid: " + puuid);
+    }
+    
+    @Operation(summary = "모든 매치 캐시 초기화", description = "모든 매치 관련 캐시 초기화")
+    @PostMapping("/cache/clear-all")
+    public ResponseEntity<String> clearAllMatchCaches() {
+        cacheManager.getCache("matchInfo").clear();
+        cacheManager.getCache("matchParticipants").clear();
+        cacheManager.getCache("matchInfoResDto").clear();
+        cacheManager.getCache("currentMatchInfo").clear();
+        log.info("All match caches cleared");
+        return ResponseEntity.ok("All match caches cleared");
     }
 }
