@@ -8,6 +8,7 @@
       <!-- 게임 모드 드롭다운 -->
       <select
           v-model="selectedGameMode"
+          :disabled="isFilterLoading"
           class="min-w-[90px] md:min-w-[150px] px-2 md:px-3 py-1 md:py-1.5 bg-gray-700 text-gray-200 text-xs md:text-sm rounded-md border border-gray-600 focus:outline-none focus:border-blue-500"
       >
         <option v-for="mode in gameModes" :key="mode.id" :value="mode.id">
@@ -22,10 +23,12 @@
       <div class="flex gap-1.5 md:gap-2">
         <button
             @click="toggleReviewFilter('reviewed')"
+            :disabled="isFilterLoading"
             :class="[
-            'px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded-md transition-colors whitespace-nowrap',
-            showReviewed ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-          ]"
+        'px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded-md transition-colors whitespace-nowrap',
+        showReviewed ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600',
+        isFilterLoading ? 'opacity-70 cursor-not-allowed' : ''
+      ]"
         >
           <span class="hidden md:inline">평가받은 게임</span>
           <span class="inline md:hidden">평가됨</span>
@@ -33,10 +36,12 @@
         <button
             v-if="authStore?.user?.puuid == profileData.riotAccountInfoEntity?.puuid"
             @click="toggleReviewFilter('unreviewed')"
+            :disabled="isFilterLoading"
             :class="[
-              'px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded-md transition-colors whitespace-nowrap',
-              showUnreviewed ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            ]"
+          'px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded-md transition-colors whitespace-nowrap',
+          showUnreviewed ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600',
+          isFilterLoading ? 'opacity-70 cursor-not-allowed' : ''
+        ]"
         >
           <span class="hidden md:inline">평가하지 않은 게임</span>
           <span class="inline md:hidden">미평가</span>
@@ -44,13 +49,21 @@
       </div>
     </div>
 
-    <!-- 매치 목록 -->
+    <!-- 매치 목록 섹션 -->
     <div v-if="matches.length > 0" class="games-section">
+      <!-- 필터 로딩 중 오버레이 표시 -->
+      <div v-if="isFilterLoading" class="filter-loading-overlay">
+        <div class="loading-spinner">
+          <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+          <div class="mt-3 text-blue-400 text-sm">데이터를 불러오는 중입니다...</div>
+        </div>
+      </div>
+
       <div v-for="match in matches" :key="match.matchInfo.matchId" class="mb-4">
         <MatchSummary
             :match="match"
             :profile-data="profileData"
-            @review-player="openReview"
+            @review-player="$emit('reviewPlayer', $event)"
         />
       </div>
 
@@ -72,12 +85,19 @@
       </div>
     </div>
 
-    <MatchDataEmpty v-else />
+    <MatchDataEmpty v-else-if="!isFilterLoading" />
+
+    <!-- 데이터가 없고 필터 로딩 중일 때 표시할 로딩 인디케이터 -->
+    <div v-else class="empty-loading-container">
+      <div class="loading-spinner">
+        <div class="animate-spin w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import type { LolMatchInfoRes } from '@/types/match';
 import type { LolSummonerProfileResDto } from '@/types/summoner';
 import MatchSummary from '@/components/match/MatchSummary.vue';
@@ -90,6 +110,7 @@ const props = defineProps<{
   profileData: LolSummonerProfileResDto;
   isLoading: boolean;
   noMoreMatches: boolean;
+  isFilterLoading?: boolean; // 필터 로딩 상태
 }>();
 
 const emit = defineEmits<{
@@ -105,6 +126,7 @@ const selectedGameMode = ref('ALL');
 const showReviewed = ref(false);
 const showUnreviewed = ref(false);
 const authStore = useAuthStore();
+const isFilterLoading = computed(() => props.isFilterLoading || false);
 
 const gameModes = [
   { id: 'ALL', name: '전체' },
@@ -120,7 +142,10 @@ const gameModes = [
   { id: 'SPECIAL', name: '특별 게임모드' }
 ];
 
+// toggleReviewFilter 함수
 const toggleReviewFilter = (type: 'reviewed' | 'unreviewed') => {
+  if (isFilterLoading.value) return; // 로딩 중이면 토글 작동 안함
+
   if (type === 'reviewed') {
     showReviewed.value = !showReviewed.value;
     if (showReviewed.value) showUnreviewed.value = false;
@@ -132,7 +157,9 @@ const toggleReviewFilter = (type: 'reviewed' | 'unreviewed') => {
 };
 
 watch(selectedGameMode, () => {
-  emitFilterChange();
+  if (!isFilterLoading.value) {
+    emitFilterChange();
+  }
 });
 
 const emitFilterChange = () => {
@@ -157,6 +184,8 @@ const openReview = (player: any) => {
   border-radius: 12px;
   padding: 10px;
   border: 1px solid rgba(255,255,255,.05);
+  position: relative;
+  min-height: 2000px; /* 기본 최소 높이 설정 */
 }
 
 .load-more-button {
@@ -185,5 +214,42 @@ select {
   background-position: right 0.5rem center;
   background-size: 1.5em 1.5em;
   padding-right: 2rem;
+}
+
+.filter-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(20, 20, 20, 0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  border-radius: 12px;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-loading-container {
+  background: #141414;
+  border-radius: 12px;
+  padding: 48px 0;
+  border: 1px solid rgba(255,255,255,.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 800px;
+}
+
+.games-section {
+  position: relative;
 }
 </style>

@@ -30,6 +30,7 @@
           :profile-data="summonerInfo"
           :is-loading="isLoadingMore"
           :no-more-matches="noMoreMatches"
+          :is-filter-loading="isFilterLoading"
           @review-player="openReviewModal"
           @load-more="loadMoreMatches"
           @filter-change="handleFilterChange"
@@ -131,6 +132,7 @@ const suggestTag = ref<ReviewTagSuggestDto[]>([])
 const writtenReview = ref<ReviewRequestDto | null>(null)
 const playTogetherLatestMatch = ref<LolMatchInfoRes | null>(null);
 const currentMatchInfo = ref<CurrentMatchInfoDto>();
+const isFilterLoading = ref(false); // 필터 로딩 상태
 
 const currentMatchFilters = ref({
   gameMode: 'ALL',
@@ -143,13 +145,25 @@ const handleFilterChange = async (filters: {
 }) => {
   currentMatchFilters.value = filters;
 
-  // 필터가 변경되면 첫 페이지부터 다시 로드
+  // 필터가 변경되면 첫 페이지부터 다시 로드하고 로딩 상태 표시
   currentStartIndex.value = 0;
   noMoreMatches.value = false;
   matches.value = [];
 
-  await fetchMatchList(0);
+  // 필터 로딩 상태 활성화
+  isFilterLoading.value = true;
+
+  try {
+    await fetchMatchList(0);
+  } catch (error) {
+    console.error('Failed to fetch filtered matches:', error);
+    toast.error('매치 목록을 가져오는데 실패했습니다.');
+  } finally {
+    // 필터 로딩 상태 비활성화
+    isFilterLoading.value = false;
+  }
 };
+
 
 const fetchSummonerInfo = async () => {
   try {
@@ -199,6 +213,10 @@ const fetchMatchList = async (startIndex: number = 0) => {
     currentStartIndex.value = startIndex;
   } catch (error) {
     console.error('Failed to fetch matches:', error);
+    if (!isFilterLoading.value) {
+      toast.error('매치 목록을 가져오는데 실패했습니다.');
+    }
+    throw error;
   }
 };
 
